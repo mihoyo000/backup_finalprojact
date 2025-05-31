@@ -1,0 +1,478 @@
+    {# flo/templates/flo/study_post/study_post_list.html #}
+{% extends "flo/base.html" %}
+{% load static %}
+
+{% block title %}학습 게시판{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'flo/css/study_post/study_post_list.css' %}">
+<style>
+    /* 목록 페이지용 카테고리 선택 UI 조정 (필요시) */
+    .category-selection-area-wrapper-list { /* 새로운 클래스명 사용 */
+        margin-bottom: 25px; /* 기존 검색폼과의 간격 */
+        border: 1px solid var(--category-panel-border);
+        padding: 15px; /* 폼 페이지보다 패딩 약간 줄임 */
+        border-radius: 4px;
+        background-color: #fff;
+    }
+    body:not(.theme-light) .category-selection-area-wrapper-list {
+        border-color: var(--dark-category-panel-border);
+        background-color: var(--dark-category-panel-bg);
+    }
+    .category-selection-area-wrapper-list > .form-label { font-size: 1rem; margin-bottom: 10px; }
+    #selected-category-display-list .selected-category-tag { /* 목록 페이지에서는 단일 선택이므로 태그가 하나만 표시될 것 */
+        font-size: 0.9rem;
+    }
+    /* 목록 페이지에서는 카테고리 패널 높이를 줄일 수 있음 */
+    .category-selection-area-wrapper-list .category-list-inline {
+        max-height: 180px; /* 목록 페이지용 최대 높이 (조절 가능) */
+        overflow-y: auto;
+    }
+
+    /* 필터 적용 버튼 스타일 (선택 사항) */
+    #applyCategoryFilterButton {
+        background-color: #34D2E2;
+        color: #2d2d2d;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.85rem;
+    }
+
+    #applyCategoryFilterButton:hover {
+        opacity: 0.8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="board-page-wrapper">
+    <div class="board-container">
+        <div class="board-header-title-wrapper">
+            <h2 class="board-main-title">학습 게시판</h2>
+            <hr class="title-underline">
+        </div>
+
+        {# === 새로운 카테고리 선택 UI (폼 페이지에서 가져옴) === #}
+        <div class="category-selection-area-wrapper-list"> {# 클래스명 변경 #}
+            <label class="form-label">카테고리 필터 (최대 5개)</label>
+            <div id="selected-category-display-list" class="mb-2">
+                {# JavaScript가 URL 파라미터를 읽어 초기 렌더링하거나,
+                서버에서 initial_selected_categories_for_ui 를 받아와서 루프 돌며 렌더링 #}
+                {% for sel_cat in initial_selected_categories_for_ui %}
+                    <span class="badge me-1 mb-1 selected-category-tag" data-slug="{{ sel_cat.slug }}">
+                        {{ sel_cat.get_full_path_name }}
+                        <span class="remove-category-filter" data-slug="{{ sel_cat.slug }}" title="선택 해제" style="cursor:pointer; font-weight:bold; margin-left:3px;">×</span>
+                    </span>
+                {% endfor %}
+            </div>
+            <div class="text-end mb-2">
+                <button type="button" id="applyCategoryFilterButton" class="btn btn-info">선택된 카테고리로 검색</button>
+            </div>
+            <div class="category-panel-container">
+                <div class="category-search-box mb-2">
+                    <input type="text" id="categorySearchInputList" class="form-control" placeholder="카테고리 검색...">
+                </div>
+                <div id="categorySearchResultsPanel" style="display:none; margin-bottom: 10px;">
+                    <h6>검색 결과</h6>
+                    <ul class="list-group" id="categorySearchResultsList"></ul>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 category-panel-col" id="majorCategoryPanelList">
+                        <h6>대분류</h6>
+                        <ul class="list-group category-list-inline">
+                            {% for major_cat in major_categories %}
+                                <li class="list-group-item category-item-inline" data-id="{{ major_cat.id }}" data-name="{{ major_cat.name }}" data-level="0" data-slug="{{ major_cat.slug }}">
+                                    {{ major_cat.name }}
+                                    {% if major_cat.children.exists %}<span class="category-arrow-inline float-end">></span>{% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-4 category-panel-col" id="mediumCategoryPanelList" style="display:none;">
+                        <h6 id="mediumCategoryPanelTitleList">중분류</h6>
+                        <ul class="list-group category-list-inline" id="mediumCategoryListList"></ul>
+                    </div>
+                    <div class="col-md-4 category-panel-col" id="minorCategoryPanelList" style="display:none;">
+                        <h6 id="minorCategoryPanelTitleList">소분류</h6>
+                        <ul class="list-group category-list-inline" id="minorCategoryListList"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {# ===================================================== #}
+
+
+        <div class="board-controls-wrapper">
+            <form method="get" action="{% url 'flo:study_post_list' %}{% if current_category_slug %}{{ current_category_slug }}/{% endif %}" class="search-form">
+                {# 기존 카테고리 select 제거됨 #}
+                <select name="search_type" class="form-select search-type-select">
+                    <option value="title_content" {% if search_type == 'title_content' or not search_type %}selected{% endif %}>검색 유형</option>
+                    <option value="title" {% if search_type == 'title' %}selected{% endif %}>제목</option>
+                    {# <option value="content" {% if search_type == 'content' %}selected{% endif %}>내용</option> -- 검색 기능에서 제거됨 #}
+                    <option value="author" {% if search_type == 'author' %}selected{% endif %}>작성자</option>
+                    <option value="category_name" {% if search_type == 'category_name' %}selected{% endif %}>카테고리명</option> {# 추가된 검색 옵션 #}
+                </select>
+                <input type="text" name="search_keyword" value="{{ search_keyword }}" placeholder="검색할 내용을 입력하세요." class="form-control search-input">
+                <button type="submit" class="btn search-button">
+                    <img src="{% static 'flo/images/icons/study_post/search-black.png' %}" alt="검색">
+                </button>
+            </form>
+
+            <a href="{% url 'flo:study_post_create' %}" class="btn btn-primary btn-write-post">
+                <img src="{% static 'flo/images/icons/study_post/write-white.png' %}" alt="글쓰기 아이콘"> 글쓰기
+            </a>
+        </div>
+
+        <table class="table board-table-custom">
+            <thead>
+                <tr>
+                    <th class="col-number">번호</th>
+                    <th class="col-title">제목</th>
+                    <th class="col-author">작성자</th>
+                    <th class="col-date">작성일</th>
+                    <th class="col-views">조회수</th>
+                    <th class="col-likes">추천</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr {% if post.is_notice %}class="notice-row"{% endif %}>
+                    <td>{% if post.is_notice %}공지{% else %}{{ post.id }}{% endif %}</td>
+                    <td class="title-cell">
+                        <a href="{{ post.get_absolute_url }}">
+                            {% if post.category %}<span class="post-category-tag">[{{ post.category.name }}]</span> {% endif %}{{ post.title }}
+                        </a>
+                        {% if post.comment_count > 0 %}
+                            <span class="comment-count-badge">[{{ post.comment_count }}]</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ post.author.username }}</td>
+                    <td>{{ post.created_at|date:"Y-m-d" }}</td>
+                    <td>{{ post.views }}</td>
+                    <td>{{ post.num_likes }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4">게시글이 없습니다.</td> {# 패딩 추가 #}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination-wrapper">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if posts.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}" aria-label="First">
+                                «
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.previous_page_number }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword }}{% endif %}{% if current_category %}&category_slug={{ current_category.slug }}{% endif %}" aria-label="Previous">
+                                ‹
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">«</span></li>
+                        <li class="page-item disabled"><span class="page-link">‹</span></li>
+                    {% endif %}
+
+                    {% for i in posts.paginator.page_range %}
+                        {% if posts.number == i %}
+                            <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+                        {% elif i >= posts.number|add:'-2' and i <= posts.number|add:'2' %} {# 현재 페이지 기준 양옆 2개씩, 총 5개 표시되도록 수정 #}
+                            <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword }}{% endif %}{% if current_category %}&category_slug={{ current_category.slug }}{% endif %}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if posts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.next_page_number }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword }}{% endif %}{% if current_category %}&category_slug={{ current_category.slug }}{% endif %}" aria-label="Next">
+                                ›
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.paginator.num_pages }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword }}{% endif %}{% if current_category %}&category_slug={{ current_category.slug }}{% endif %}" aria-label="Last">
+                                »
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">›</span></li>
+                        <li class="page-item disabled"><span class="page-link">»</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("List Page DOM Content Loaded - Initializing Multi-Category Filter JS with Apply Button");
+
+    const MAX_CATEGORIES_FILTER = 5;
+    let selectedCategoriesForFilter = new Map(); // key: slug, value: {id, name, slug, path}
+
+    // --- 초기 선택된 카테고리 로드 (URL의 'category_slugs' 파라미터 또는 서버에서 전달된 데이터) ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialSlugsParam = urlParams.get('category_slugs');
+
+    // 서버에서 전달된 initial_selected_categories_for_ui (객체 리스트)를 사용하여 selectedCategoriesForFilter 맵 채우기
+    {% for cat_obj in initial_selected_categories_for_ui %}
+        selectedCategoriesForFilter.set("{{ cat_obj.slug }}", {
+            id: "{{ cat_obj.id }}",
+            name: "{{ cat_obj.name|escapejs }}",
+            slug: "{{ cat_obj.slug }}",
+            path: "{{ cat_obj.get_full_path_name|escapejs }}"
+        });
+    {% endfor %}
+    // 만약 URL 파라미터에도 값이 있다면, 서버에서 전달된 값과 합치거나 우선순위 결정
+    // (여기서는 서버 전달값을 우선으로 하고, JS 초기화 로직에서 URL 파라미터를 다시 파싱하여
+    // selectedCategoriesForFilter를 최종 결정하고 render하는 것이 더 일관적일 수 있음)
+    // 지금은 서버에서 전달된 값으로 초기화하고, renderSelectedCategoryTagsList() 호출
+    renderSelectedCategoryTagsList();
+
+
+    // 대분류, 중분류, 소분류 아이템 클릭 공통 핸들러
+    $('#majorCategoryPanelList, #mediumCategoryPanelList, #minorCategoryPanelList').on('click', '.category-item-inline', function() {
+        const $item = $(this);
+        const categoryId = $item.data('id').toString();
+        const categoryName = $item.data('name');
+        const categorySlug = $item.data('slug');
+        const fullPath = $item.data('path') || ($item.data('level') === 0 ? categoryName : ''); // 정확한 path는 AJAX 응답에서 설정됨
+        const hasChildren = $item.find('.category-arrow-inline').length > 0;
+
+        // 패널 내 아이템 활성화/비활성화 (선택된 항목 표시용)
+        const $parentPanel = $item.closest('.category-panel-col');
+        $parentPanel.find('.category-item-inline').removeClass('active-parent'); // 현재 패널에서 다른 active-parent 해제
+        // $item.addClass('active-parent'); // 클릭된 아이템을 active-parent로 (하위 로드 시에만)
+
+        if (hasChildren) {
+            $item.addClass('active-parent'); // 하위가 있을 때만 active-parent
+            if ($parentPanel.is('#majorCategoryPanelList')) {
+                $('#mediumCategoryPanelList').hide().find('.category-list-inline').empty();
+                $('#minorCategoryPanelList').hide().find('.category-list-inline').empty();
+                loadChildCategoriesList(categoryId, categoryName, '#mediumCategoryPanelList', '#mediumCategoryListList', 1);
+            } else if ($parentPanel.is('#mediumCategoryPanelList')) {
+                $('#minorCategoryPanelList').hide().find('.category-list-inline').empty();
+                const majorParentName = $('#majorCategoryPanelList .category-item-inline.active-parent').data('name');
+                const currentBasePath = majorParentName ? majorParentName + " > " + categoryName : categoryName;
+                loadChildCategoriesList(categoryId, currentBasePath, '#minorCategoryPanelList', '#minorCategoryListList', 2);
+            }
+        } else { // 하위 카테고리가 없는, 즉 선택 가능한 아이템 클릭
+            toggleCategorySelectionForFilter({ id: categoryId, name: categoryName, slug: categorySlug, path: fullPath }, $item);
+        }
+    });
+
+    function toggleCategorySelectionForFilter(category, $clickedItemElement) {
+        if (!category.slug) {
+            alert("카테고리 정보(slug)가 없어 선택할 수 없습니다.");
+            return;
+        }
+
+        if (selectedCategoriesForFilter.has(category.slug)) {
+            selectedCategoriesForFilter.delete(category.slug);
+            if ($clickedItemElement) $clickedItemElement.removeClass('active');
+        } else {
+            if (selectedCategoriesForFilter.size < MAX_CATEGORIES_FILTER) {
+                selectedCategoriesForFilter.set(category.slug, category);
+                if ($clickedItemElement) $clickedItemElement.addClass('active');
+            } else {
+                alert(`카테고리는 최대 ${MAX_CATEGORIES_FILTER}개까지 선택할 수 있습니다.`);
+                return;
+            }
+        }
+        renderSelectedCategoryTagsList(); // 선택된 태그 UI만 업데이트 (페이지 이동 없음)
+    }
+
+    function renderSelectedCategoryTagsList() {
+        const $displayArea = $('#selected-category-display-list');
+        $displayArea.empty(); // 기존 태그 비우기
+
+        // 서버에서 전달받은 initial_selected_categories_for_ui 또는 selectedCategoriesForFilter 맵을 사용
+        // 여기서는 selectedCategoriesForFilter 맵을 기준으로 렌더링
+        selectedCategoriesForFilter.forEach(function(cat) {
+            const tag = $(`
+                <span class="badge me-1 mb-1 selected-category-tag" data-slug="${cat.slug}" title="클릭하여 선택 해제" style="cursor:pointer;">
+                    ${cat.path}
+                    <span class="remove-category-visual" data-slug="${cat.slug}" style="font-weight:bold; margin-left:5px; pointer-events: none;">×</span>
+                </span>`);
+            $displayArea.append(tag);
+        });
+
+        // 카테고리 패널의 아이템들 'active' 상태 업데이트
+        $('.category-panel-container .category-item-inline').each(function() {
+            const $item = $(this);
+            const itemSlug = $item.data('slug');
+            if (selectedCategoriesForFilter.has(itemSlug)) {
+                $item.addClass('active');
+            } else {
+                $item.removeClass('active');
+            }
+        });
+    }
+
+    // 선택된 카테고리 태그 클릭(해제)
+    $('#selected-category-display-list').on('click', '.selected-category-tag', function() {
+        const slugToRemove = $(this).data('slug').toString();
+        if (selectedCategoriesForFilter.has(slugToRemove)) {
+            selectedCategoriesForFilter.delete(slugToRemove);
+            $(`.category-panel-container .category-item-inline[data-slug="${slugToRemove}"]`).removeClass('active');
+            renderSelectedCategoryTagsList(); // UI만 업데이트
+        }
+    });
+
+    // "선택된 카테고리로 검색" 버튼 클릭 이벤트
+    $('#applyCategoryFilterButton').on('click', function() {
+        applyCategoryFilters();
+    });
+
+    function applyCategoryFilters() {
+        const slugs = Array.from(selectedCategoriesForFilter.keys());
+        let filterUrl = "{% url 'flo:study_post_list' %}";
+
+        const currentSearchParams = new URLSearchParams(window.location.search);
+        const preservedParams = new URLSearchParams();
+
+        if (currentSearchParams.get('search_keyword')) {
+            preservedParams.set('search_keyword', encodeURIComponent(currentSearchParams.get('search_keyword')));
+        }
+        if (currentSearchParams.get('search_type')) {
+            preservedParams.set('search_type', encodeURIComponent(currentSearchParams.get('search_type')));
+        }
+
+        if (slugs.length > 0) {
+            preservedParams.set('category_slugs', slugs.join(','));
+        }
+
+        if (preservedParams.toString()) {
+            filterUrl += "?" + preservedParams.toString();
+        }
+
+        console.log("Applying filters. New URL:", filterUrl);
+        window.location.href = filterUrl;
+    }
+
+    function loadChildCategoriesList(parentId, basePathForTitle, panelSelector, listSelector, level) {
+        const $list = $(listSelector);
+        const $panel = $(panelSelector);
+        const $panelTitle = $(panelSelector.replace('PanelList', 'PanelTitleList'));
+
+        $list.html('<li class="list-group-item disabled p-5 text-center"><div class="spinner-border spinner-border-sm"></div></li>');
+        $panel.show();
+        $panelTitle.text((basePathForTitle || "하위") + " 카테고리");
+
+        $.ajax({
+            url: "{% url 'flo:ajax_get_child_categories' %}",
+            data: { 'parent_id': parentId },
+            dataType: 'json',
+            success: function(data) {
+                $list.empty();
+                if (data.children && data.children.length > 0) {
+                    data.children.forEach(function(child) {
+                        // AJAX로 로드된 하위 카테고리의 전체 경로(path)를 정확히 설정
+                        let childFullPath = basePathForTitle + " > " + child.name;
+                        if (level === 0) { // 대분류의 자식이면 (즉, 중분류)
+                            childFullPath = child.name; // 잘못된 계산, child.full_path를 써야 함
+                        }
+                        // child.full_path가 AJAX 응답에 포함되어 있다면 그것을 사용
+                        const displayPath = child.full_path || childFullPath;
+
+
+                        const listItem = $(`
+                            <li class="list-group-item category-item-inline ${selectedCategoriesForFilter.has(child.slug) ? 'active' : ''}"
+                                data-id="${child.id}"
+                                data-name="${child.name}"
+                                data-level="${level}"
+                                data-path="${displayPath}" {# AJAX 응답의 full_path 사용 권장 #}
+                                data-slug="${child.slug || ''}">
+                                ${child.name}
+                                ${child.has_children ? '<span class="category-arrow-inline float-end">></span>' : ''}
+                            </li>
+                        `);
+                        $list.append(listItem);
+                    });
+                } else {
+                    $list.html('<li class="list-group-item disabled text-muted">하위 카테고리가 없습니다.</li>');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX Error loading child categories:", textStatus, errorThrown, jqXHR.responseText);
+                $list.html('<li class="list-group-item text-danger">목록을 불러오는데 실패했습니다.</li>');
+            }
+        });
+    }
+
+    // 카테고리 검색 (AJAX 방식)
+    let searchTimeout;
+    $('#categorySearchInputList').on('keyup', function() {
+        clearTimeout(searchTimeout);
+        const searchTerm = $(this).val().toLowerCase();
+        const $resultsPanel = $('#categorySearchResultsPanel');
+        const $resultsList = $('#categorySearchResultsList');
+        const $categoryPanelsContainer = $('.category-selection-area-wrapper-list .category-panel-container .row');
+
+        if (searchTerm.length < 1) {
+            $resultsPanel.hide();
+            $resultsList.empty();
+            $categoryPanelsContainer.show();
+            $('.category-selection-area-wrapper-list .category-panel-container .category-item-inline').show();
+            return;
+        }
+
+        $categoryPanelsContainer.hide();
+        $resultsPanel.show();
+        $resultsList.html('<li class="list-group-item disabled text-center"><div class="spinner-border spinner-border-sm"></div></li>');
+
+        searchTimeout = setTimeout(function() {
+            $.ajax({
+                url: "{% url 'flo:ajax_search_categories' %}",
+                data: { 'q': searchTerm },
+                dataType: 'json',
+                success: function(data) {
+                    $resultsList.empty();
+                    if (data.categories && data.categories.length > 0) {
+                        data.categories.forEach(function(cat) {
+                            let levelText = '';
+                            if (cat.level === 0) levelText = ' (대분류)';
+                            else if (cat.level === 1) levelText = ' (중분류)';
+                            else if (cat.level === 2) levelText = ' (소분류)';
+
+                            const listItem = $(`
+                                <li class="list-group-item category-item-inline search-result-item ${selectedCategoriesForFilter.has(cat.slug) ? 'active' : ''}"
+                                    data-id="${cat.id}" data-name="${cat.name}" data-slug="${cat.slug}" data-path="${cat.full_path}"
+                                    style="cursor:pointer; display: flex; justify-content: space-between; align-items: center;">
+                                    <span class="search-result-path">${cat.full_path}</span>
+                                    <span class="search-result-level text-muted fs-sm">${levelText}</span>
+                                    ${cat.has_children ? '<span class="search-result-arrow category-arrow-inline text-muted">></span>' : '<span class="search-result-arrow"></span>'}
+                                </li>
+                            `);
+                            listItem.on('click', function() {
+                                toggleCategorySelectionForFilter({ // 검색 결과 클릭 시에도 선택 토글만
+                                    id: $(this).data('id').toString(),
+                                    name: $(this).data('name'),
+                                    slug: $(this).data('slug'),
+                                    path: $(this).data('path')
+                                }, $(this)); // $clickedItemElement 전달
+                                // 검색 UI 처리
+                                $resultsPanel.hide();
+                                $resultsList.empty();
+                                $categoryPanelsContainer.show();
+                                $('#categorySearchInputList').val('');
+                            });
+                            $resultsList.append(listItem);
+                        });
+                    } else {
+                        $resultsList.html('<li class="list-group-item disabled text-muted">검색 결과가 없습니다.</li>');
+                    }
+                },
+                error: function() { $resultsList.html('<li class="list-group-item text-danger">검색 중 오류가 발생했습니다.</li>');}
+            });
+        }, 300);
+    });
+});
+</script>
+{% endblock %}

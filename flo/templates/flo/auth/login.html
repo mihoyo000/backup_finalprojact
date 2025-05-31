@@ -1,0 +1,68 @@
+{% extends "flo/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "로그인" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="max-width: 500px;"> {# 상하 마진 추가 #}
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4">{% translate "로그인" %}</h2>
+            {# messages 프레임워크가 base.html에서 처리하므로 여기서 별도 에러 표시는 중복될 수 있음 #}
+            {% if form.errors and not messages %}
+                <div class="alert alert-danger">
+                    {% translate "아이디 또는 비밀번호가 올바르지 않습니다. 다시 시도해주세요." %}
+                </div>
+            {% endif %}
+            <form method="post" action="{% url 'flo:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}"> {# next 파라미터 추가 및 urlencode #}
+                {% csrf_token %}
+                {# {{ form.as_p }} #} {# 기본 폼 렌더링 #}
+
+                {# Bootstrap 폼 스타일 적용 예시 #}
+                <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">{% translate "사용자 이름" %}</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.username.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">{% translate "비밀번호" %}</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">{% translate "로그인" %}</button>
+                </div>
+            </form>
+            <hr class="my-4">
+            <div class="text-center">
+                <p>{% translate "계정이 없으신가요?" %} <a href="#">{% translate "회원가입" %}</a></p>
+                {# <p><a href="#">{% translate "비밀번호를 잊으셨나요?" %}</a></p> #} {# 비밀번호 찾기 기능은 별도 구현 필요 #}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Django 기본 폼 위젯에 Bootstrap 클래스 추가 (선택 사항, forms.py에서 위젯 수정이 더 좋음) #}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameInput = document.getElementById('{{ form.username.id_for_label }}');
+        if (usernameInput) usernameInput.classList.add('form-control');
+        const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
+        if (passwordInput) passwordInput.classList.add('form-control');
+    });
+</script>
+{% endblock %}

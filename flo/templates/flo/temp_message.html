@@ -1,0 +1,11 @@
+{% extends "flo/base.html" %}
+
+{% block title %}알림{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>알림</h2>
+    <p>{{ message }}</p>
+    <a href="{% url 'flo:study_post_list' %}" class="btn btn-info">게시판으로 돌아가기</a>
+</div>
+{% endblock %}
