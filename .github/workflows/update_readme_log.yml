@@ -25,10 +25,10 @@ jobs:
       - name: Append commit info to README.md
         run: |
           echo -e "\n### 📝 Commit Log\n" >> README.md   # escape 문자 해석 요청
-          echo "**Author:** $(git log -1 --pretty=format:'%an')" >> README.md    # git log --> 문자열 출력
-          echo "**Message:** $(git log -1 --pretty=format:'%s')" >> README.md
-          echo "**Commit:** $(git log -1 --pretty=format:'%H')" >> README.md
-          echo "**Date:** $(date '+%Y-%m-%d %H:%M:%S')" >> README.md      # +는 기본 출력 대신 내가 지정한 형식을 사용해 출력하라는 의미
+          echo "**Author:** $(git log -1 --pretty=format:'%an')\n" >> README.md    # git log --> 문자열 출력
+          echo "**Message:** $(git log -1 --pretty=format:'%s')\n" >> README.md
+          echo "**Commit:** $(git log -1 --pretty=format:'%H')\n" >> README.md
+          echo "**Date:** $(date '+%Y-%m-%d %H:%M:%S')\n\n" >> README.md      # +는 기본 출력 대신 내가 지정한 형식을 사용해 출력하라는 의미
           echo "" >> README.md
 
       - name: Commit and push changes
