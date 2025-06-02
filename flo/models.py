@@ -1,4 +1,5 @@
 # flo/models.py
+from datetime import timezone
 from django.db import models
 from django.conf import settings # settings.AUTH_USER_MODEL 사용
 from django.urls import reverse
@@ -140,12 +141,63 @@ class Post(models.Model):
     
     def get_category_display_names(self): # 선택된 카테고리 이름들을 문자열로 반환 (템플릿 표시용)
         return ", ".join([cat.get_full_path_name for cat in self.categories.all()])
-
+    
+    @property
+    def attachments_count(self): # 첨부파일 개수를 반환하는 프로퍼티
+        return self.post_attachments.count()
 
     class Meta:
         verbose_name = "학습 게시글"
         verbose_name_plural = "학습 게시글 목록"
         ordering = ['-is_notice', '-created_at']
+            
+class Attachment(models.Model):
+    post = models.ForeignKey(Post, related_name='post_attachments', on_delete=models.CASCADE, verbose_name="게시글")
+    file = models.FileField(upload_to='post_attachments/%Y/%m/%d/', verbose_name="첨부파일")
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="업로드 날짜")
+
+    def __str__(self):
+        # 파일 이름만 추출 (경로 제외)
+        return self.file.name.split('/')[-1]
+
+    @property
+    def filename(self): # 템플릿에서 파일 이름만 쉽게 사용하기 위한 프로퍼티
+        return self.file.name.split('/')[-1]
+
+    # ★★★ 다운로드 시 사용할 파일명을 생성하는 프로퍼티 추가 ★★★
+    @property
+    def download_filename(self):
+        # uploaded_at 필드를 사용하여 "YYYYMMDD_원래파일명" 형식으로 만듭니다.
+        # self.uploaded_at이 naive datetime일 경우, settings.TIME_ZONE 기준으로 변환 필요 없음
+        # (auto_now_add=True는 보통 aware datetime으로 저장)
+        # 만약 naive datetime이고 시간대 변환이 필요하다면 추가 로직이 필요할 수 있습니다.
+        # 여기서는 uploaded_at이 적절한 시간 정보를 가지고 있다고 가정합니다.
+        
+        date_str = ""
+        if self.uploaded_at: # uploaded_at 값이 있는 경우에만 날짜 문자열 생성
+            # Django의 TIME_ZONE 설정에 따라 aware datetime일 수 있습니다.
+            # 만약 항상 특정 형식 (예: UTC 기준)으로 저장하고 싶다면 추가 처리 필요.
+            # 여기서는 저장된 uploaded_at 값을 그대로 사용합니다.
+            try:
+                # timezone.localtime()을 사용하여 settings.TIME_ZONE 기준으로 변환 후 포맷팅 (더 안전)
+                local_uploaded_at = timezone.localtime(self.uploaded_at)
+                date_str = local_uploaded_at.strftime("%Y%m%d")
+            except ValueError: # 만약 uploaded_at이 naive datetime이면 발생할 수 있음
+                date_str = self.uploaded_at.strftime("%Y%m%d") # 이 경우 서버 시간대 기준
+            except AttributeError: # uploaded_at이 None인 경우 등
+                pass # date_str은 빈 문자열로 유지
+
+        original_filename = self.filename # 기존 filename 프로퍼티 사용
+        
+        if date_str:
+            return f"{date_str}_{original_filename}"
+        else: # 날짜 정보가 없으면 원래 파일명 반환
+            return original_filename
+
+    class Meta:
+        verbose_name = "첨부파일"
+        verbose_name_plural = "첨부파일 목록"
+        ordering = ['uploaded_at']
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name="원본글")

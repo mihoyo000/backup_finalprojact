@@ -110,7 +110,12 @@ html {
     background-color: var(--bg-color-html-light);
 }
 body {
-    font-family: 'Pretendard-Regular';
+    font-family: 'Pretendard Variable', Pretendard, /* 사용하는 프리텐다드 이름 우선 */
+                 -apple-system, BlinkMacSystemFont, /* macOS, iOS 시스템 폰트 */
+                 system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', /* 기타 최신 시스템 폰트 */
+                 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', /* 한글 시스템 폰트 */
+                 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', /* 이모지 폰트 */
+                 sans-serif; /* 최후의 보루: 기본 산세리프 */
     line-height: 1.6;
     display: flex;
     flex-direction: column;

@@ -1,23 +1,51 @@
 /* static/flo/css/study_post/study_post_list.css */
 
+/* --- 기본 변수 (study_post_form.css 와 유사하게 또는 필요한 부분만 가져오기) --- */
+:root {
+    /* 기존 study_post_list.css에 있던 변수들 (생략 가능, base.css 등에서 관리될 수 있음) */
+    --bg-page-list: #111111; /* 예시: 목록 페이지용 배경 */
+    --text-main-list: #f1f1f1; /* 예시: 목록 페이지용 주 텍스트 */
+    --line-sub-list: #f1f1f1; /* 예시: 목록 페이지용 구분선 */
+
+    /* 카테고리 선택 UI를 위한 색상 (study_post_form.css에서 가져옴) */
+    --category-panel-bg: #f8f9fa; /* 라이트 모드 패널 배경 */
+    --category-panel-border: #e9ecef;
+    --category-item-text: #212529;
+    --category-item-hover-bg: #e9ecef; /* 라이트 모드 호버 배경 */
+    --category-item-active-bg: #3294E4; /* Bootstrap primary color 또는 btn-bg 등 */
+    --category-item-active-text: #fff;
+
+    /* 다크모드 카테고리 패널 (study_post_form.css에서 가져옴) */
+    --dark-category-panel-bg: #212529;
+    --dark-category-panel-border: #343a40;
+    --dark-category-item-text: #f8f9fa;
+    --dark-category-item-hover-bg: #3a3a3a;
+    --dark-category-item-active-bg: var(--btn-bg, #3294E4); /* form의 --btn-bg 참조, 없으면 기본값 */
+    --dark-category-item-active-text: #fff;
+    --dark-active-parent-bg: #3e444a;
+
+    /* 폼 요소에 사용될 수 있는 변수 (목록 페이지 검색창 등에 필요시 사용) */
+    --form-input-bg: #FFFFFF;
+    --form-input-text: #212529;
+    --form-input-border: #ced4da;
+    --form-input-placeholder: #6c757d;
+}
+
+
 /* --- 학습 게시판 공통 스타일 --- */
 .board-page-wrapper {
-    padding-top: 60px; /* 헤더와의 간격을 위해 추가 */
-    padding-bottom: 60px; /* 푸터와의 간격을 위해 추가 */
-    /* background-color는 body의 것을 상속받도록 별도 지정 안함 */
+    padding-top: 60px;
+    padding-bottom: 60px;
 }
 
-/* body {
-    background-color: #f8f9fa;
-} */
-
-/* 라이트 모드 시 게시판 관련 스타일 */
+/* --- 라이트 모드 전체 게시판 스타일 --- */
 body.theme-light .board-container {
-    background-color: #f8f9fa; /* 라이트 모드 게시판 배경 */
+    background-color: #f8f9fa;
     color: #212529;
-    /* box-shadow: 0 0 15px rgba(0,0,0,0.05); /* 은은한 그림자 효과 (선택 사항) */
 }
-body.theme-light .board-main-title { color: #212529; }
+body.theme-light .board-main-title {
+    color: #212529;
+}
 body.theme-light hr.title-underline {
     background-color: #000000;
 }
@@ -27,91 +55,384 @@ body.theme-light .form-control.search-input {
     color: #495057;
     border: 1px solid #ced4da;
 }
-body.theme-light .form-select option { background-color: #fff; color: #212529; }
-body.theme-light .btn.search-button { background-color: #6d28d9; }
-body.theme-light .btn.search-button img { filter: invert(100%) brightness(2); }
+body.theme-light .form-select option {
+    background-color: #fff;
+    color: #212529;
+}
+body.theme-light .btn.search-button {
+    background-color: #6d28d9; /* 라이트모드 검색 버튼 배경색 예시 */
+}
+body.theme-light .btn.search-button img {
+    filter: invert(100%) brightness(2); /* 라이트모드 검색 버튼 아이콘 색상 반전 */
+}
 body.theme-light .btn-primary.btn-write-post {
-    background-color: #6d28d9;
+    background-color: #6d28d9; /* 라이트모드 글쓰기 버튼 배경색 예시 */
     border-color: #6d28d9;
     color: #fff;
 }
-/* body.theme-light .btn-primary.btn-write-post img { filter: invert(100%) brightness(2); } */
-body.theme-light .board-table-custom { color: #212529; border-color: #e0e0e0; }
+body.theme-light .board-table-custom {
+    color: #212529;
+    border-color: #e0e0e0;
+}
 body.theme-light .board-table-custom thead th {
     background-color: #f5f5f5;
     color: #333;
     border-bottom-color: #d0d0d0;
 }
-body.theme-light .board-table-custom tbody tr:hover { background-color: #f0f0f0; }
+body.theme-light .board-table-custom tbody tr:hover {
+    background-color: #f0f0f0;
+}
 body.theme-light .board-table-custom .notice-row {
-    background-color: #ede7f6;
-    color: #6d28d9;
+    background-color: #ede7f6; /* 라이트모드 공지사항 배경 */
+    color: #6d28d9; /* 라이트모드 공지사항 텍스트 */
     font-weight: bold;
 }
-body.theme-light .board-table-custom .title-cell a { color: #6d28d9; }
-body.theme-light .comment-count-badge { color: #4caf50; }
-
-/* 라이트 모드 카테고리 목록 아이템 호버 스타일 */
-body.theme-light .category-selection-area-wrapper-list .category-list-inline .category-item-inline:hover {
-    background-color: var(--category-item-hover-bg, #e9ecef); /* 예시: 라이트 모드 호버 배경색 */
-    color: var(--category-item-text, #212529); /* 예시: 라이트 모드 호버 텍스트 색 (배경에 따라 조절) */
+body.theme-light .board-table-custom .title-cell a {
+    color: #6d28d9; /* 라이트모드 게시글 제목 링크 */
+}
+body.theme-light .comment-count-badge {
+    color: #4caf50; /* 라이트모드 댓글 수 */
 }
 
-/* 라이트 모드 active-parent 호버 스타일 (필요하다면) */
-body.theme-light .category-selection-area-wrapper-list .category-list-inline .category-item-inline.active-parent:hover {
-    background-color: #dcdcdc; /* active-parent 상태에서 호버 시 약간 다른 배경 (예시) */
-}
-
+/* --- 다크 모드 전체 게시판 스타일 --- */
 body:not(.theme-light) .board-container {
-    background-color: var(--bg-color-body-dark); /* base.css의 body 배경색과 동일하게 하거나 다른 색 지정 */
-    color: var(--text-color-default-dark);    /* base.css의 body 텍스트색과 동일하게 하거나 다른 색 지정 */
+    /* background-color: var(--bg-color-body-dark); base.css 에서 정의된 변수 사용 권장 */
+    background-color: #1e1e1e; /* 예시 다크모드 게시판 배경 */
+    color: var(--text-main-list, #e0e0e0);
 }
 
-/* === 카테고리 필터 UI 다크 모드 스타일 === */
-/* study_post_form.css 의 스타일을 참조하거나 여기에 필요한 스타일 추가 */
-/* 예시: 대분류/중분류/소분류 패널 제목 */
-body:not(.theme-light) .category-selection-area-wrapper-list .category-panel-col h6 {
-    color: var(--dark-category-item-text, #f0f0f0); /* 변수가 없다면 기본값 사용 */
-    border-bottom-color: var(--dark-category-panel-border, #444);
+
+/* --- 카테고리 필터 UI (목록 페이지) --- */
+/* study_post_form.css 의 스타일을 기반으로,
+   study_post_list.html 의 <style> 블록 내용과 통합 및 클래스명(.category-selection-area-wrapper-list)에 맞게 수정 */
+
+.category-selection-area-wrapper-list {
+    margin-bottom: 25px;
+    border: 1px solid var(--category-panel-border); /* 라이트 모드 테두리 */
+    padding: 15px;
+    border-radius: 4px;
+    background-color: #fff; /* 라이트 모드 배경 */
 }
-/* 예시: 카테고리 목록 아이템 텍스트 */
-body:not(.theme-light) .category-selection-area-wrapper-list .category-list-inline .category-item-inline {
-    color: var(--dark-category-item-text, #f0f0f0);
+body:not(.theme-light) .category-selection-area-wrapper-list {
+    border-color: var(--dark-category-panel-border);
+    background-color: var(--dark-category-panel-bg);
 }
-/* 예시: 카테고리 목록 아이템 호버 시 배경/텍스트 */
-body:not(.theme-light) .category-selection-area-wrapper-list .category-list-inline .category-item-inline:hover {
-    background-color: var(--dark-category-item-hover-bg, #3a3a3a);
-    color: var(--dark-category-item-hover-text, #ffffff);
+
+.category-selection-area-wrapper-list > .form-label {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: block;
+    color: #333; /* 라이트모드 */
 }
-/* 예시: 하위 메뉴를 열고 있는 부모 아이템(active-parent) 배경/텍스트 */
-body:not(.theme-light) .category-selection-area-wrapper-list .category-list-inline .category-item-inline.active-parent {
-    background-color: var(--dark-category-item-hover-bg, #3e444a); /* 호버보다 약간 다르거나 같게 */
-    color: var(--dark-category-item-text, #f0f0f0); /* 텍스트 색상 */
-}
-/* 레이블 (카테고리 필터) */
 body:not(.theme-light) .category-selection-area-wrapper-list > .form-label {
-    color: var(--text-color-default-dark, #ced4da);
+    color: var(--text-main-list); /* 다크모드 */
 }
-/* 검색창 */
+
+/* 선택된 카테고리 태그 표시 영역 */
+#selected-category-display-list { /* ID에 -list 접미사 주의 */
+    margin-bottom: 15px;
+    min-height: 28px;
+}
+#selected-category-display-list .selected-category-tag {
+    display: inline-block;
+    font-size: 0.9rem;
+    padding: .3em .7em;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border-radius: .25rem;
+    background-color: var(--category-item-active-bg); /* form.css 와 동일한 변수 사용 */
+    color: var(--category-item-active-text);
+    font-weight: 500;
+}
+/* 다크모드에서 선택된 태그 색상을 다르게 하려면 study_post_form.css 와 동일하게 처리 */
+body:not(.theme-light) #selected-category-display-list .selected-category-tag {
+    background-color: var(--dark-category-item-active-bg); /* form.css 와 동일한 변수 사용 */
+    color: var(--dark-category-item-active-text);
+}
+#selected-category-display-list .remove-category-filter,
+#selected-category-display-list .remove-category-visual { /* 두 클래스명 모두 대응 */
+    margin-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    opacity: 0.7;
+}
+#selected-category-display-list .remove-category-filter:hover,
+#selected-category-display-list .remove-category-visual:hover {
+    opacity: 1;
+}
+
+/* "선택된 카테고리로 검색" 버튼 (HTML <style> 블록에서 가져옴) */
+#applyCategoryFilterButton {
+    background-color: #34D2E2; /* 기존 스타일 유지 또는 테마에 맞게 변경 */
+    color: #2d2d2d;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.85rem;
+    border: none; /* 테두리 제거 추가 */
+    border-radius: 0.25rem; /* 모서리 둥글게 추가 */
+}
+#applyCategoryFilterButton:hover {
+    opacity: 0.8;
+}
+/* 다크모드 필터 적용 버튼 (필요시) */
+body:not(.theme-light) #applyCategoryFilterButton {
+    background-color: #2aa1af; /* 다크모드용 색상 예시 */
+    color: #f0f0f0;
+}
+
+
+/* 카테고리 검색창 */
+.category-selection-area-wrapper-list .category-search-box input[type="text"].form-control {
+    width: 100%;
+    padding: .5rem .75rem;
+    font-size: 0.9rem;
+    border-radius: .25rem;
+    background-color: var(--form-input-bg); /* 라이트 모드 */
+    color: var(--form-input-text);
+    border: 1px solid var(--form-input-border);
+    margin-bottom: 15px;
+}
+.category-selection-area-wrapper-list .category-search-box input[type="text"].form-control::placeholder {
+    color: var(--form-input-placeholder);
+}
 body:not(.theme-light) .category-selection-area-wrapper-list .category-search-box input[type="text"].form-control {
-    background-color: #3e3e3e; /* 예시 */
+    background-color: #3e3e3e; /* form.css 와 동일하게 */
     color: #f0f0f0;
     border-color: #555;
 }
 body:not(.theme-light) .category-selection-area-wrapper-list .category-search-box input[type="text"].form-control::placeholder {
     color: #888;
 }
-/* 화살표 */
-body:not(.theme-light) .category-selection-area-wrapper-list .category-arrow-inline {
-    color: #888;
+
+/* 각 카테고리 패널 (대/중/소) 컬럼 */
+.category-selection-area-wrapper-list .category-panel-col {
+    padding-right: 8px;
+    padding-left: 8px;
+}
+.category-selection-area-wrapper-list .category-panel-col:not(:last-child) {
+    border-right: 1px solid var(--category-panel-border); /* 라이트 모드 구분선 */
+}
+body:not(.theme-light) .category-selection-area-wrapper-list .category-panel-col:not(:last-child) {
+    border-right-color: var(--dark-category-panel-border);
 }
 
+/* 패널 제목 (h6) */
+.category-selection-area-wrapper-list .category-panel-col h6 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--category-panel-border); /* 라이트 모드 */
+    color: #333; /* 라이트모드 */
+}
+body:not(.theme-light) .category-selection-area-wrapper-list .category-panel-col h6 {
+    color: var(--dark-category-item-text); /* form.css 와 동일하게 */
+    border-bottom-color: var(--dark-category-panel-border);
+}
 
+.category-column {
+    height: auto; /* 콘텐츠 높이에 맞춰 늘어나도록 */
+    min-height: 100%; /* 또는 최소 높이를 보장 */
+}
+
+.category-wrapper {
+    overflow: visible;
+    padding-bottom: 8px; /* 필요 시 스크롤 영역 아래 여백 확보 */
+}
+
+/* 카테고리 목록 (ul.list-group) */
+.category-selection-area-wrapper-list .category-list-inline {
+    list-style: none;
+    margin: 0; /* 마진은 0으로 유지 */
+    padding-left: 0;
+    padding-right: 0; /* 스크롤바 공간을 위해 약간의 우측 패딩을 줄 수도 있습니다. */
+    padding-top: 0;
+    padding-bottom: 10px; /* <<-- 이 부분을 조절하여 아래쪽 여백을 확보합니다. (예: 5px ~ 15px) */
+    max-height: 180px;    /* 기존 max-height 유지 또는 약간 늘릴 수 있음 */
+    overflow-y: auto;
+    box-sizing: border-box; /* <<-- 패딩이 max-height 계산에 포함되도록 합니다. 중요! */
+}
+
+/* 카테고리 목록 아이템 (li.list-group-item) */
+.category-selection-area-wrapper-list .category-list-inline .category-item-inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .5rem .75rem;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    font-size: 0.9rem;
+    color: var(--category-item-text); /* 라이트 모드 */
+    background-color: transparent; /* 기본 배경 투명 */
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+}
+.category-selection-area-wrapper-list .category-list-inline .category-item-inline:last-child {
+    border-bottom: 1px solid var(--category-panel-border);
+}
+
+/* 라이트 모드 아이템 :hover */
+body.theme-light .category-selection-area-wrapper-list .category-list-inline .category-item-inline:hover {
+    background-color: var(--category-item-hover-bg); /* form.css 와 동일하게 */
+    color: var(--category-item-text);
+}
+
+/* 라이트 모드 아이템 .active-parent */
+body.theme-light .category-selection-area-wrapper-list .category-list-inline .category-item-inline.active-parent {
+    background-color: #e0e0e0; /* form.css 와 동일하게 */
+    font-weight: 500;
+    color: var(--category-item-text);
+}
+body.theme-light .category-selection-area-wrapper-list .category-list-inline .category-item-inline.active-parent:hover {
+    background-color: #dcdcdc; /* form.css 와 동일하게 (또는 기존 list.html <style> 값 유지) */
+}
+
+/* 최종 선택된 아이템 스타일 .active (라이트/다크 공통) */
+.category-selection-area-wrapper-list .category-list-inline .category-item-inline.active {
+    background-color: var(--category-item-active-bg) !important;
+    color: var(--category-item-active-text) !important;
+    font-weight: 500;
+}
+
+/* 다크 모드 카테고리 목록 아이템 */
+body:not(.theme-light) .category-selection-area-wrapper-list .category-list-inline .category-item-inline {
+    color: var(--dark-category-item-text);
+    /* background-color: var(--dark-category-panel-bg); 아이템 자체 배경은 투명 또는 호버/액티브 시 지정 */
+}
+body:not(.theme-light) .category-selection-area-wrapper-list .category-list-inline .category-item-inline:hover {
+    background-color: var(--dark-category-item-hover-bg);
+    color: var(--dark-category-item-hover-text, #ffffff); /* form.css 와 동일하게 */
+}
+body:not(.theme-light) .category-selection-area-wrapper-list .category-list-inline .category-item-inline.active-parent {
+    background-color: var(--dark-active-parent-bg); /* form.css 와 동일하게 */
+    color: var(--dark-category-item-text);
+}
+/* .active 스타일은 위에서 라이트/다크 공통으로 이미 정의됨 (var(--category-item-active-bg) 사용)
+   만약 다크모드에서 .active 배경/글자색을 다르게 하려면 아래 주석 풀고 수정 */
+/*
+body:not(.theme-light) .category-selection-area-wrapper-list .category-list-inline .category-item-inline.active {
+    background-color: var(--dark-category-item-active-bg) !important;
+    color: var(--dark-category-item-active-text) !important;
+}
+*/
+
+/* 카테고리 계층 화살표 (>) */
+.category-selection-area-wrapper-list .category-arrow-inline {
+    font-size: 0.8em;
+    color: #6c757d; /* 라이트 모드 기본 */
+    font-weight: bold;
+}
+/* 라이트 모드에서 active 또는 active-parent 일 때 화살표 색상 */
+body.theme-light .category-selection-area-wrapper-list .category-item-inline.active .category-arrow-inline,
+body.theme-light .category-selection-area-wrapper-list .category-item-inline.active-parent .category-arrow-inline {
+    color: var(--category-item-text); /* form.css 와 동일하게 (기본 텍스트 색상) */
+}
+body.theme-light .category-selection-area-wrapper-list .category-item-inline.active.active-parent .category-arrow-inline,
+body.theme-light .category-selection-area-wrapper-list .category-item-inline.active .category-arrow-inline { /* 최종 선택 시 */
+    color: var(--category-item-active-text); /* form.css 와 동일하게 (활성 아이템 텍스트 색상) */
+}
+
+/* 다크 모드 화살표 */
+body:not(.theme-light) .category-selection-area-wrapper-list .category-arrow-inline {
+    color: #888; /* form.css 와 동일하게 (다크모드 기본 화살표) */
+}
+body:not(.theme-light) .category-selection-area-wrapper-list .category-item-inline.active .category-arrow-inline,
+body:not(.theme-light) .category-selection-area-wrapper-list .category-item-inline.active-parent .category-arrow-inline {
+    color: var(--dark-category-item-text); /* form.css 와 동일하게 */
+}
+body:not(.theme-light) .category-selection-area-wrapper-list .category-item-inline.active.active-parent .category-arrow-inline,
+body:not(.theme-light) .category-selection-area-wrapper-list .category-item-inline.active .category-arrow-inline { /* 최종 선택 시 */
+     color: var(--dark-category-item-active-text); /* form.css 와 동일하게 */
+}
+
+/* 카테고리 검색 결과 패널 및 목록 
+#categorySearchResultsPanel { /* JS에서 사용하는 ID 기준
+    /* margin-bottom: 10px; HTML 인라인 스타일로 적용
+} */
+#categorySearchResultsPanel h6 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    color: #333; /* 라이트모드 기본 */
+    /* border-bottom: 1px solid var(--category-panel-border); */
+}
+body:not(.theme-light) #categorySearchResultsPanel h6 {
+    color: var(--dark-category-item-text);
+    /* border-bottom-color: var(--dark-category-panel-border); */
+}
+
+#categorySearchResultsList { /* JS에서 사용하는 ID 기준 */
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid var(--category-panel-border); /* 라이트모드 기본 */
+    border-radius: 0.25rem;
+    background-color: #fff; /* 검색 결과 목록 라이트모드 배경 */
+}
+body:not(.theme-light) #categorySearchResultsList {
+    border-color: var(--dark-category-panel-border);
+    background-color: var(--dark-category-panel-bg); /* 다크모드 검색 결과 목록 배경 */
+}
+
+/* 검색 결과 아이템 (HTML li.search-result-item) */
+.category-selection-area-wrapper-list .search-result-item {
+    /* 기본 스타일은 JS에서 동적으로 생성되는 HTML 인라인 스타일에 따름 (display, justify-content 등) */
+    /* 여기서는 테마 관련 색상, 패딩 등 공통 스타일 지정 */
+    padding: .5rem .75rem; /* category-item-inline과 유사하게 */
+    cursor: pointer;
+    color: var(--category-item-text); /* 라이트 모드 */
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+}
+body.theme-light .category-selection-area-wrapper-list .search-result-item:hover {
+    background-color: var(--category-item-hover-bg);
+}
+body:not(.theme-light) .category-selection-area-wrapper-list .search-result-item {
+    color: var(--dark-category-item-text);
+}
+body:not(.theme-light) .category-selection-area-wrapper-list .search-result-item:hover {
+    background-color: var(--dark-category-item-hover-bg);
+}
+/* 검색 결과 아이템 중 선택된 것 */
+.category-selection-area-wrapper-list .search-result-item.active {
+    background-color: var(--category-item-active-bg) !important;
+    color: var(--category-item-active-text) !important;
+    font-weight: 500;
+}
+/* 다크모드 .active 는 위에서 공통으로 var(--category-item-active-bg) 사용 */
+
+/* 검색 결과 아이템 내부 요소들 (경로, 레벨, 화살표) */
+.search-result-path { /* 기존 스타일 유지 또는 테마 적용 */
+    flex-grow: 1;
+    margin-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.search-result-level { /* 기존 스타일 유지 또는 테마 적용 */
+    flex-shrink: 0;
+    width: 70px;
+    text-align: right;
+    margin-right: 10px;
+    font-size: 0.85em; /* fs-sm 클래스 대신 직접 지정 */
+}
+body.theme-light .search-result-level { color: #6c757d; } /* text-muted 효과 */
+body:not(.theme-light) .search-result-level { color: #8899a6; } /* 다크모드 text-muted 효과 */
+
+.search-result-arrow { /* 기존 스타일 유지 또는 테마 적용 */
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+/* 검색결과 화살표도 category-arrow-inline 처럼 테마 적용 */
+body.theme-light .search-result-item .search-result-arrow.category-arrow-inline { color: #6c757d; }
+body:not(.theme-light) .search-result-item .search-result-arrow.category-arrow-inline { color: #888; }
+
+
+/* --- 게시판 전반적인 레이아웃 및 요소 (기존 스타일 유지) --- */
 .board-container {
     max-width: 1100px;
-    margin: 0 auto; /* 상하 마진은 wrapper의 padding으로, 좌우는 auto로 중앙정렬 */
-    padding: 40px 20px; /* 컨테이너 내부 패딩 (제목 등과 컨테이너 경계 사이) */
-    /* 다크 모드에서는 배경색 없이 body의 배경을 사용 (별도 지정 X) */
+    margin: 0 auto;
+    padding: 40px 20px;
 }
 
 .board-header-title-wrapper {
@@ -121,17 +442,16 @@ body:not(.theme-light) .category-selection-area-wrapper-list .category-arrow-inl
 .board-main-title {
     font-size: 2.2rem;
     font-weight: 600;
-    color: #e0e0e0; /* 다크모드 기준 */
+    color: var(--text-main-list, #e0e0e0); /* 다크모드 기준 */
     margin-bottom: 0.75rem;
 }
 hr.title-underline {
     width: 500px;
     height: 3px;
-    background-color: #ffffff; /* 다크모드 기준 */
+    background-color: var(--line-sub-list, #ffffff); /* 다크모드 기준 */
     border: none;
     margin: 0 auto 25px auto;
 }
-
 
 /* 검색 폼 및 글쓰기 버튼 */
 .board-controls-wrapper {
@@ -146,8 +466,8 @@ hr.title-underline {
     flex-grow: 1;
     margin-right: 20px;
 }
-.form-select {
-    background-color: #2c2c2c;
+.form-select { /* 검색 영역 select */
+    background-color: #2c2c2c; /* 다크모드 기본 */
     color: #e0e0e0;
     border: 1px solid #444;
     border-radius: 0.25rem;
@@ -158,12 +478,12 @@ hr.title-underline {
     border-color: #7e57c2;
     box-shadow: 0 0 0 0.2rem rgba(126, 87, 194, 0.25);
 }
-.form-select.category-select { flex-basis: 200px; }
+/* .form-select.category-select { flex-basis: 200px; } 현재 사용 안함 */
 .form-select.search-type-select { flex-basis: 140px; }
 
-.form-control.search-input {
+.form-control.search-input { /* 검색 영역 input */
     flex-grow: 1;
-    background-color: #2c2c2c;
+    background-color: #2c2c2c; /* 다크모드 기본 */
     color: #e0e0e0;
     border: 1px solid #444;
     border-radius: 0.25rem;
@@ -178,7 +498,7 @@ hr.title-underline {
 }
 
 .btn.search-button {
-    background-color: #7e57c2;
+    background-color: #7e57c2; /* 다크모드 기본 */
     border: none;
     border-radius: 0.25rem;
     padding: 0.45rem 0.9rem;
@@ -189,10 +509,10 @@ hr.title-underline {
 .btn.search-button img {
     height: 18px;
     width: 18px;
-    filter: invert(100%) brightness(1.5);
+    filter: invert(100%) brightness(1.5); /* 다크모드 기본 아이콘 */
 }
 .btn-primary.btn-write-post {
-    background-color: #7e57c2;
+    background-color: #7e57c2; /* 다크모드 기본 */
     border-color: #7e57c2;
     color: #fff;
     font-weight: 500;
@@ -206,15 +526,13 @@ hr.title-underline {
     margin-right: 7px;
     vertical-align: middle;
     position: relative; top: -1px;
-    /* filter: invert(100%) brightness(1.5); */
 }
-
 
 /* 게시판 테이블 */
 .board-table-custom {
     width: 100%;
     margin-bottom: 1.5rem;
-    color: #c0c0c0;
+    color: #c0c0c0; /* 다크모드 기본 */
     border-collapse: collapse;
 }
 .board-table-custom th,
@@ -223,13 +541,13 @@ hr.title-underline {
     border-bottom: 1px solid #383838; /* 다크모드 기준 구분선 */
     text-align: center;
 }
-.board-table-custom td:first-child, 
+.board-table-custom td:first-child,
 .board-table-custom td:nth-child(3),
 .board-table-custom td:nth-child(4),
 .board-table-custom td:nth-child(5),
 .board-table-custom td:nth-child(6) {
     font-size: 0.85rem;
-    color: #a0a0a0;
+    color: #a0a0a0; /* 다크모드 기본 */
 }
 
 .board-table-custom thead th {
@@ -268,7 +586,6 @@ hr.title-underline {
     color: #d1c4e9;
 }
 
-
 .title-cell { text-align: left; }
 .title-cell a {
     color: #dcdcdc; /* 다크모드 제목 링크 */
@@ -280,7 +597,7 @@ hr.title-underline {
     color: #fff;
 }
 .post-category-tag {
-    color: #909090;
+    color: #909090; /* 다크모드 카테고리 태그 (게시글 제목 옆) */
     margin-right: 6px;
     font-size: 0.85em;
 }
@@ -291,178 +608,45 @@ hr.title-underline {
     font-weight: 500;
 }
 
-
-/* 페이지네이션 수정 */
+/* 페이지네이션 */
 .pagination-wrapper {
     margin-top: 35px;
 }
 .pagination .page-link {
-    background-color: transparent; /* 기본 배경 투명 */
-    border: none !important; /* 테두리 없음 (흰색 테두리 제거) */
-    margin: 0 2px; /* 좌우 마진으로 버튼 간 간격 조정 */
-    border-radius: 0.375rem; /* 둥근 모서리 (6px 정도) */
-    padding: 0.5rem 0.9rem; /* 패딩 조정 (첫 번째 이미지와 유사하게) */
+    background-color: transparent;
+    border: none !important;
+    margin: 0 2px;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.9rem;
     font-size: 0.85rem;
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; /* 부드러운 전환 효과 */
-
-    /* 다크모드 기본 색상 */
-    color: #9ca3af; /* (기존 #a0a0a0) 비활성 페이지 번호 (회색톤) */
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    color: #9ca3af; /* 다크모드 기본 */
     cursor: pointer;
 }
 .pagination .page-link:hover {
-    /* 다크모드 호버 */
-    background-color: #374151; /* (기존 #2a2a2a) 어두운 회색 배경 */
-    color: #e5e7eb; /* (기존 #d0d0d0) 밝은 글자색 */
+    background-color: #374151; /* 다크모드 호버 */
+    color: #e5e7eb;
 }
 .pagination .page-item.active .page-link {
     z-index: 3;
     color: #fff;
-    background-color: #3B82F6; /* 요청된 활성 페이지 배경색 */
-    /* border-color는 border:none으로 인해 불필요 */
+    background-color: #3B82F6; /* 활성 페이지 (라이트/다크 공통) */
 }
 .pagination .page-item.disabled .page-link {
-    /* 다크모드 비활성화 */
-    color: #4b5563; /* (기존 #555) 더 어두운 회색 */
+    color: #4b5563; /* 다크모드 비활성화 */
     pointer-events: none;
-    background-color: transparent; /* 배경 없음 */
+    background-color: transparent;
 }
 
 /* 라이트 모드 페이지네이션 */
 body.theme-light .pagination .page-link {
-    /* border, margin, border-radius, padding 등은 위에서 상속 */
-    color: #6B7280; /* 라이트모드 비활성 페이지 번호 (회색톤) */
+    color: #6B7280;
 }
 body.theme-light .pagination .page-link:hover {
-    background-color: #3294E4; /* 라이트모드 호버 배경 (밝은 회색) */
-    color: #ffffff; /* 라이트모드 호버 글자색 (어두운 회색) */
+    background-color: #e2e8f0; /* 라이트모드 호버 배경 (더 연하게) */
+    color: #4A5568; /* 라이트모드 호버 글자 */
 }
-/* .pagination .page-item.active .page-link 의 색상은 다크/라이트 공통이므로 위에서 정의된 것 사용 */
-/* body.theme-light .pagination .page-item.active .page-link {
-    background-color: #3B82F6;
-    color: #fff;
-} */ /* 중복되므로 주석 처리 또는 삭제 가능 */
+/* body.theme-light .pagination .page-item.active .page-link 는 위에서 공통으로 처리 */
 body.theme-light .pagination .page-item.disabled .page-link {
-    color: #D1D5DB; /* 라이트모드 비활성화 (매우 밝은 회색) */
-    /* background-color: transparent; 이미 위에서 설정됨 */
+    color: #D1D5DB;
 }
-
-/* 검색 결과 항목 스타일 */
-.search-result-item {
-    /* display: flex; 이미 li에 인라인으로 적용됨 */
-    /* justify-content: space-between; 이미 li에 인라인으로 적용됨 */
-    /* align-items: center; 이미 li에 인라인으로 적용됨 */
-    padding-top: 0.6rem;    /* 패딩 조절 */
-    padding-bottom: 0.6rem;
-}
-
-.search-result-path {
-    flex-grow: 1; /* 경로 텍스트가 남은 공간을 모두 차지하도록 */
-    margin-right: 10px; /* 경로와 레벨 사이 간격 */
-    white-space: nowrap; /* 경로가 길 경우 줄바꿈 방지 (필요에 따라) */
-    overflow: hidden;    /* 넘치는 텍스트 숨김 (필요에 따라) */
-    text-overflow: ellipsis; /* 넘치는 텍스트 ... 처리 (필요에 따라) */
-}
-
-.search-result-level {
-    flex-shrink: 0; /* 레벨 텍스트는 줄어들지 않도록 */
-    width: 70px; /* 레벨 텍스트 너비 고정 (예시 값, 조절 필요) */
-    text-align: right; /* 레벨 텍스트 오른쪽 정렬 */
-    margin-right: 10px; /* 레벨과 화살표 사이 간격 */
-}
-
-.search-result-arrow {
-    flex-shrink: 0; /* 화살표는 줄어들지 않도록 */
-    width: 20px; /* 화살표 또는 빈 공간 너비 고정 (예시 값, 조절 필요) */
-    text-align: center; /* 화살표 중앙 정렬 */
-    font-weight: bold;
-}
-
-/* 카테고리 목록 (ul.list-group) - 대/중/소 공통 */
-.category-list-inline { /* 이 클래스에 대한 스타일 */
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 220px; /* 스크롤 생성 높이 (폼 페이지 기준, 예시 값) */
-    overflow-y: auto;  /* 내용이 넘치면 세로 스크롤바 자동 생성 */
-    /* background-color는 각 패널의 배경을 따르므로 여기서 지정 안 함 */
-}
-
-/* 검색 결과 목록 스크롤 스타일 */
-#categorySearchResultsList {
-    max-height: 250px; /* 원하는 최대 높이 지정 (예: 250px) */
-    overflow-y: auto;  /* 내용이 넘칠 경우 세로 스크롤바 자동 생성 */
-    border: 1px solid #dee2e6; /* 목록 테두리 (선택 사항) */
-    border-radius: 0.25rem; /* 목록 모서리 둥글게 (선택 사항) */
-}
-
-/* 검색 결과 패널 내 h6 제목 스타일 (선택 사항) */
-#categorySearchResultsPanel h6 {
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-bottom: 8px; /* 제목과 목록 사이 간격 */
-    padding-bottom: 8px; /* 제목 아래 여백 또는 구분선 공간 */
-    /* border-bottom: 1px solid #e9ecef; */ /* 필요시 제목 아래 구분선 */
-    /* color: ... */ /* 테마에 맞게 색상 조정 */
-}
-
-body:not(.theme-light) #categorySearchResultsList { /* 다크 모드 */
-    border-color: var(--dark-category-panel-border, #444); /* 기존 CSS 변수 활용 또는 직접 지정 */
-}
-body:not(.theme-light) #categorySearchResultsPanel h6 {
-    color: var(--dark-category-item-text); /* 다크 모드 제목 색상 */
-    border-bottom-color: var(--dark-category-panel-border);
-}
-
-body:not(.theme-light) .category-selection-area-wrapper-list { /* 목록 페이지용 클래스명 사용 */
-    border-color: var(--dark-category-panel-border);
-    background-color: var(--dark-category-panel-bg);
-}
-body:not(.theme-light) .category-selection-area-wrapper-list > .form-label {
-    color: var(--text-main); /* base.css의 다크모드 텍스트 변수 활용 */
-}
-body:not(.theme-light) .category-search-box input[type="text"].form-control {
-    background-color: #3e3e3e;
-    color: #f0f0f0;
-    border-color: #555;
-}
-body:not(.theme-light) .category-search-box input[type="text"].form-control::placeholder {
-    color: #888;
-}
-body:not(.theme-light) .category-panel-col h6 { /* 대분류, 중분류, 소분류 제목 */
-    color: var(--text-main); /* 또는 var(--dark-category-item-text) */
-    border-bottom-color: var(--dark-category-panel-border);
-}
-body:not(.theme-light) .category-list-inline .category-item-inline { /* 목록 아이템 */
-    color: var(--dark-category-item-text);
-    background-color: var(--dark-category-panel-bg);
-}
-body:not(.theme-light) .category-list-inline .category-item-inline:hover {
-    background-color: var(--dark-category-item-hover-bg);
-}
-/* 현재 하위 메뉴를 보여주는 부모 아이템 (active-parent) 다크 모드 */
-body:not(.theme-light) .category-list-inline .category-item-inline.active-parent {
-    background-color: #3e444a; /* 예시 색상, var(--dark-category-item-hover-bg) 보다 약간 다르게 */
-    color: var(--dark-category-item-text); /* 텍스트 색상 유지 또는 변경 */
-    border-bottom-color: var(--dark-category-panel-border);
-}
-/* 최종 선택된 아이템 (active) 다크 모드 - 이건 파란색 배경이라 괜찮을 수 있음 */
-body:not(.theme-light) .category-list-inline .category-item-inline.active {
-    background-color: #3e444a;
-    border-color: var(--dark-category-item-text);
-}
-body:not(.theme-light) .category-arrow-inline {
-    color: #888;
-}
-
-/* 기존 category-arrow-inline 스타일이 search-result-arrow에도 잘 적용되는지 확인,
-   필요하면 search-result-arrow에 직접 스타일 부여 */
-/*
-.category-arrow-inline {
-    font-size: 0.8em;
-    color: #6c757d;
-    font-weight: bold;
-}
-body:not(.theme-light) .category-arrow-inline {
-    color: #888;
-}
-*/

@@ -5,10 +5,16 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count
+from django.db.models.functions import Lower, Coalesce # ★★★ Lower, Coalesce 임포트 확인/추가 ★★★
+from django.db.models import Value                     # ★★★ Value 임포트 확인/추가 (Coalesce와 함께 사용 시) ★★★
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.contrib import messages
-from .models import Post, Comment, Category, FAQCategory, FAQItem
-from .forms import PostForm, CommentForm
+from .models import Post, Attachment, Comment, Category, FAQCategory, FAQItem
+from .forms import PostForm, AttachmentForm, CommentForm
+from django.forms import inlineformset_factory
+
+from django.core.serializers.json import DjangoJSONEncoder # 추가
+import json # 추가
 
 def home(request):
     return render(request, 'flo/index.html')
@@ -146,25 +152,64 @@ def study_post_detail(request, pk):
 # 글쓰기 (post_form.html)
 @login_required
 def study_post_create(request):
-    # ★★★ 최상위 대분류 목록을 major_categories 라는 이름으로 전달 ★★★
     major_categories_list = Category.objects.filter(parent__isnull=True).order_by('name')
+    AttachmentFormSet = inlineformset_factory(Post, Attachment, form=AttachmentForm, extra=1, can_delete=True)
 
     if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES or None)
-        if form.is_valid():
+        print("--- CREATE POST: POST request data ---") # 디버깅 추가
+        print("REQUEST.POST:", request.POST)
+
+        form = PostForm(request.POST, request.FILES)
+        formset = AttachmentFormSet(request.POST, request.FILES, prefix='attachments')
+
+        if form.is_valid() and formset.is_valid():
+            print("--- CREATE POST: Form and Formset are VALID ---") # 디버깅 추가
+            print("Form cleaned_data['categories']:", form.cleaned_data.get('categories')) # 디버깅 추가
+
             post = form.save(commit=False)
             post.author = request.user
-            post.save() # 먼저 주 객체 저장
-            form.save_m2m() # 그 다음 ManyToManyField 관계 저장
+            post.save()       # Post 객체 먼저 저장 (PK 생성)
+            form.save_m2m()   # ★★★ ManyToManyField (categories) 저장 ★★★
+
+            # formset.instance = post # formset에 Post 인스턴스 연결 (이미 save()에서 되었을 수도 있음)
+            # formset.save()       # 첨부파일들 저장
+
+            # formset 저장 부분 명시적으로 (이전 답변처럼)
+            saved_attachments = formset.save(commit=False)
+            for attachment in saved_attachments:
+                attachment.post = post
+                attachment.save()
+            # 삭제 표시된 첨부파일 처리 (글쓰기 시에는 보통 없음)
+            # for form_in_formset in formset.deleted_forms:
+            #     if form_in_formset.instance.pk:
+            #         form_in_formset.instance.delete()
+
             messages.success(request, '게시글이 성공적으로 등록되었습니다.')
             return redirect(post.get_absolute_url())
-    else:
-        form = PostForm() # GET 요청 시 (또는 폼 유효성 실패 시)
+        else:
+            print("--- CREATE POST: Form or Formset INVALID ---") # 디버깅 추가
+            if not form.is_valid():
+                print("PostForm errors:", form.errors.as_json(escape_html=True))
+            if not formset.is_valid():
+                print("AttachmentFormSet errors:")
+                for i, fs_form_errors in enumerate(formset.errors):
+                    if fs_form_errors:
+                        print(f"  Form {i} errors: {fs_form_errors.as_json(escape_html=True)}")
+                print(f"  AttachmentFormSet non_form_errors: {formset.non_form_errors().as_json(escape_html=True)}")
+    else: # GET 요청
+        form = PostForm()
+        formset = AttachmentFormSet(prefix='attachments')
+        initial_selected_categories_for_js = [] # 글쓰기 시에는 빈 배열
+
+    # GET 요청 또는 POST 실패 시 컨텍스트
+    # 글쓰기 시에는 initial_selected_categories_for_js가 비어있어야 함
     context = {
         'form': form,
+        'formset': formset,
         'form_title': '학습 게시판 글쓰기',
         'submit_text': '등록',
-        'major_categories': major_categories_list, # ★★★ 컨텍스트 변수 이름 확인 ★★★
+        'major_categories': major_categories_list,
+        'initial_selected_categories_for_js': json.dumps(initial_selected_categories_for_js if request.method == 'GET' else [], cls=DjangoJSONEncoder)
     }
     return render(request, 'flo/study_post/study_post_form.html', context)
 
@@ -195,54 +240,189 @@ def ajax_get_child_categories(request): # 함수 이름 확인!
 
 # AJAX로 하위 카테고리 목록을 가져오는 뷰
 def ajax_search_categories(request):
-    query = request.GET.get('q', '')
-    categories_data = []
-    if query:
-        # Q 객체를 사용하여 이름 또는 경로에 검색어가 포함된 모든 카테고리 검색
-        # Category 모델에 get_full_path_name 같은 메서드가 있다고 가정
-        # 실제로는 full_path 필드를 DB에 저장해두고 검색하는 것이 효율적일 수 있음
-        matched_categories = Category.objects.filter(
-            Q(name__icontains=query) | Q(slug__icontains=query) # 예시: 이름 또는 슬러그로 검색
-            # 필요하다면 전체 경로(full_path)에 대해서도 검색
-        ).distinct().order_by('name') # 중복 제거 및 정렬
+    query = request.GET.get('q', '').strip() # JavaScript에서 이미 소문자로 변환되어 올 것임
+    page = request.GET.get('page', 1)
+    ITEMS_PER_PAGE = 15
 
-        for cat in matched_categories:
+    categories_data = []
+    has_next_page = False
+    total_results_count = 0
+
+    if query: # query는 이미 소문자라고 가정
+        final_results_set = set()
+        
+        # ★★★ 모델 필드 값을 소문자로 변환하여 비교 ★★★
+        direct_matches = Category.objects.annotate(
+            name_lower=Lower('name')
+        ).filter(name_lower__contains=query) # query는 이미 소문자이므로 그대로 사용
+
+        for category in direct_matches:
+            # ... (기존 카테고리 처리 로직 동일) ...
+            final_results_set.add(category)
+            level = category.get_level()
+            if level == 1:
+                for child in category.children.all().filter(children__isnull=True):
+                    final_results_set.add(child)
+            elif level == 0:
+                for medium_child in category.children.all():
+                    if medium_child.get_level() == 1:
+                        for minor_child in medium_child.children.all().filter(children__isnull=True):
+                            final_results_set.add(minor_child)
+        
+        all_sorted_results = sorted(list(final_results_set), key=lambda cat: (cat.get_level(), cat.get_full_path_name))
+        total_results_count = len(all_sorted_results)
+
+        paginator = Paginator(all_sorted_results, ITEMS_PER_PAGE)
+        try:
+            results_page = paginator.page(page)
+        except PageNotAnInteger:
+            results_page = paginator.page(1)
+        except EmptyPage:
+            results_page = paginator.page(paginator.num_pages)
+
+        for cat in results_page:
             categories_data.append({
                 'id': cat.id,
                 'name': cat.name,
                 'slug': cat.slug,
                 'full_path': cat.get_full_path_name,
-                'level': cat.get_level(), # Category 모델에 get_level() 메서드 필요
+                'level': cat.get_level(),
                 'has_children': cat.children.exists()
             })
-    return JsonResponse({'categories': categories_data})
+        
+        has_next_page = results_page.has_next()
+
+    return JsonResponse({
+        'categories': categories_data,
+        'has_next_page': has_next_page,
+        'total_results': total_results_count,
+        'current_page': int(page)
+    })
 
 # 글 수정 (post_form.html)
 @login_required
 def study_post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    # ★★★ 최상위 대분류 목록을 major_categories 라는 이름으로 전달 ★★★
     major_categories_list = Category.objects.filter(parent__isnull=True).order_by('name')
 
+    AttachmentFormSet = inlineformset_factory(
+        Post,
+        Attachment,
+        form=AttachmentForm,
+        fk_name='post',
+        extra=1,
+        can_delete=True
+    )
+
     if request.user != post.author:
-        # ... (권한 오류 처리)
         messages.error(request, '수정 권한이 없습니다.')
         return redirect(post.get_absolute_url())
 
     if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES or None, instance=post)
-        if form.is_valid():
-            form.save() # instance가 있으면 save_m2m()도 보통 같이 처리됨
+        print("--- EDIT POST: POST request data ---")
+        print("REQUEST.POST:", request.POST)
+        print("REQUEST.FILES:", request.FILES)
+
+        form = PostForm(request.POST, request.FILES, instance=post)
+        formset = AttachmentFormSet(
+            request.POST,
+            request.FILES,
+            instance=post,
+            prefix='attachments',
+            queryset=post.post_attachments.all()
+        )
+
+        # ★★★ is_valid() 호출 전에 management_form 확인 ★★★
+        print("--- study_post_edit: POST - Formset Management Data (before validation) ---")
+        management_form_is_valid = formset.management_form.is_valid() # 먼저 is_valid() 호출
+        print(f"  formset.management_form.is_valid(): {management_form_is_valid}")
+        if not management_form_is_valid:
+            print(f"  formset.management_form.errors: {formset.management_form.errors}")
+        # management_form이 유효해야 cleaned_data 접근 가능
+        if management_form_is_valid:
+            print(f"  TOTAL_FORMS (from management_form.cleaned_data): {formset.management_form.cleaned_data.get('TOTAL_FORMS')}")
+            print(f"  INITIAL_FORMS (from management_form.cleaned_data): {formset.management_form.cleaned_data.get('INITIAL_FORMS')}")
+        else:
+            print(f"  TOTAL_FORMS (from request.POST): {request.POST.get(formset.prefix + '-TOTAL_FORMS')}")
+            print(f"  INITIAL_FORMS (from request.POST): {request.POST.get(formset.prefix + '-INITIAL_FORMS')}")
+
+
+        # ★★★ is_valid() 호출 후 각 폼의 상태 확인 ★★★
+        form_is_valid = form.is_valid()
+        formset_is_valid = formset.is_valid() # is_valid()를 호출해야 cleaned_data 등이 채워짐
+
+        print(f"Form is_valid: {form_is_valid}")
+        print(f"Formset is_valid: {formset_is_valid}")
+
+
+        print("--- study_post_edit: POST - Formset forms instances and cleaned_data (after validation attempt) ---")
+        for i, fs_form in enumerate(formset.forms):
+            instance_pk_in_view = getattr(fs_form.instance, 'pk', 'No PK Attr')
+            has_changed = fs_form.has_changed()
+            is_new = not fs_form.instance.pk if fs_form.instance else True
+            can_delete_checked = False
+            
+            # formset_is_valid가 True이거나, 개별 폼이 에러 없이 cleaned_data를 가질 수 있는 경우에만 접근
+            # 또는 formset.is_bound 이고 fs_form.is_bound 일 때
+            if formset.is_bound and fs_form.is_bound and not fs_form.errors: # 에러가 없는 경우 cleaned_data 접근 시도
+                if 'DELETE' in fs_form.cleaned_data and fs_form.cleaned_data.get('DELETE'):
+                    can_delete_checked = True
+            elif 'DELETE' in fs_form.fields and fs_form.data.get(fs_form.prefix + '-DELETE'): # cleaned_data 접근 전, raw data 확인
+                 can_delete_checked = True
+
+
+            print(f"  Form {i} instance in view: {fs_form.instance}, PK: {instance_pk_in_view}, Has Changed: {has_changed}, Is New: {is_new}, DELETE checked: {can_delete_checked}")
+            if fs_form.errors:
+                print(f"    Form {i} errors: {fs_form.errors.as_json(escape_html=True)}")
+
+
+        if form_is_valid and formset_is_valid:
+            saved_post = form.save()
+            formset.save()
             messages.success(request, '게시글이 성공적으로 수정되었습니다.')
-            return redirect(post.get_absolute_url())
-    else:
+            return redirect(saved_post.get_absolute_url())
+        else:
+            if not form_is_valid: # PostForm 에러만 따로 출력
+                print("--- PostForm errors on edit ---")
+                print(form.errors.as_json(escape_html=True))
+            if not formset_is_valid: # AttachmentFormSet 에러만 따로 출력
+                print("--- AttachmentFormSet non_form_errors on edit ---")
+                print(formset.non_form_errors().as_json(escape_html=True))
+                # 개별 폼 에러는 위 루프에서 이미 출력됨
+            messages.error(request, '게시글 수정에 실패했습니다. 입력 내용을 확인해주세요.')
+
+    else: # GET 요청
         form = PostForm(instance=post)
+        formset = AttachmentFormSet(
+            instance=post,
+            prefix='attachments',
+            queryset=post.post_attachments.all()
+        )
+        # ... (GET 요청 시 폼 인스턴스 출력 로직은 이전과 동일) ...
+        print("--- study_post_edit: GET - Formset forms instances (after formset creation) ---")
+        for i, fs_form in enumerate(formset.forms):
+            instance_pk_in_view = getattr(fs_form.instance, 'pk', 'No PK Attr')
+            print(f"  Form {i} instance in view: {fs_form.instance}, PK: {instance_pk_in_view}")
+
+    initial_selected_categories_for_js = []
+    current_post_for_initial_data = post
+    if request.method == 'POST' and hasattr(form, 'instance') and form.instance: # form.instance가 None이 아닌지 확인
+        current_post_for_initial_data = form.instance
+
+    if current_post_for_initial_data and current_post_for_initial_data.pk:
+        initial_selected_categories_for_js = [
+            {'id': str(cat.id), 'name': cat.name, 'path': cat.get_full_path_name, 'slug': cat.slug}
+            for cat in current_post_for_initial_data.categories.all()
+        ]
+
     context = {
         'form': form,
+        'formset': formset,
         'post': post,
         'form_title': '학습 게시판 - 게시글 수정',
         'submit_text': '수정',
-        'major_categories': major_categories_list, # ★★★ 컨텍스트 변수 이름 확인 ★★★
+        'major_categories': major_categories_list,
+        'initial_selected_categories_for_js': json.dumps(initial_selected_categories_for_js, cls=DjangoJSONEncoder),
     }
     return render(request, 'flo/study_post/study_post_form.html', context)
 

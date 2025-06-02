@@ -1,4 +1,4 @@
-{# flo/templates/flo/study_post/study_post_list.html #}
+    {# flo/templates/flo/study_post/study_post_list.html #}
 {% extends "flo/base.html" %}
 {% load static %}
 
@@ -58,7 +58,7 @@
                 {# JavaScript가 URL 파라미터를 읽어 초기 렌더링하거나,
                 서버에서 initial_selected_categories_for_ui 를 받아와서 루프 돌며 렌더링 #}
                 {% for sel_cat in initial_selected_categories_for_ui %}
-                    <span class="badge bg-primary me-1 mb-1 selected-category-tag" data-slug="{{ sel_cat.slug }}">
+                    <span class="badge me-1 mb-1 selected-category-tag" data-slug="{{ sel_cat.slug }}">
                         {{ sel_cat.get_full_path_name }}
                         <span class="remove-category-filter" data-slug="{{ sel_cat.slug }}" title="선택 해제" style="cursor:pointer; font-weight:bold; margin-left:3px;">×</span>
                     </span>
@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 여기서는 selectedCategoriesForFilter 맵을 기준으로 렌더링
         selectedCategoriesForFilter.forEach(function(cat) {
             const tag = $(`
-                <span class="badge bg-primary me-1 mb-1 selected-category-tag" data-slug="${cat.slug}" title="클릭하여 선택 해제" style="cursor:pointer;">
+                <span class="badge me-1 mb-1 selected-category-tag" data-slug="${cat.slug}" title="클릭하여 선택 해제" style="cursor:pointer;">
                     ${cat.path}
                     <span class="remove-category-visual" data-slug="${cat.slug}" style="font-weight:bold; margin-left:5px; pointer-events: none;">×</span>
                 </span>`);

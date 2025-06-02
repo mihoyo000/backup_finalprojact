@@ -3,97 +3,225 @@
 
 {% block title %}{{ post.title }}{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'flo/css/study_post/study_post_detail.css' %}">
+    <style>
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; background-color: var(--dropdown-bg, #f9f9f9); min-width: 100px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 100; right:0; border-radius: 4px; border: 1px solid var(--dropdown-border-color, #ddd); }
+        body:not(.theme-light) .dropdown-content { background-color: var(--dark-dropdown-bg, #2c2c2c); border-color: var(--dark-dropdown-border-color, #444); }
+        .dropdown-content a, .dropdown-content button.btn-delete-link { color: var(--dropdown-text-color, black); padding: 10px 12px; text-decoration: none; display: block; background: none; border: none; width: 100%; text-align: left; cursor: pointer; font-size:0.9rem; }
+        body:not(.theme-light) .dropdown-content a, body:not(.theme-light) .dropdown-content button.btn-delete-link { color: var(--dark-dropdown-text-color, #f1f1f1); }
+        .dropdown-content a:hover, .dropdown-content button.btn-delete-link:hover { background-color: var(--dropdown-hover-bg, #f1f1f1); }
+        body:not(.theme-light) .dropdown-content a:hover, body:not(.theme-light) .dropdown-content button.btn-delete-link:hover { background-color: var(--dark-dropdown-hover-bg, #383838); }
+        .show { display: block; }
+    </style>
+{% endblock %}
+
+
 {% block content %}
-<div class="post-detail">
-    <div class="post-detail-header">
-        <p class="post-category-title">[학습 게시판]</p> {# 고정 텍스트 또는 post.category.name #}
-        <h1>{{ post.title }}</h1>
-        <div class="post-meta">
-            <img src="{% static 'img/default_profile.png' %}" alt="profile" class="author-avatar"> {# 실제 프로필 이미지 경로 #}
-            <span class="author-name">{{ post.author.username }}</span>
-            <span class="post-date">{{ post.created_at|date:"Y-m-d H:i" }}</span>
-            <span class="post-views">조회수: {{ post.views }}</span>
-            {# <span class="post-attachments">첨부파일: N개</span> (구현시) #}
-        </div>
-        <div class="post-actions">
-            <a href="{% url 'board:post_list' %}" class="btn btn-list">목록</a>
-            {% if user.is_authenticated and user == post.author %}
-            <div class="dropdown">
-                <button class="btn btn-more">...</button> {# 더보기 버튼 #}
-                <div class="dropdown-content">
-                    <a href="{% url 'board:post_edit' post.pk %}">수정</a>
-                    <form action="{% url 'board:post_delete' post.pk %}" method="post" onsubmit="return confirm('정말로 삭제하시겠습니까?');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-delete-link">삭제</button>
-                    </form>
-                    {# <a href="#">신고</a> #}
+<div class="post-detail-page-wrapper"> {# 전체 페이지를 감싸는 wrapper #}
+    <div class="post-detail-container"> {# 실제 내용 컨테이너 #}
+
+        <div class="post-header">
+            <p class="post-board-name">[학습 게시판]</p>
+            <h1 class="post-title">{{ post.title }}</h1>
+
+            {# === 선택된 카테고리 표시 === #}
+            {% if post.categories.all %}
+            <div class="post-categories-display mb-2">
+                {% for category in post.categories.all %}
+                    <span class="badge bg-light text-dark border me-1">{{ category.get_full_path_name }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="post-meta-info">
+                <div class="author-info">
+                    {% if post.author.profile.has_custom_profile_image %}
+                        <img src="{{ post.author.profile.get_profile_image_url }}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar">
+                    {% else %}
+                        <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar default-avatar">
+                    {% endif %}
+                    <span class="author-name">{{ post.author.profile.get_display_name }}</span>
                 </div>
+                <div class="post-stats">
+                    <span class="post-created-at">{{ post.created_at|date:"Y-m-d H:i" }}</span>
+                    <span class="post-view-count">조회수: {{ post.views }}</span>
+                    {% if post.attachments_count > 0 %}
+                    <span class="post-attachment-info">
+                        <a href="#" id="attachments-dropdown-toggle" aria-expanded="false" aria-controls="attachments-list-container">
+                            첨부파일: {{ post.attachments_count }}개
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16" style="margin-left: 4px;">
+                            <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </a>
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="post-header-actions">
+                    <a href="{% url 'flo:study_post_list' %}" class="btn btn-outline-secondary btn-sm btn-list-top">목록</a>
+                    {% if request.user.is_authenticated and request.user == post.author %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm btn-more-options" aria-label="더보기">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                                <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+                              </svg>
+                        </button>
+                        <div class="dropdown-content">
+                            <a href="{% url 'flo:study_post_edit' post.pk %}">수정</a>
+                            <form action="{% url 'flo:study_post_delete' post.pk %}" method="post" onsubmit="return confirm('정말로 이 게시글을 삭제하시겠습니까?');" style="margin:0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-delete-link">삭제</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div> {# <!-- End of .post-meta-info --> #}
+
+            {# <!-- 첨부파일 목록 컨테이너: .post-meta-info 다음, .post-header 안 또는 직후 --> #}
+            {% if post.post_attachments.all %}
+            <div id="attachments-list-container" style="display: none; /* 초기에는 숨김 */">
+                <h6>첨부파일 목록</h6>
+                <ul class="list-unstyled mb-0">
+                    {% for attachment in post.post_attachments.all %}
+                    <li style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        {# ★★★ 파일 이름은 텍스트로만 표시 ★★★ #}
+                        <span class="attachment-filename me-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16" style="margin-right: 6px; vertical-align: text-bottom;">
+                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 12a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1z"/>
+                                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                            </svg>
+                            {{ attachment.filename }}
+                        </span>
+                        {# ★★★ 다운로드 버튼만 링크와 download 속성 가짐 ★★★ #}
+                        <a href="{{ attachment.file.url }}" download="{{ attachment.download_filename }}" class="btn btn-sm btn-outline-secondary download-btn-icon" title="다운로드">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L6.354 8.146a.5.5 0 1 0-.708.708z"/>
+                            </svg>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div> {# <!-- End of .post-header --> #}
+
+        <hr class="post-divider">
+
+        <div class="post-body-content">
+            {{ post.content|safe }}
+        </div>
+
+        <div class="post-feedback-section">
+            <button id="like-button" data-post-id="{{ post.pk }}" class="btn btn-like {% if is_liked %}active{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16" style="margin-right: 5px;">
+                    <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                  </svg>
+                추천 <span id="like-count">{{ post.total_likes }}</span>
+            </button>
+            <span class="comment-count-display">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-text-fill" viewBox="0 0 16 16" style="margin-right: 5px;">
+                    <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793zm3.5 1a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 2.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 2.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1z"/>
+                  </svg>
+                댓글 <span id="comment-total-count">{{ post.comment_count }}</span>
+            </span>
+        </div>
+
+        <div class="author-profile-more">
+            <div class="author-profile-box">
+                 {% if post.author.profile.has_custom_profile_image %}
+                    <img src="{{ post.author.profile.get_profile_image_url }}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar-small">
+                {% else %}
+                    <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar-small default-avatar">
+                {% endif %}
+                <span class="author-name-link">
+                    {{ post.author.profile.get_display_name }}
+                    <a href="#">님의 게시글 더보기 ></a> {# 링크 URL 수정 필요 #}
+                </span>
+            </div>
+        </div>
+
+        <hr class="post-divider">
+
+        <div class="comments-area">
+            <div class="comments-header">
+                <span class="comments-title">댓글</span>
+                <div class="comment-sort-options">
+                    <a href="#" class="sort-option active" data-sort="created_at">등록순</a>
+                    <a href="#" class="sort-option" data-sort="-created_at">최신순</a>
+                </div>
+            </div>
+
+            <ul id="comment-list" class="comment-list-ul">
+                {% for comment in comments %}
+                <li id="comment-{{ comment.id }}" class="comment-item-wrapper">
+                    <div class="comment-author-meta">
+                        {% if comment.author.profile.has_custom_profile_image %}
+                            <img src="{{ comment.author.profile.get_profile_image_url }}" alt="{{ comment.author.profile.get_display_name }}" class="commenter-avatar">
+                        {% else %}
+                             <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ comment.author.profile.get_display_name }}" class="commenter-avatar default-avatar">
+                        {% endif %}
+                        <div class="comment-author-details">
+                            <strong class="commenter-name">{{ comment.author.profile.get_display_name }}</strong>
+                            <span class="comment-date">{{ comment.created_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                    </div>
+                    <p class="comment-content-text" id="comment-text-{{comment.id}}">{{ comment.content|linebreaksbr }}</p>
+                    {% if request.user.is_authenticated and request.user == comment.author %}
+                    <div class="comment-item-actions">
+                        <button class="btn-link-style edit-comment" data-comment-id="{{ comment.id }}">수정</button>
+                        <button class="btn-link-style delete-comment" data-comment-id="{{ comment.id }}" data-delete-url="{% url 'flo:study_post_comment_delete' comment.pk %}">삭제</button>
+                    </div>
+                    <form id="edit-comment-form-{{comment.id}}" class="edit-comment-form" style="display:none;" data-edit-url="{% url 'flo:study_post_comment_edit' comment.pk %}">
+                        {% csrf_token %}
+                        <textarea name="content" class="form-control" rows="2">{{ comment.content }}</textarea>
+                        <div class="edit-form-actions">
+                            <button type="submit" class="btn btn-primary btn-sm">수정 완료</button>
+                            <button type="button" class="btn btn-secondary btn-sm cancel-edit">취소</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li id="no-comments" class="no-comments-message">아직 댓글이 없습니다.</li>
+                {% endfor %}
+            </ul>
+
+            {% if user.is_authenticated %}
+            <form id="comment-form" method="post" action="{% url 'flo:study_post_comment_create' post.pk %}" class="new-comment-form">
+                {% csrf_token %}
+                <div class="comment-form-author-avatar">
+                    {% if request.user.profile.has_custom_profile_image %}
+                        <img src="{{ request.user.profile.get_profile_image_url }}" alt="내 프로필" class="current-user-avatar">
+                    {% else %}
+                        <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="내 프로필" class="current-user-avatar default-avatar">
+                    {% endif %}
+                </div>
+                <div class="comment-form-input-area">
+                    {{ comment_form.content }} {# placeholder는 forms.py에서 설정 #}
+                    <button type="submit" class="btn btn-primary btn-submit-comment">댓글 등록</button>
+                </div>
+            </form>
+            {% else %}
+            <div class="login-prompt-for-comment">
+                <p><a href="{% url 'flo:login' %}?next={{ request.path }}">로그인</a> 후 댓글을 작성할 수 있습니다.</p>
             </div>
             {% endif %}
         </div>
-    </div>
 
-    <div class="post-content-area">
-        {{ post.content|safe }} {# TinyMCE HTML 출력 #}
-    </div>
+        <div class="post-navigation-bottom">
+            <a href="{% url 'flo:study_post_list' %}" class="btn btn-secondary btn-list-bottom">목록으로</a>
+        </div>
 
-    <div class="post-feedback">
-        <button id="like-button" data-post-id="{{ post.pk }}" class="btn-like {% if is_liked %}liked{% endif %}">
-            추천 <span id="like-count">{{ post.total_likes }}</span>
-        </button>
-        <span class="comment-info">댓글 <span id="comment-total-count">{{ post.comment_count }}</span></span>
-    </div>
-
-    <div class="author-more-posts">
-        <a href="#">{{ post.author.username }}님의 게시글 더보기 ></a>
-    </div>
-
-    <div class="comments-section">
-        <h4>댓글 <span class="comments-order">등록순</span> | <a href="#" class="comments-order-latest">최신순</a></h4>
-        <ul id="comment-list">
-            {% for comment in comments %}
-            <li id="comment-{{ comment.id }}" class="comment-item">
-                <div class="comment-author-info">
-                    <img src="{% static 'img/default_profile.png' %}" alt="profile" class="commenter-avatar">
-                    <strong>{{ comment.author.username }}</strong>
-                    <span class="comment-timestamp">{{ comment.created_at|date:"Y-m-d H:i" }}</span>
-                </div>
-                <p class="comment-text" id="comment-text-{{comment.id}}">{{ comment.content|linebreaksbr }}</p>
-                {% if user.is_authenticated and user == comment.author %}
-                <div class="comment-actions">
-                    <button class="btn-comment-action edit-comment" data-comment-id="{{ comment.id }}">수정</button>
-                    <button class="btn-comment-action delete-comment" data-comment-id="{{ comment.id }}" data-delete-url="{% url 'board:comment_delete' comment.pk %}">삭제</button>
-                </div>
-                <form id="edit-comment-form-{{comment.id}}" class="edit-comment-form" style="display:none;" data-edit-url="{% url 'board:comment_edit' comment.pk %}">
-                    {% csrf_token %}
-                    <textarea name="content" rows="2">{{ comment.content }}</textarea>
-                    <button type="submit">수정 완료</button>
-                    <button type="button" class="cancel-edit">취소</button>
-                </form>
-                {% endif %}
-            </li>
-            {% empty %}
-            <li id="no-comments">아직 댓글이 없습니다.</li>
-            {% endfor %}
-        </ul>
-
-        {% if user.is_authenticated %}
-        <form id="comment-form" method="post" action="{% url 'board:comment_create' post.pk %}" class="comment-write-form">
-            {% csrf_token %}
-            {{ comment_form.content }}
-            <button type="submit">댓글 등록</button>
-        </form>
-        {% else %}
-        <p><a href="{% url 'login' %}?next={{ request.path }}">로그인</a> 후 댓글을 작성할 수 있습니다.</p>
-        {% endif %}
-        {# <button id="load-more-comments">댓글 더보기</button> (댓글 페이지네이션 시) #}
-    </div>
-</div>
+    </div> {# end .post-detail-container #}
+</div> {# end .post-detail-page-wrapper #}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// CSRF 토큰 가져오기 (AJAX 요청 시 필요)
+// CSRF 토큰 가져오기
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -110,98 +238,39 @@ function getCookie(name) {
 }
 const csrftoken = getCookie('csrftoken');
 
-// 추천 버튼 AJAX
-const likeButton = document.getElementById('like-button');
-if (likeButton) {
-    likeButton.addEventListener('click', function() {
-        const postId = this.dataset.postId;
-        fetch(`/board/post/${postId}/like/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json' // 본문 없으면 생략 가능
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('like-count').textContent = data.count;
-            this.classList.toggle('liked', data.liked);
-        })
-        .catch(error => console.error('Like error:', error));
-    });
-}
-
-// 댓글 작성 AJAX
-const commentForm = document.getElementById('comment-form');
-if (commentForm) {
-    commentForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        fetch(this.action, {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                const commentList = document.getElementById('comment-list');
-                const noCommentsLi = document.getElementById('no-comments');
-                if (noCommentsLi) noCommentsLi.remove();
-
-                const newCommentHtml = `
-                    <li id="comment-${data.comment_id}" class="comment-item">
-                        <div class="comment-author-info">
-                            <img src="{% static 'img/default_profile.png' %}" alt="profile" class="commenter-avatar">
-                            <strong>${data.author_username}</strong>
-                            <span class="comment-timestamp">${data.created_at}</span>
-                        </div>
-                        <p class="comment-text" id="comment-text-${data.comment_id}">${data.content.replace(/\n/g, '<br>')}</p>
-                        <div class="comment-actions">
-                            <button class="btn-comment-action edit-comment" data-comment-id="${data.comment_id}">수정</button>
-                            <button class="btn-comment-action delete-comment" data-comment-id="${data.comment_id}" data-delete-url="/board/comment/${data.comment_id}/delete/">삭제</button>
-                        </div>
-                        <form id="edit-comment-form-${data.comment_id}" class="edit-comment-form" style="display:none;" data-edit-url="/board/comment/${data.comment_id}/edit/">
-                            <input type="hidden" name="csrfmiddlewaretoken" value="${csrftoken}">
-                            <textarea name="content" rows="2">${data.content}</textarea>
-                            <button type="submit">수정 완료</button>
-                            <button type="button" class="cancel-edit">취소</button>
-                        </form>
-                    </li>`;
-                commentList.insertAdjacentHTML('beforeend', newCommentHtml);
-                this.reset();
-                document.getElementById('comment-total-count').textContent = data.comment_count;
-                // 새로 추가된 댓글의 수정/삭제 버튼 이벤트 리스너 다시 바인딩
-                bindCommentActionButtons(document.getElementById(`comment-${data.comment_id}`));
-            } else {
-                alert(data.errors || '댓글 작성에 실패했습니다.');
-            }
-        })
-        .catch(error => console.error('Comment submit error:', error));
-    });
-}
-
-// 댓글 수정/삭제 버튼 이벤트 바인딩 함수
-function bindCommentActionButtons(commentItemElement) {
-    // 수정 버튼 클릭
-    commentItemElement.querySelectorAll('.edit-comment').forEach(button => {
-        button.addEventListener('click', function() {
-            const commentId = this.dataset.commentId;
-            document.getElementById(`comment-text-${commentId}`).style.display = 'none';
-            document.getElementById(`edit-comment-form-${commentId}`).style.display = 'block';
-            this.style.display = 'none'; // '수정' 버튼 숨김
-            this.nextElementSibling.style.display = 'none'; // '삭제' 버튼 숨김
+document.addEventListener('DOMContentLoaded', function() {
+    // 추천 버튼 AJAX
+    const likeButton = document.getElementById('like-button');
+    if (likeButton) {
+        likeButton.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            fetch(`/flo/study_post/${postId}/like/`, { // URL 수정: 앱 이름 'flo'와 모델명 'study_post' 일치
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('like-count').textContent = data.count;
+                this.classList.toggle('active', data.liked); // 'liked' 대신 'active' 사용 (CSS와 일치)
+            })
+            .catch(error => console.error('Like error:', error));
         });
-    });
+    }
 
-    // 수정 폼 제출 (AJAX)
-    commentItemElement.querySelectorAll('.edit-comment-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
+    // 댓글 작성 AJAX
+    const commentForm = document.getElementById('comment-form');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const commentId = this.id.split('-').pop();
             const formData = new FormData(this);
-            fetch(this.dataset.editUrl, {
+            const currentUserAvatarElement = document.querySelector('.new-comment-form .current-user-avatar');
+            const defaultProfileImageUrl = "{% static 'flo/images/icons/profile/default_profile_light.png' %}"; // 기본 이미지 경로
+            const currentUserAvatarUrl = currentUserAvatarElement ? currentUserAvatarElement.src : defaultProfileImageUrl;
+
+            fetch(this.action, {
                 method: 'POST',
                 body: formData,
                 headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
@@ -209,90 +278,226 @@ function bindCommentActionButtons(commentItemElement) {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    document.getElementById(`comment-text-${commentId}`).innerHTML = data.content.replace(/\n/g, '<br>');
-                    document.getElementById(`comment-text-${commentId}`).style.display = 'block';
-                    this.style.display = 'none';
-                    // 수정/삭제 버튼 다시 보이게
-                    const actionsDiv = document.getElementById(`comment-${commentId}`).querySelector('.comment-actions');
-                    actionsDiv.querySelector('.edit-comment').style.display = 'inline-block';
-                    actionsDiv.querySelector('.delete-comment').style.display = 'inline-block';
-                } else {
-                    alert(data.message || '댓글 수정에 실패했습니다.');
-                }
-            })
-            .catch(error => console.error('Comment edit error:', error));
-        });
-    });
-    // 수정 취소 버튼
-    commentItemElement.querySelectorAll('.cancel-edit').forEach(button => {
-        button.addEventListener('click', function() {
-            const form = this.closest('form');
-            const commentId = form.id.split('-').pop();
-            form.style.display = 'none';
-            document.getElementById(`comment-text-${commentId}`).style.display = 'block';
-            const actionsDiv = document.getElementById(`comment-${commentId}`).querySelector('.comment-actions');
-            actionsDiv.querySelector('.edit-comment').style.display = 'inline-block';
-            actionsDiv.querySelector('.delete-comment').style.display = 'inline-block';
-        });
-    });
+                    const commentList = document.getElementById('comment-list');
+                    const noCommentsLi = document.getElementById('no-comments');
+                    if (noCommentsLi) noCommentsLi.remove();
 
+                    const authorProfileImageUrl = data.author_profile_image_url || currentUserAvatarUrl;
+                    const authorDisplayName = data.author_display_name || data.author_username;
 
-    // 삭제 버튼 클릭 (AJAX)
-    commentItemElement.querySelectorAll('.delete-comment').forEach(button => {
-        button.addEventListener('click', function() {
-            if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
-            const commentId = this.dataset.commentId;
-            fetch(this.dataset.deleteUrl, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById(`comment-${data.deleted_comment_id}`).remove();
+                    const newCommentHtml = `
+                        <li id="comment-${data.comment_id}" class="comment-item-wrapper">
+                            <div class="comment-author-meta">
+                                <img src="${authorProfileImageUrl}" alt="${authorDisplayName}" class="commenter-avatar ${!data.author_profile_image_url ? 'default-avatar' : ''}">
+                                <div class="comment-author-details">
+                                    <strong class="commenter-name">${authorDisplayName}</strong>
+                                    <span class="comment-date">${data.created_at}</span>
+                                </div>
+                            </div>
+                            <p class="comment-content-text" id="comment-text-${data.comment_id}">${data.content.replace(/\n/g, '<br>')}</p>
+                            <div class="comment-item-actions">
+                                <button class="btn-link-style edit-comment" data-comment-id="${data.comment_id}">수정</button>
+                                <button class="btn-link-style delete-comment" data-comment-id="${data.comment_id}" data-delete-url="{% url 'flo:study_post_comment_delete' 0 %}".replace('0', data.comment_id) >삭제</button>
+                            </div>
+                            <form id="edit-comment-form-${data.comment_id}" class="edit-comment-form" style="display:none;" data-edit-url="{% url 'flo:study_post_comment_edit' 0 %}".replace('0', data.comment_id)>
+                                <input type="hidden" name="csrfmiddlewaretoken" value="${csrftoken}">
+                                <textarea name="content" class="form-control" rows="2">${data.content_raw || data.content}</textarea>
+                                <div class="edit-form-actions">
+                                    <button type="submit" class="btn btn-primary btn-sm">수정 완료</button>
+                                    <button type="button" class="btn btn-secondary btn-sm cancel-edit">취소</button>
+                                </div>
+                            </form>
+                        </li>`;
+                    commentList.insertAdjacentHTML('beforeend', newCommentHtml);
+                    this.reset();
                     document.getElementById('comment-total-count').textContent = data.comment_count;
-                    if (data.comment_count === 0 && !document.getElementById('no-comments')) {
-                        document.getElementById('comment-list').innerHTML = '<li id="no-comments">아직 댓글이 없습니다.</li>';
-                    }
+                    bindCommentActionButtons(document.getElementById(`comment-${data.comment_id}`));
+                    setDefaultAvatarTheme();
                 } else {
-                    alert(data.message || '댓글 삭제에 실패했습니다.');
+                    alert(data.errors || data.message || '댓글 작성에 실패했습니다.');
                 }
             })
-            .catch(error => console.error('Comment delete error:', error));
+            .catch(error => {
+                console.error('Comment submit error:', error);
+                alert('댓글 작성 중 오류가 발생했습니다.');
+            });
+        });
+    }
+
+    // 댓글 수정/삭제 버튼 이벤트 바인딩 함수
+    function bindCommentActionButtons(commentItemElement) {
+        // 수정 버튼 클릭
+        commentItemElement.querySelectorAll('.edit-comment').forEach(button => {
+            button.removeEventListener('click', handleEditCommentClick); // 기존 리스너 제거 (중복 방지)
+            button.addEventListener('click', handleEditCommentClick);
+        });
+
+        // 수정 폼 제출 (AJAX)
+        commentItemElement.querySelectorAll('.edit-comment-form').forEach(form => {
+            form.removeEventListener('submit', handleEditFormSubmit); // 기존 리스너 제거
+            form.addEventListener('submit', handleEditFormSubmit);
+        });
+        // 수정 취소 버튼
+        commentItemElement.querySelectorAll('.cancel-edit').forEach(button => {
+            button.removeEventListener('click', handleCancelEditClick); // 기존 리스너 제거
+            button.addEventListener('click', handleCancelEditClick);
+        });
+
+        // 삭제 버튼 클릭 (AJAX)
+        commentItemElement.querySelectorAll('.delete-comment').forEach(button => {
+            button.removeEventListener('click', handleDeleteCommentClick); // 기존 리스너 제거
+            button.addEventListener('click', handleDeleteCommentClick);
+        });
+    }
+
+    // 이벤트 핸들러 함수들 (중복 바인딩 방지 위해 외부로 분리)
+    function handleEditCommentClick() {
+        const commentId = this.dataset.commentId;
+        document.getElementById(`comment-text-${commentId}`).style.display = 'none';
+        document.getElementById(`edit-comment-form-${commentId}`).style.display = 'block';
+        this.style.display = 'none';
+        this.closest('.comment-item-actions').querySelector('.delete-comment').style.display = 'none';
+    }
+
+    function handleEditFormSubmit(e) {
+        e.preventDefault();
+        const commentId = this.id.split('-').pop();
+        const formData = new FormData(this);
+        fetch(this.dataset.editUrl, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.getElementById(`comment-text-${commentId}`).innerHTML = data.content.replace(/\n/g, '<br>');
+                document.getElementById(`comment-text-${commentId}`).style.display = 'block';
+                this.style.display = 'none';
+                const actionsDiv = document.getElementById(`comment-${commentId}`).querySelector('.comment-item-actions');
+                actionsDiv.querySelector('.edit-comment').style.display = 'inline-block';
+                actionsDiv.querySelector('.delete-comment').style.display = 'inline-block';
+            } else {
+                alert(data.message || '댓글 수정에 실패했습니다.');
+            }
+        })
+        .catch(error => console.error('Comment edit error:', error));
+    }
+
+    function handleCancelEditClick() {
+        const form = this.closest('form');
+        const commentId = form.id.split('-').pop();
+        form.style.display = 'none';
+        document.getElementById(`comment-text-${commentId}`).style.display = 'block';
+        const actionsDiv = document.getElementById(`comment-${commentId}`).querySelector('.comment-item-actions');
+        actionsDiv.querySelector('.edit-comment').style.display = 'inline-block';
+        actionsDiv.querySelector('.delete-comment').style.display = 'inline-block';
+    }
+
+    function handleDeleteCommentClick() {
+        if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
+        const commentId = this.dataset.commentId;
+        fetch(this.dataset.deleteUrl, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.getElementById(`comment-${data.deleted_comment_id}`).remove();
+                document.getElementById('comment-total-count').textContent = data.comment_count;
+                if (data.comment_count === 0 && !document.getElementById('no-comments')) {
+                    document.getElementById('comment-list').innerHTML = '<li id="no-comments" class="no-comments-message">아직 댓글이 없습니다.</li>';
+                }
+            } else {
+                alert(data.message || '댓글 삭제에 실패했습니다.');
+            }
+        })
+        .catch(error => console.error('Comment delete error:', error));
+    }
+
+
+    // 페이지 로드 시 기존 댓글들에 이벤트 바인딩
+    document.querySelectorAll('.comment-item-wrapper').forEach(item => {
+        bindCommentActionButtons(item);
+    });
+
+    // 댓글 정렬 기능 (예시)
+    document.querySelectorAll('.sort-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('.sort-option').forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+            // 서버에 정렬 요청 로직 추가
         });
     });
-}
 
-// 페이지 로드 시 기존 댓글들에 이벤트 바인딩
-document.querySelectorAll('.comment-item').forEach(item => {
-    bindCommentActionButtons(item);
-});
-
-// 더보기 메뉴 토글
-document.querySelectorAll('.btn-more').forEach(button => {
-    button.addEventListener('click', function() {
-        this.nextElementSibling.classList.toggle('show');
+    // 더보기 메뉴 토글
+    document.querySelectorAll('.btn-more-options').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.stopPropagation();
+            var dropdownContent = this.nextElementSibling;
+            document.querySelectorAll('.dropdown-content.show').forEach(openDropdown => {
+                if (openDropdown !== dropdownContent) {
+                    openDropdown.classList.remove('show');
+                }
+            });
+            dropdownContent.classList.toggle('show');
+        });
     });
-});
-// 드롭다운 외부 클릭 시 닫기
-window.onclick = function(event) {
-    if (!event.target.matches('.btn-more')) {
-        var dropdowns = document.getElementsByClassName("dropdown-content");
-        for (var i = 0; i < dropdowns.length; i++) {
-            var openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
+    window.addEventListener('click', function(event) {
+        if (!event.target.closest('.dropdown')) {
+            document.querySelectorAll('.dropdown-content.show').forEach(openDropdown => {
                 openDropdown.classList.remove('show');
-            }
+            });
         }
+    });
+
+    // 기본 프로필 이미지 다크모드 대응
+    function setDefaultAvatarTheme() {
+        const isDarkMode = !document.body.classList.contains('theme-light');
+        const defaultAvatarSrcLight = "{% static 'flo/images/icons/profile/default_profile_light.png' %}";
+        const defaultAvatarSrcDark = "{% static 'flo/images/icons/profile/default_profile_dark.png' %}";
+
+        document.querySelectorAll('img.default-avatar').forEach(img => {
+            // 현재 이미지 소스가 라이트/다크 기본 이미지 중 하나일 때만 변경
+            if (img.src.endsWith('default_profile_light.png') || img.src.endsWith('default_profile_dark.png')) {
+                 img.src = isDarkMode ? defaultAvatarSrcDark : defaultAvatarSrcLight;
+            }
+        });
     }
-}
+    setDefaultAvatarTheme();
+    // 테마 변경 이벤트 리스너가 있다면 그곳에서도 호출
+    // 예: document.body.addEventListener('themeChanged', setDefaultAvatarTheme);
+
+
+    // 첨부파일 드롭다운 토글
+    const attachmentsToggle = document.getElementById('attachments-dropdown-toggle');
+    const attachmentsListContainer = document.getElementById('attachments-list-container');
+
+    if (attachmentsToggle && attachmentsListContainer) {
+        attachmentsToggle.addEventListener('click', function(event) {
+            event.preventDefault();
+            const isExpanded = this.getAttribute('aria-expanded') === 'true' || false;
+            this.setAttribute('aria-expanded', !isExpanded);
+            attachmentsListContainer.style.display = isExpanded ? 'none' : 'block';
+
+            const icon = this.querySelector('svg'); // 더 구체적인 선택자 사용 가능
+            if (icon) { // 아이콘이 실제로 SVG라고 가정
+                if (!isExpanded) { // 펼쳐질 때
+                    // 위쪽 화살표 SVG path (예시)
+                    icon.classList.remove('bi-chevron-down');
+                    icon.classList.add('bi-chevron-up');
+                    icon.innerHTML = '<path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>';
+                } else { // 닫힐 때
+                    // 아래쪽 화살표 SVG path (예시)
+                    icon.classList.remove('bi-chevron-up');
+                    icon.classList.add('bi-chevron-down');
+                    icon.innerHTML = '<path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>';
+                }
+            }
+        });
+    }
+});
 </script>
-<style>
-    /* 간단한 더보기 메뉴 스타일 */
-    .dropdown { position: relative; display: inline-block; }
-    .dropdown-content { display: none; position: absolute; background-color: #f9f9f9; min-width: 100px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; right:0; }
-    .dropdown-content a, .dropdown-content button { color: black; padding: 8px 10px; text-decoration: none; display: block; background: none; border: none; width: 100%; text-align: left; cursor: pointer;}
-    .dropdown-content a:hover, .dropdown-content button:hover { background-color: #f1f1f1; }
-    .show { display: block; }
-</style>
 {% endblock %}

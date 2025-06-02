@@ -4,8 +4,9 @@ from django.urls import reverse
 from django.utils.html import format_html
 from .models import (
     Category, MajorCategory, MediumCategory, MinorCategory, # 프록시 모델 임포트
-    Post, Comment, FAQCategory, FAQItem
+    Post, Attachment ,Comment, FAQCategory, FAQItem
 )
+from .forms import AttachmentForm # ★★★ AttachmentForm 임포트 ★★★
 
 # --- 대분류 관리자 ---
 @admin.register(MajorCategory)
@@ -117,6 +118,35 @@ class OriginalCategoryAdmin(admin.ModelAdmin):
             return obj.get_level()
         return '-'
 
+@admin.register(Attachment)
+class AttachmentAdmin(admin.ModelAdmin):
+    list_display = ('filename', 'post_link', 'uploaded_at')
+    list_filter = ('uploaded_at',)
+    search_fields = ('file', 'post__title')
+    readonly_fields = ('uploaded_at',)
+
+    def post_link(self, obj):
+        if obj.post:
+            link = reverse("admin:flo_post_change", args=[obj.post.id]) # 앱 이름과 모델 이름 확인
+            return format_html('<a href="{}">{}</a>', link, obj.post.title)
+        return "-"
+    post_link.short_description = "게시글"
+    post_link.admin_order_field = 'post__title'
+
+# PostAdmin에서 Attachment를 인라인으로 관리할 때
+class AttachmentInline(admin.TabularInline):
+    model = Attachment
+    form = AttachmentForm
+    extra = 1
+    readonly_fields = ('uploaded_at', 'filename_display')
+    # 'DELETE'를 fields에서 제거합니다.
+    # TabularInline은 can_delete (FormSet 팩토리에서 설정)를 기반으로
+    # 삭제 UI를 자동으로 제공합니다.
+    fields = ('file', 'filename_display', 'uploaded_at') # 'DELETE' 제거
+
+    def filename_display(self, obj):
+        return obj.filename if obj.pk else "-"
+    filename_display.short_description = "파일명"
 
 # --- PostAdmin 수정 ---
 @admin.register(Post)
@@ -129,6 +159,7 @@ class PostAdmin(admin.ModelAdmin):
     # autocomplete_fields에서 'category' 제거. ManyToManyField에는 filter_horizontal/vertical 사용
     autocomplete_fields = ['author'] # 'category' 제거
     filter_horizontal = ('categories', 'likes') # 'categories'를 filter_horizontal로 관리
+    inlines = [AttachmentInline] # Post 수정/추가 페이지에 Attachment 폼을 인라인으로 추가
 
     @admin.display(description='카테고리(들)')
     def get_category_display_names_admin(self, obj):

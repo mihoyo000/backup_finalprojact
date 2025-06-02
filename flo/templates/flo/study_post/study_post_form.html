@@ -55,8 +55,9 @@
 
         <form method="post" enctype="multipart/form-data" class="study-post-form">
             {% csrf_token %}
-            {# 숨겨진 input 필드: 선택된 카테고리 ID들을 저장 #}
-            {{ form.categories.as_hidden }}
+                <div style="display: none;">
+                    {{ form.categories }}
+                </div>
 
             <div class="form-row category-selection-area-wrapper">
                 <label class="form-label">카테고리 선택 (최대 5개)</label>
@@ -65,8 +66,12 @@
                 </div>
                 <div class="category-panel-container">
                     {# 검색창 #}
-                    <div class="category-search-box mb-2">
+                    <!-- <div class="category-search-box mb-2">
                         <input type="text" id="categorySearchInputInline" class="form-control" placeholder="카테고리 검색...">
+                    </div> -->
+                    <div class="category-search-box mb-2 position-relative"> {# position-relative 추가 #}
+                        <input type="text" id="categorySearchInputInline" class="form-control" placeholder="카테고리 검색...">
+                        <span id="clearSearchInput" class="clear-search-btn" style="display:none;">×</span> {# ×는 'x' 문자입니다 #}
                     </div>
                     {# 대/중/소 분류 패널 #}
                     <div class="row">
@@ -123,6 +128,95 @@
             </div>
             {% endif %}
 
+            {# === 첨부파일 폼셋 렌더링 === #}
+            <div class="form-row attachment-formset-container">
+                <label class="form-label">첨부파일</label>
+                {{ formset.management_form }}
+                <div id="attachment-forms-wrapper">
+                    {% for attachment_form in formset %}
+                        <div class="attachment-form-item mb-3 p-3 border rounded">
+                            {# ★★★ 숨겨진 ID 필드 추가 (가장 중요) ★★★ #}
+                            {# attachment_form.id는 <input type="hidden" name="attachments-{{ forloop.counter0 }}-id" value="{{ attachment_form.instance.pk }}"> 와 같이 렌더링됩니다. #}
+                            {# Django 폼 시스템이 formset의 각 form에 instance를 바인딩하면, .id를 통해 해당 필드에 접근할 수 있습니다. #}
+                            {# 만약 instance가 없는 새 폼이라면 이 필드는 렌더링되지 않거나 value가 비어있게 됩니다. #}
+                            {{ attachment_form.id }}
+
+                            {# 숨겨진 삭제 체크박스, JS에서 제어 #}
+                            {{ attachment_form.DELETE }}
+
+                            {% if attachment_form.instance.pk and attachment_form.instance.file %}
+                                {# --- 1. 기존 저장된 파일 정보 --- #}
+                                <div class="current-attachment-display mb-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <p class="mb-0">
+                                            <span class="attachment-label-text" style="font-weight: 500;">첨부된 파일:</span>
+                                            <a href="{{ attachment_form.instance.file.url }}" target="_blank"
+                                            title="{{ attachment_form.instance.filename }} 새 창으로 열기"
+                                            class="ms-1 current-file-link">
+                                                {{ attachment_form.instance.filename }}
+                                            </a>
+                                        </p>
+                                        {% if attachment_form.can_delete %} {# formset에서 can_delete=True로 설정되어 있다면 이 조건만으로 충분할 수 있음 #}
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-existing-file-btn"
+                                                    data-checkbox-id="{{ attachment_form.DELETE.id_for_label }}"
+                                                    title="이 파일 삭제">X</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <label for="{{ attachment_form.file.id_for_label }}" class="form-label-attachment-change small d-block mb-1">파일 변경:</label>
+                            {% else %}
+                                <label for="{{ attachment_form.file.id_for_label }}" class="form-label-attachment-new small d-block mb-1">새 파일 첨부:</label>
+                            {% endif %}
+
+                            {# 커스텀 파일 입력 UI 유지 #}
+                            <div class="attachment-file-input-wrapper d-flex align-items-center">
+                                {# 실제 파일 input. name과 id는 Django 폼 필드에서 자동으로 생성됩니다. #}
+                                {# attachment_form.file을 직접 렌더링하면 ClearableFileInput 위젯이 나오므로, 커스텀 UI를 위해서는 숨겨진 input과 버튼을 사용합니다. #}
+                                {# views.py의 AttachmentForm Meta widgets에서 이 필드의 attrs에 d-none 클래스를 추가하는 것이 더 명확할 수 있습니다. #}
+                                {# 또는, 여기서 직접 input type="file"을 만들되, name과 id는 Django 규칙을 따라야 합니다. #}
+                                {{ attachment_form.file }} {# 이렇게 하면 ClearableFileInput 전체가 렌더링 됩니다. 아래 커스텀 UI와 중복될 수 있으니 주의. #}
+                                {# 만약 위 {{ attachment_form.file }}을 사용하지 않고 아래 커스텀 UI를 그대로 사용하려면, #}
+                                {# forms.py의 AttachmentForm 위젯에서 'd-none' 클래스를 추가하거나, #}
+                                {# 여기서 <input type="file" name="{{ attachment_form.file.html_name }}" id="{{ attachment_form.file.auto_id }}" class="d-none attachment-true-input"> #}
+                                {# 와 같이 수동으로 렌더링하고, JS가 이 input을 클릭하도록 해야 합니다. #}
+                                {# 현재 JavaScript 로직은 attachment-true-input 클래스를 가진 숨겨진 input을 사용하고 있습니다. #}
+                                {# 따라서 {{ attachment_form.file }} 대신 아래와 같이 명시적으로 input을 다시 만들거나, #}
+                                {# {{ attachment_form.file }}이 렌더링하는 input에 JavaScript가 사용하는 클래스를 부여해야 합니다. #}
+                                {# 가장 간단한 방법은 forms.py의 위젯에 class: 'd-none attachment-true-input'를 모두 주는 것입니다. #}
+
+                                {# --- 아래는 이전 커스텀 UI 유지 시 --- #}
+                                <input type="file" name="{{ attachment_form.file.html_name }}" id="{{ attachment_form.file.auto_id }}" class="d-none attachment-true-input">
+                                <button type="button" class="btn btn-sm btn-primary select-file-button me-2">파일 선택</button>
+                                <span class="selected-file-name small flex-grow-1">선택된 파일 없음</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary clear-newly-selected-file" style="display:none;" title="선택한 파일 취소">X</button>
+                            </div>
+
+                            {# 에러 메시지 표시 #}
+                            {% if attachment_form.file.errors %}{% for error in attachment_form.file.errors %}<p class="error mt-1 small">{{ error }}</p>{% endfor %}{% endif %}
+                            {% if attachment_form.id.errors %}{% for error in attachment_form.id.errors %}<p class="error mt-1 small">ID 오류: {{ error }}</p>{% endfor %}{% endif %} {# ID 필드 에러 #}
+                            {% for error in attachment_form.non_field_errors %}<p class="error mt-1 small">{{ error }}</p>{% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="button" id="add-attachment-form" class="btn btn-outline-secondary btn-sm mt-2">파일 추가</button>
+                <small class="form-text text-muted d-block mt-1">새 파일을 추가하거나 기존 파일을 변경/삭제할 수 있습니다.</small>
+            </div>
+
+            {# JavaScript에서 사용할 빈 폼 템플릿 (숨겨둠) #}
+            <div id="empty-attachment-form" style="display:none;">
+                <div class="attachment-form-item mb-3 p-3 border rounded">
+                    {# ★★★ Django Formset의 DELETE 필드 추가 (숨김 처리) ★★★ #}
+                    <input type="checkbox" name="attachments-__prefix__-DELETE" id="id_attachments-__prefix__-DELETE" style="display:none;">
+                    <label for="id_attachments-__prefix__-file" class="form-label-attachment-new small d-block mb-1">새 파일 첨부:</label>
+                    <div class="attachment-file-input-wrapper d-flex align-items-center">
+                        <input type="file" name="attachments-__prefix__-file" id="id_attachments-__prefix__-file" class="d-none attachment-true-input">
+                        <button type="button" class="btn btn-sm btn-primary select-file-button me-2">파일 선택</button>
+                        <span class="selected-file-name small flex-grow-1 no-file-selected">선택된 파일 없음</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary clear-newly-selected-file" style="display:none;" title="선택한 파일 취소">X</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-row mt-4">
                 <button type="submit" class="btn-submit-form">
                     <img src="{% static 'flo/images/icons/study_post/write-white.png' %}" alt="등록 아이콘">
@@ -139,236 +233,531 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.tiny.cloud/1/YOUR_TINYMCE_API_KEY/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script> {# API 키 변경 #}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.tiny.cloud/1/xqn37s38iyj7twa9wlozw51dfmv2mqxbxsr6le9amrbajhlc/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script> {# API 키 변경 #}
 
-    <script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("DOM Content Loaded - Initializing Form JS");
+<script type="text/javascript">
+console.log("--- JavaScript execution started ---"); // ★★★ 이 로그가 뜨는지 확인 ★★★
 
-        // TinyMCE 초기화 (이전과 동일)
-        let contentFieldId = '{{ form.content.id_for_label }}';
-        if (document.getElementById(contentFieldId)) {
-            tinymce.init({
-                selector: 'textarea#' + contentFieldId,
-                height: 450,
-                placeholder: '내용을 입력하세요.',
-                plugins: [ 'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount', 'checklist', 'mediaembed', 'importword'],
-                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat | code',
-                content_style: "body { background-color: #FFFFFF; color: #212529; font-family: inherit; } body.mce-content-body::placeholder { color: #a0a0a0; opacity: 1; }",
-            });
-        } else {
-            console.warn("TinyMCE target element not found with ID: " + contentFieldId);
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("--- DOMContentLoaded event fired ---"); // ★★★ 이 로그가 뜨는지 확인 ★★★ 
+
+    // TinyMCE 초기화
+    let contentFieldId = '{{ form.content.id_for_label }}';
+    console.log("TinyMCE target ID from template: ", contentFieldId); // ★★★
+    if (document.getElementById(contentFieldId)) {
+        tinymce.init({
+            selector: 'textarea#' + contentFieldId,
+            height: 450,
+            placeholder: '내용을 입력하세요.',
+            plugins: [ 'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount', 'checklist', 'mediaembed', 'importword'],
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat | code',
+            content_style: "body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif; background-color: #FFFFFF; color: #212529; } body.mce-content-body::placeholder { color: #a0a0a0; opacity: 1; }",
+        });
+    } else {
+        console.warn("[FORM JS] TinyMCE target element not found with ID: " + contentFieldId);
+    }
+
+    // --- 카테고리 관련 변수 및 초기화 ---
+    const MAX_CATEGORIES = 5;
+    let selectedCategories = new Map(); // key: categoryId (string), value: {id, name, path, slug}
+    const $hiddenSelectElement = $('#id_categories'); // ★★★ ID로 직접 선택 ★★★
+    console.log(`[FORM JS] Hidden select for 'categories' (Selector: '#id_categories' | Found ID: ${$hiddenSelectElement.attr('id')} | Found Name: ${$hiddenSelectElement.attr('name')}):`, $hiddenSelectElement.length > 0 ? "Found" : "NOT FOUND - Check rendered HTML for #id_categories");
+
+    // 페이지 로드 시 초기 선택값 설정 (수정 폼의 경우)
+    let initialCategoriesData = [];
+    const initialJsonString = '{{ initial_selected_categories_for_js|escapejs|default:"[]" }}';
+    console.log("[FORM JS] Initial categories JSON string from Django template:", initialJsonString);
+    try {
+        if (initialJsonString && initialJsonString !== "[]") {
+            initialCategoriesData = JSON.parse(initialJsonString);
         }
+    } catch (e) {
+        console.error("[FORM JS] Error parsing initial_selected_categories_for_js:", e, "Raw string was:", initialJsonString);
+    }
 
-        const MAX_CATEGORIES = 5;
-        let selectedCategories = new Map(); // key: id (string), value: {id, name, path}
-        const $hiddenSelectElement = $('select[name="{{ form.categories.html_name }}"]'); // HTML에 있는 <select multiple>
-        console.log("Hidden select for categories:", $hiddenSelectElement.length > 0 ? $hiddenSelectElement[0] : "Not found");
-
-        // --- 초기 선택값 로드 (수정 폼일 경우) ---
-        if ($hiddenSelectElement.length) {
-            $hiddenSelectElement.find('option:selected').each(function() {
-                const id = $(this).val();
-                const name = $(this).text(); // <option>의 텍스트 (카테고리 이름)
-                // data-path는 템플릿에서 option에 직접 설정했거나, AJAX로 가져와야 함.
-                // 여기서는 AJAX로 카테고리 정보를 다시 가져오는 것을 가정하지 않고,
-                // 템플릿에서 모든 카테고리 정보를 <option>에 data-path로 넣었다고 가정.
-                // 또는, 서버에서 초기 선택된 카테고리들의 full_path 정보를 별도로 전달받아 사용.
-                // 지금은 임시로 name을 path로 사용 (개선 필요)
-                const path = $(this).data('path') || name; // 템플릿의 <option data-path="..."> 값을 읽음
-
-                if (id && selectedCategories.size < MAX_CATEGORIES) {
-                    selectedCategories.set(id.toString(), { id: id.toString(), name: name, path: path });
-                }
-            });
-            renderSelectedCategories();
-            // updateHiddenSelect(); // 이미 selected 상태이므로 호출 불필요, 또는 중복 호출 방지
-        }
-
-
-        // --- 이벤트 핸들러 바인딩 ---
-
-        // 대분류 아이템 클릭: 중분류 로드
-        $('#majorCategoryPanelInline').on('click', '.category-item-inline', function() {
-            const $this = $(this);
-            console.log("Major category clicked:", $this.data('name'));
-            // 부모 패널의 다른 아이템 비활성화 (시각적 표시용)
-            $('#majorCategoryPanelInline .category-item-inline').removeClass('active-parent');
-            $this.addClass('active-parent');
-
-            // 중분류/소분류 패널 초기화
-            $('#mediumCategoryPanelInline').hide().find('.category-list-inline').empty();
-            $('#mediumCategoryPanelInline h6').text("중분류");
-            $('#minorCategoryPanelInline').hide().find('.category-list-inline').empty();
-            $('#minorCategoryPanelInline h6').text("소분류");
-
-            if ($this.find('.category-arrow-inline').length > 0) { // 하위가 있을 때만 로드
-                loadChildCategories($this.data('id'), '#mediumCategoryPanelInline', '#mediumCategoryListInline', 1, $this.data('name'));
-            } else { // 하위가 없는 대분류 -> 바로 선택 로직으로 (선택 사항)
-                handleCategorySelection($this);
+    if (initialCategoriesData && initialCategoriesData.length > 0) {
+        console.log("[FORM JS] Edit Form: Loading initial categories from initial_selected_categories_for_js:", initialCategoriesData);
+        initialCategoriesData.forEach(function(catData) {
+            if (catData.id && selectedCategories.size < MAX_CATEGORIES) {
+                selectedCategories.set(catData.id.toString(), {
+                    id: catData.id.toString(), name: catData.name, path: catData.path, slug: catData.slug
+                });
             }
         });
+        renderSelectedCategories();
+        updateHiddenSelect();
+        updatePanelActiveStates();
+    } else {
+        console.log("[FORM JS] Create Form or Edit Form with no initial categories.");
+        // 글쓰기 시에도 updateHiddenSelect()를 호출하여 빈 값으로 명시적 초기화
+        if ($hiddenSelectElement.length > 0) { // $hiddenSelectElement가 존재할 때만 호출
+             updateHiddenSelect();
+        }
+    }
 
-        // 중분류 아이템 클릭: 소분류 로드
-        $('#mediumCategoryPanelInline').on('click', '.category-item-inline', function() {
-            const $this = $(this);
-            console.log("Medium category clicked:", $this.data('name'));
-            $('#mediumCategoryPanelInline .category-item-inline').removeClass('active-parent');
-            $this.addClass('active-parent');
+    /* // 이전 방식의 초기 선택값 로드 로직 (주석 처리 - 위 방식으로 통합)
+    if ($hiddenSelectElement.length && '{{ form.instance.pk|default:"" }}') {
+        console.log("[FORM JS] (Old method) Edit Form: Loading initial categories from hidden select options.");
+        // ...
+    }
+    */
 
-            $('#minorCategoryPanelInline').hide().find('.category-list-inline').empty();
-            $('#minorCategoryPanelInline h6').text("소분류");
-
-            if ($this.find('.category-arrow-inline').length > 0) { // 하위가 있을 때만 로드
-                const parentPath = $('#majorCategoryPanelInline .category-item-inline.active-parent').data('name');
-                const currentBasePath = parentPath ? parentPath + " > " + $this.data('name') : $this.data('name');
-                loadChildCategories($this.data('id'), '#minorCategoryPanelInline', '#minorCategoryListInline', 2, currentBasePath);
-            } else { // 하위가 없는 중분류 -> 바로 선택 로직으로
-                handleCategorySelection($this);
-            }
+    // --- 카테고리 UI 업데이트 함수들 ---
+    function renderSelectedCategories() {
+        const $displayArea = $('#selected-categories-display');
+        $displayArea.empty();
+        // console.log("[FORM JS] Rendering selected category tags. Current map:", selectedCategories);
+        selectedCategories.forEach(function(cat) {
+            const tag = $(`<span class="badge me-1 mb-1 selected-category-tag" data-id="${cat.id}">${cat.path} <span class="remove-category" data-id="${cat.id}" title="선택 해제" style="cursor:pointer; font-weight:bold; margin-left:3px;">×</span></span>`);
+            $displayArea.append(tag);
         });
+    }
 
-        // 소분류 아이템 클릭 (또는 선택 가능한 최하위 아이템 클릭)
-        $('#minorCategoryPanelInline').on('click', '.category-item-inline', function() {
-            const $this = $(this);
-            console.log("Minor category clicked (for selection):", $this.data('name'));
-            // 소분류는 항상 자식이 없다고 가정 (있다면 위 로직과 유사하게 처리)
-            handleCategorySelection($this);
-        });
+    function updateHiddenSelect() {
+        if (!$hiddenSelectElement || $hiddenSelectElement.length === 0) {
+            console.error(`[FORM JS] CRITICAL: Hidden select element '{{ form.categories.html_name }}' NOT FOUND. Cannot update form values for submission.`);
+            return;
+        }
+        let currentSelectedIds = Array.from(selectedCategories.keys());
+        $hiddenSelectElement.val(currentSelectedIds);
+        $hiddenSelectElement.trigger('change');
+        console.log(`[FORM JS] updateHiddenSelect: Set hidden <select name="${$hiddenSelectElement.attr('name')}"> to values:`, $hiddenSelectElement.val());
+    }
 
-
-        // 카테고리 선택/해제 공통 로직 함수
-        function handleCategorySelection($item) {
-            const categoryId = $item.data('id').toString();
-            const categoryName = $item.data('name');
-            // data-path는 AJAX 응답을 통해 채워지거나, 초기 렌더링 시 <option>에 있어야 함
-            const fullPath = $item.data('path') || categoryName; // data-path가 최우선
-
-            if (selectedCategories.has(categoryId)) {
-                selectedCategories.delete(categoryId);
-                $item.removeClass('active');
+    function updatePanelActiveStates() {
+        // console.log("[FORM JS] Updating panel active states based on selectedCategories:", selectedCategories);
+        $('.category-panel-container .category-item-inline').each(function() {
+            const $item = $(this);
+            if (selectedCategories.has($item.data('id')?.toString())) {
+                $item.addClass('active');
             } else {
-                if (selectedCategories.size < MAX_CATEGORIES) {
-                    selectedCategories.set(categoryId, { id: categoryId, name: categoryName, path: fullPath });
-                    $item.addClass('active');
-                } else {
-                    alert(`카테고리는 최대 ${MAX_CATEGORIES}개까지 선택할 수 있습니다.`);
-                    // $item.removeClass('active'); // 이미 선택된 것을 해제하지는 않음
-                    return; // 추가 선택 방지
-                }
+                $item.removeClass('active');
             }
+        });
+        $('#ajaxSearchResultsPanel .category-search-result-item').each(function() { /* 검색 결과 패널도 동일하게 */
+            const $item = $(this);
+            if (selectedCategories.has($item.data('id')?.toString())) {
+                $item.addClass('active');
+            } else {
+                $item.removeClass('active');
+            }
+        });
+    }
+
+    // --- 카테고리 선택/해제 공통 로직 함수 ---
+    function handleCategorySelection($item) {
+        if (!$item || $item.length === 0) {
+            console.warn("[FORM JS] handleCategorySelection called with invalid $item");
+            return;
+        }
+        const categoryId = $item.data('id')?.toString();
+        const categoryName = $item.data('name');
+        const fullPath = $item.data('path') || categoryName;
+        const categorySlug = $item.data('slug') || '';
+
+        if (!categoryId) {
+            console.warn("[FORM JS] handleCategorySelection: categoryId is missing from $item's data attributes.", $item.data());
+            return;
+        }
+        console.log(`[FORM JS] Category item clicked: ID=${categoryId}, Name=${categoryName}, Path=${fullPath}`);
+
+        if (selectedCategories.has(categoryId)) {
+            selectedCategories.delete(categoryId);
+            $item.removeClass('active');
+            console.log(`[FORM JS] Category [${categoryId}] REMOVED. selectedCategories size: ${selectedCategories.size}`);
+        } else {
+            if (selectedCategories.size < MAX_CATEGORIES) {
+                selectedCategories.set(categoryId, {
+                    id: categoryId, name: categoryName, path: fullPath, slug: categorySlug
+                });
+                $item.addClass('active');
+                console.log(`[FORM JS] Category [${categoryId}] ADDED. selectedCategories size: ${selectedCategories.size}`);
+            } else {
+                alert(`카테고리는 최대 ${MAX_CATEGORIES}개까지 선택할 수 있습니다.`);
+                return;
+            }
+        }
+        renderSelectedCategories();
+        updateHiddenSelect();
+        // updatePanelActiveStates(); // handleCategorySelection에서 active/inactive 직접 처리하므로 여기서 중복 호출 불필요
+    }
+
+
+    // --- 카테고리 패널 클릭 이벤트 핸들러들 ---
+    $('#majorCategoryPanelInline').on('click', '.category-item-inline', function() {
+        const $this = $(this);
+        console.log("[FORM JS] Major category clicked:", $this.data('name'), $this.data());
+
+        // 클릭된 아이템이 이미 active-parent가 아니라면, 기존 active-parent 해제
+        if (!$this.hasClass('active-parent')) {
+            $('#majorCategoryPanelInline .category-item-inline').removeClass('active-parent');
+        }
+        // 중분류, 소분류 패널 초기화
+        $('#mediumCategoryPanelInline').hide().find('.category-list-inline').empty().end().find('h6').text("중분류");
+        $('#minorCategoryPanelInline').hide().find('.category-list-inline').empty().end().find('h6').text("소분류");
+
+        if ($this.find('.category-arrow-inline').length > 0) { // 하위 카테고리가 있으면
+            $this.addClass('active-parent'); // 클릭된 아이템을 active-parent로 설정
+            loadChildCategories($this.data('id'), '#mediumCategoryPanelInline', '#mediumCategoryListInline', 1, $this.data('name'));
+        } else { // 하위 카테고리가 없으면 (선택 가능한 아이템)
+            // active-parent 클래스는 유지하거나, 선택 로직에 따라 제거할 수도 있음 (현재는 유지)
+            // $this.addClass('active-parent'); // 또는 이 라인 제거
+            handleCategorySelection($this);
+        }
+    });
+
+    $('#mediumCategoryPanelInline').on('click', '.category-item-inline', function() {
+        const $this = $(this);
+        console.log("[FORM JS] Medium category clicked:", $this.data('name'), $this.data());
+
+        if (!$this.hasClass('active-parent')) {
+            $('#mediumCategoryPanelInline .category-item-inline').removeClass('active-parent');
+        }
+        // 소분류 패널 초기화
+        $('#minorCategoryPanelInline').hide().find('.category-list-inline').empty().end().find('h6').text("소분류");
+
+        if ($this.find('.category-arrow-inline').length > 0) {
+            $this.addClass('active-parent');
+            const parentPath = $('#majorCategoryPanelInline .category-item-inline.active-parent').data('name');
+            const currentBasePath = parentPath ? parentPath + " > " + $this.data('name') : $this.data('name');
+            loadChildCategories($this.data('id'), '#minorCategoryPanelInline', '#minorCategoryListInline', 2, currentBasePath);
+        } else {
+            // $this.addClass('active-parent'); // 또는 이 라인 제거
+            handleCategorySelection($this);
+        }
+    });
+
+    // 소분류 클릭 시에는 active-parent 개념이 없음 (항상 선택/해제 대상)
+    $('#minorCategoryPanelInline').on('click', '.category-item-inline', function() {
+        const $this = $(this);
+        console.log("[FORM JS] Minor category clicked:", $this.data('name'), $this.data());
+        handleCategorySelection($this);
+    });
+
+    // 선택된 태그의 X 버튼 클릭
+    $('#selected-categories-display').on('click', '.remove-category', function() {
+        const categoryIdToRemove = $(this).data('id').toString();
+        console.log("[FORM JS] Remove category tag (X) clicked for ID:", categoryIdToRemove);
+        if (selectedCategories.has(categoryIdToRemove)) {
+            selectedCategories.delete(categoryIdToRemove);
+            // 패널의 해당 아이템에서 'active' 클래스 제거
+            $(`.category-panel-container .category-item-inline[data-id="${categoryIdToRemove}"]`).removeClass('active');
+            // 검색 결과 패널의 아이템도 active 해제 (만약 있다면)
+            $(`#ajaxSearchResultsPanel .category-search-result-item[data-id="${categoryIdToRemove}"]`).removeClass('active');
             renderSelectedCategories();
             updateHiddenSelect();
         }
+    });
 
+    // --- 하위 카테고리 로드 함수 (AJAX) ---
+    function loadChildCategories(parentId, panelSelector, listSelector, level, basePathForTitle) {
+        const $list = $(listSelector);
+        const $panel = $(panelSelector);
+        const $panelTitle = $(panelSelector.replace('PanelInline', 'PanelTitleInline'));
+        console.log(`[FORM JS] Loading child categories for parentId=${parentId}, level=${level}, panel=${panelSelector}`);
 
-        // 하위 카테고리 로드 함수
-        function loadChildCategories(parentId, panelSelector, listSelector, level, basePathForTitle) {
-            const $list = $(listSelector);
-            const $panel = $(panelSelector);
-            const $panelTitle = $(panelSelector.replace('PanelInline', 'PanelTitleInline'));
+        $list.html('<li class="list-group-item disabled p-3 text-center"><div class="spinner-border spinner-border-sm"></div></li>');
+        $panel.show();
+        $panelTitle.text((basePathForTitle || "하위") + " 카테고리");
 
-            $list.html('<li class="list-group-item disabled p-5 text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div></li>'); // 부트스트랩 스피너 예시
-            $panel.show();
-            $panelTitle.text((basePathForTitle || "하위") + " 카테고리");
-
-            console.log(`AJAX: Loading children for parentId: ${parentId}`);
-            $.ajax({
-                url: "{% url 'flo:ajax_get_child_categories' %}", // views.py에 정의된 AJAX URL
-                data: { 'parent_id': parentId },
-                dataType: 'json', // 응답 타입 명시
-                success: function(data) {
-                    console.log("AJAX success, data:", data);
-                    $list.empty();
-                    if (data.children && data.children.length > 0) {
-                        data.children.forEach(function(child) {
-                            // child 객체는 {id, name, full_path, has_children} 형태를 기대
-                            const listItem = $(`
-                                <li class="list-group-item category-item-inline" 
-                                    data-id="${child.id}" 
-                                    data-name="${child.name}" 
-                                    data-level="${level}" 
-                                    data-path="${child.full_path || child.name}">
-                                    ${child.name}
-                                    ${child.has_children ? '<span class="category-arrow-inline float-end">></span>' : ''}
-                                </li>
-                            `);
-                            if (selectedCategories.has(child.id.toString())) {
-                                listItem.addClass('active');
-                            }
-                            $list.append(listItem);
-                        });
-                    } else {
-                        $list.html('<li class="list-group-item disabled text-muted">하위 카테고리가 없습니다.</li>');
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error("AJAX Error:", textStatus, errorThrown, jqXHR.responseText);
-                    $list.html('<li class="list-group-item text-danger">목록을 불러오는데 실패했습니다.</li>');
+        $.ajax({
+            url: "{% url 'flo:ajax_get_child_categories' %}",
+            data: { 'parent_id': parentId },
+            dataType: 'json',
+            success: function(data) {
+                $list.empty();
+                if (data.children && data.children.length > 0) {
+                    console.log(`[FORM JS] Received ${data.children.length} child categories for parentId=${parentId}`);
+                    data.children.forEach(function(child) {
+                        const listItem = $(`
+                            <li class="list-group-item category-item-inline"
+                                data-id="${child.id}" data-name="${child.name}" data-level="${level}"
+                                data-path="${child.full_path || child.name}" data-slug="${child.slug || ''}">
+                                ${child.name}
+                                ${child.has_children ? '<span class="category-arrow-inline float-end">></span>' : ''}
+                            </li>`);
+                        if (selectedCategories.has(child.id.toString())) {
+                            listItem.addClass('active');
+                        }
+                        $list.append(listItem);
+                    });
+                } else {
+                    console.log(`[FORM JS] No child categories found for parentId=${parentId}`);
+                    $list.html('<li class="list-group-item disabled text-muted">하위 카테고리가 없습니다.</li>');
                 }
-            });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("[FORM JS] AJAX Error loading child categories:", textStatus, errorThrown, jqXHR.responseText);
+                $list.html('<li class="list-group-item text-danger">목록을 불러오는데 실패했습니다.</li>');
+            }
+        });
+    }
+
+    // --- 카테고리 검색 관련 (AJAX) ---
+    const $categorySearchInput = $('#categorySearchInputInline');
+    const $clearSearchButton = $('#clearSearchInput');
+    const $panelsContainer = $('.category-panel-container .row'); // 대/중/소 패널 컨테이너
+    let $searchResultsPanel = $('#ajaxSearchResultsPanel');
+    if ($searchResultsPanel.length === 0) {
+         $searchResultsPanel = $('<div id="ajaxSearchResultsPanel" class="col-md-12 category-panel-col mb-3" style="display:none;"><h6>검색 결과</h6><ul class="list-group category-list-inline"></ul><div id="search-results-load-more-container" class="text-center mt-2" style="display:none;"><button type="button" id="loadMoreSearchResults" class="btn btn-sm btn-outline-secondary">더보기</button></div></div>');
+        $('.category-search-box.mb-2').after($searchResultsPanel);
+    }
+    const $resultsList = $searchResultsPanel.find('.list-group');
+    const $loadMoreContainer = $searchResultsPanel.find('#search-results-load-more-container');
+    const $loadMoreButton = $searchResultsPanel.find('#loadMoreSearchResults');
+    let currentPage = 1;
+    let currentSearchTerm = '';
+    let searchRequestTimeout;
+
+    $categorySearchInput.on('keyup input', function() {
+        const searchTerm = $(this).val().trim();
+        const searchTermLower = searchTerm.toLowerCase();
+        clearTimeout(searchRequestTimeout);
+
+        if (searchTerm.length > 0) { $clearSearchButton.show(); } else { $clearSearchButton.hide(); }
+
+        if (currentSearchTerm !== searchTermLower) {
+            currentPage = 1; $resultsList.empty(); $loadMoreContainer.hide();
+        }
+        currentSearchTerm = searchTermLower; // 현재 검색어 업데이트
+
+        if (searchTermLower.length === 0) {
+            // 검색어가 비워지면 검색 결과 숨기고 패널 다시 표시
+            $searchResultsPanel.hide();
+            $resultsList.empty();
+            $panelsContainer.show();
+            updatePanelActiveStates(); // 패널 상태 동기화
+            return;
         }
 
-        // 선택된 카테고리 태그 렌더링
-        function renderSelectedCategories() {
-            const $displayArea = $('#selected-categories-display');
-            $displayArea.empty();
-            selectedCategories.forEach(function(cat) {
-                // cat.path가 전체 경로를 가지고 있어야 함
-                const tag = $(`<span class="badge bg-primary me-1 mb-1 selected-category-tag" data-id="${cat.id}">${cat.path} <span class="remove-category" data-id="${cat.id}" title="선택 해제" style="cursor:pointer; font-weight:bold; margin-left:3px;">×</span></span>`);
-                $displayArea.append(tag);
-            });
-        }
+        searchRequestTimeout = setTimeout(function() {
+            if (currentPage === 1) {
+                $panelsContainer.hide(); // 검색 시작 시 일반 패널 숨김
+                $searchResultsPanel.show();
+                $resultsList.html('<li class="list-group-item disabled p-3 text-center"><div class="spinner-border spinner-border-sm"></div></li>');
+            }
+            fetchSearchResults(searchTermLower, currentPage);
+        }, 300);
+    });
 
-        // 선택된 태그의 x 버튼 클릭 시
-        $('#selected-categories-display').on('click', '.remove-category', function() {
-            const categoryIdToRemove = $(this).data('id').toString();
-            if (selectedCategories.has(categoryIdToRemove)) {
-                selectedCategories.delete(categoryIdToRemove);
-                // 패널의 해당 아이템에서 'active' 클래스 제거
-                $(`.category-panel-container .category-item-inline[data-id="${categoryIdToRemove}"]`).removeClass('active');
-                renderSelectedCategories();
-                updateHiddenSelect();
+    // 검색창의 'x' 버튼 클릭 시
+    $clearSearchButton.on('click', function() {
+        $categorySearchInput.val('').focus();
+        $categorySearchInput.trigger('input'); // input 이벤트를 발생시켜 검색 결과 숨김 로직 실행
+    });
+
+    $searchResultsPanel.on('click', '.category-search-result-item', function() {
+        const $clickedItem = $(this);
+        console.log("[FORM JS] Search result category clicked:", $clickedItem.data('name'), $clickedItem.data());
+
+        handleCategorySelection($clickedItem); // 선택 처리 (selectedCategories 업데이트, 태그 UI, 숨겨진 select 업데이트, $clickedItem에 active 클래스 토글)
+
+        // 검색 UI를 숨기거나 검색창을 비우는 로직을 여기서 실행하지 않습니다.
+        // 검색창 내용과 검색 결과 목록은 그대로 유지됩니다.
+        // 선택된 항목은 $clickedItem.addClass('active') 또는 removeClass('active')로 시각적으로 표시됩니다.
+
+        // 만약, 검색 결과에서 하나를 선택하면 바로 검색창을 닫고 싶다면,
+        // 이전 코드처럼 아래 주석 처리된 로직을 다시 활성화합니다.
+        /*
+        $searchResultsPanel.hide();
+        $resultsList.empty();
+        $categorySearchInput.val('');
+        $clearSearchButton.hide();
+        $panelsContainer.show();
+        updatePanelActiveStates();
+        */
+    });
+
+    $loadMoreButton.on('click', function() {
+        if (currentSearchTerm) { fetchSearchResults(currentSearchTerm, currentPage); }
+    });
+
+    function fetchSearchResults(term, page) {
+        console.log(`[FORM JS] Fetching search results for: ${term}, page: ${page}`);
+        $loadMoreButton.prop('disabled', true).text('로딩 중...');
+        $.ajax({
+            url: "{% url 'flo:ajax_search_categories' %}",
+            data: { 'q': term, 'page': page },
+            dataType: 'json',
+            success: function(data) {
+                if (page === 1) { $resultsList.empty(); }
+                if (data.categories && data.categories.length > 0) {
+                    data.categories.forEach(function(cat) {
+                        const listItem = $(`
+                            <li class="list-group-item category-item-inline category-search-result-item"
+                                data-id="${cat.id}" data-name="${cat.name}"
+                                data-path="${cat.full_path || cat.name}" data-slug="${cat.slug || ''}">
+                                ${cat.full_path || cat.name}
+                            </li>`);
+                        if (selectedCategories.has(cat.id.toString())) { listItem.addClass('active'); }
+                        $resultsList.append(listItem);
+                    });
+                    if (data.has_next_page) { $loadMoreContainer.show(); currentPage = data.current_page + 1; }
+                    else { $loadMoreContainer.hide(); }
+                } else {
+                    if (page === 1) { $resultsList.html('<li class="list-group-item disabled text-muted">검색 결과가 없습니다.</li>'); }
+                    $loadMoreContainer.hide();
+                }
+            },
+            error: function() { /* ... */ $loadMoreContainer.hide(); },
+            complete: function() { $loadMoreButton.prop('disabled', false).text('더보기'); }
+        });
+    }
+
+    // --- 첨부파일 폼셋 관련 로직 ---
+    const addFormButton = document.getElementById('add-attachment-form');
+    const formsWrapper = document.getElementById('attachment-forms-wrapper');
+    const totalFormsInput = document.querySelector('input[name="attachments-TOTAL_FORMS"]');
+    const emptyFormElement = document.getElementById('empty-attachment-form');
+    const emptyFormHtml = emptyFormElement ? emptyFormElement.innerHTML : "";
+
+    function setupAttachmentFormItem($formItem) {
+        const formItemId = $formItem.find('input[type="file"].attachment-true-input').attr('id') || $formItem.index(); // 고유 식별자
+        console.log(`[ATTACHMENT] setupAttachmentFormItem 호출 시작 - FormItem ID/Index: ${formItemId}`); // ★★★ 로그 추가 ★★★
+
+        const $actualFileInput = $formItem.find('input[type="file"].attachment-true-input');
+        const $selectFileTriggerButton = $formItem.find('.select-file-button');
+        const $selectedFileNameSpan = $formItem.find('.selected-file-name');
+        const $clearNewlySelectedFileButton = $formItem.find('.clear-newly-selected-file');
+
+        // 기존 파일 삭제 관련 요소
+        const $deleteExistingFileButton = $formItem.find('.delete-existing-file-btn'); // 이 버튼은 기존 렌더링된 폼에만 있음
+        let $deleteCheckbox = $formItem.find('input[type="checkbox"][name$="-DELETE"]'); // 해당 폼 아이템 내의 DELETE 체크박스
+
+        // 디버깅용: 각 폼 아이템에 대해 어떤 요소들이 찾아졌는지 확인
+        // console.log("Processing form item:", $formItem);
+        // console.log("  Actual file input:", $actualFileInput.length > 0 ? $actualFileInput.attr('name') : "Not found");
+        // console.log("  Delete existing file button:", $deleteExistingFileButton.length > 0 ? "Found" : "Not found");
+        // console.log("  Delete checkbox:", $deleteCheckbox.length > 0 ? $deleteCheckbox.attr('name') : "Not found");
+
+
+        // 1. "파일 선택" 버튼 클릭
+        $selectFileTriggerButton.off('click').on('click', function(event) {
+            event.stopPropagation();
+            console.log("[ATTACHMENT] '파일 선택' 버튼 클릭됨. Target input:", $actualFileInput.attr('id')); // ★★★ 로그 추가 ★★★
+            $actualFileInput.click();
+            console.log("[ATTACHMENT] $actualFileInput.click() 호출 완료."); // ★★★ 로그 추가 ★★★
+        });
+
+        // 2. 실제 파일 입력 필드 변경
+        $actualFileInput.off('change').on('change', function() {
+            const $currentAttachmentDisplay = $formItem.find('.current-attachment-display');
+            if (this.files && this.files.length > 0) {
+                $selectedFileNameSpan.text(this.files[0].name).removeClass('no-file-selected text-muted file-cleared').addClass('file-selected');
+                $clearNewlySelectedFileButton.show();
+                if ($currentAttachmentDisplay.length) { // 기존 파일 정보가 있었다면 숨김
+                    $currentAttachmentDisplay.hide();
+                }
+
+                if ($deleteCheckbox.length && $deleteCheckbox.prop('checked')) {
+                    $deleteCheckbox.prop('checked', false);
+                    if ($deleteExistingFileButton.length) {
+                        $deleteExistingFileButton.removeClass('marked-for-delete btn-danger').addClass('btn-outline-danger').attr('title', '이 파일 삭제');
+                        // 파일 변경 UI 다시 표시
+                        $formItem.find('.attachment-file-input-wrapper').find('input[type="file"], .select-file-button, .selected-file-name, .clear-newly-selected-file').show();
+                    }
+                }
+            } else {
+                $selectedFileNameSpan.text('선택된 파일 없음').removeClass('file-selected').addClass('no-file-selected text-muted');
+                if ($currentAttachmentDisplay.length && $currentAttachmentDisplay.find('.current-file-link').length > 0) {
+                    $currentAttachmentDisplay.show(); // 기존 파일 정보 다시 표시
+                }
+                $clearNewlySelectedFileButton.hide();
+                $selectedFileNameSpan.removeClass('file-cleared');
             }
         });
 
-        // 숨겨진 <select multiple> 요소 업데이트
-        function updateHiddenSelect() {
-            if (!$hiddenSelectElement.length) return;
-
-            let currentSelectedIds = Array.from(selectedCategories.keys());
-            $hiddenSelectElement.val(currentSelectedIds); // jQuery가 알아서 처리
-
-            // Django가 폼 유효성 검사 시 참고할 수 있도록,
-            // <select>에 없는 <option>이 선택되었다면 동적으로 추가 (선택사항, 보통은 queryset에 모든 카테고리가 있어야 함)
-            currentSelectedIds.forEach(function(id) {
-                if ($hiddenSelectElement.find(`option[value="${id}"]`).length === 0) {
-                    // 이 경우, selectedCategories Map에 있는 name 또는 path로 <option> 텍스트를 설정해야 함
-                    const catData = selectedCategories.get(id);
-                    $hiddenSelectElement.append(new Option(catData.name, id, true, true));
-                }
-            });
-        }
-
-        // 카테고리 검색 기능
-        $('#categorySearchInputInline').on('keyup', function() {
-            const searchTerm = $(this).val().toLowerCase();
-            console.log("Searching for:", searchTerm);
-            // 검색 시, 현재 보이는 모든 패널의 아이템에 대해 필터링
-            $('.category-panel-container .category-item-inline').each(function() {
-                const itemName = $(this).data('name').toLowerCase();
-                const itemPath = ($(this).data('path') || '').toLowerCase(); // data-path가 없을 수 있음
-
-                if (itemName.includes(searchTerm) || itemPath.includes(searchTerm)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
+        // 3. "X" (새로 선택한 파일 취소) 버튼 클릭
+        $clearNewlySelectedFileButton.off('click').on('click', function() {
+            $actualFileInput.val('');
+            $selectedFileNameSpan.addClass('file-cleared');
+            $actualFileInput.trigger('change');
         });
 
+        // 4. "X" (기존 저장된 파일 삭제) 버튼 클릭
+        if ($deleteExistingFileButton.length && $deleteCheckbox.length) {
+            $deleteExistingFileButton.off('click').on('click', function() {
+                const isCurrentlyChecked = $deleteCheckbox.prop('checked');
+                $deleteCheckbox.prop('checked', !isCurrentlyChecked);
+                $(this).toggleClass('marked-for-delete btn-danger', !isCurrentlyChecked).toggleClass('btn-outline-danger', isCurrentlyChecked);
+                $(this).attr('title', !isCurrentlyChecked ? '삭제 취소' : '이 파일 삭제');
+
+                const $fileInputControls = $formItem.find('.attachment-file-input-wrapper').find('input[type="file"], .select-file-button, .selected-file-name, .clear-newly-selected-file');
+                const $currentAttachmentInfo = $formItem.find('.current-attachment-display'); // 기존 파일 정보
+                const $fileChangeLabel = $formItem.find('.form-label-attachment-change'); // "파일 변경:" 레이블
+
+                if (!isCurrentlyChecked) { // 삭제로 표시됨
+                    if ($actualFileInput.val()) { // 혹시 새 파일 선택한게 있다면 그것도 클리어
+                        $actualFileInput.val('');
+                        $actualFileInput.trigger('change'); // UI 업데이트
+                    }
+                    $fileInputControls.hide(); // 파일 선택 관련 UI 숨김
+                    if($fileChangeLabel.length) $fileChangeLabel.hide(); // "파일 변경:" 레이블도 숨김
+                    if($currentAttachmentInfo.length) $currentAttachmentInfo.show(); // 기존 파일 정보는 보여줌 (삭제 취셔 위해)
+
+                } else { // 삭제 취소됨
+                    $fileInputControls.show();
+                    if($fileChangeLabel.length) $fileChangeLabel.show();
+                    // 파일 선택이 없었다면 "선택된 파일 없음"으로 초기화
+                    if (!$actualFileInput.val() && $selectedFileNameSpan.length){
+                        $selectedFileNameSpan.text('선택된 파일 없음').removeClass('file-selected').addClass('no-file-selected text-muted');
+                        if($clearNewlySelectedFileButton.length) $clearNewlySelectedFileButton.hide();
+                    }
+                }
+            });
+
+            // 초기 상태: DELETE 체크박스가 이미 체크되어 있다면 버튼 스타일 및 UI 업데이트
+            if ($deleteCheckbox.prop('checked')) {
+                $deleteExistingFileButton.addClass('marked-for-delete btn-danger').removeClass('btn-outline-danger').attr('title', '삭제 취소');
+                const $fileInputControls = $formItem.find('.attachment-file-input-wrapper').find('input[type="file"], .select-file-button, .selected-file-name, .clear-newly-selected-file');
+                const $fileChangeLabel = $formItem.find('.form-label-attachment-change');
+                $fileInputControls.hide();
+                if($fileChangeLabel.length) $fileChangeLabel.hide();
+            }
+        }
+        console.log(`[ATTACHMENT] setupAttachmentFormItem 호출 완료 - FormItem ID/Index: ${formItemId}`); // ★★★ 로그 추가 ★★★
+    }
+
+    // 페이지 로드 시 기존 렌더링된 폼들 + 동적으로 추가될 폼들에 대해 setup 함수 실행
+    // 페이지 로드 시 기존 폼들에 대해 setup 함수 실행 부분
+    console.log("[ATTACHMENT] 페이지 로드 시 기존 첨부파일 폼들에 setupAttachmentFormItem 적용 시작"); // ★★★
+    $('#attachment-forms-wrapper .attachment-form-item').each(function(index) {
+        console.log(`[ATTACHMENT] 기존 폼 ${index}에 대해 setup 호출`); // ★★★
+        setupAttachmentFormItem($(this));
     });
-    </script>
+    console.log("[ATTACHMENT] 페이지 로드 시 기존 첨부파일 폼들에 setupAttachmentFormItem 적용 완료"); // ★★★
+
+    // "파일 추가" 버튼 클릭 시
+    if (addFormButton && formsWrapper && totalFormsInput && emptyFormHtml) {
+        addFormButton.addEventListener('click', function() {
+            console.log("[ATTACHMENT] '파일 추가' 버튼 클릭됨. 새 폼에 setupAttachmentFormItem 적용 시작"); // ★★★
+            let formIdx = parseInt(totalFormsInput.value);
+            let newFormHtmlWithIndex = emptyFormHtml.replace(/__prefix__/g, formIdx);
+            const $newFormItem = $(newFormHtmlWithIndex);
+
+            $(formsWrapper).append($newFormItem);
+            setupAttachmentFormItem($newFormItem); // 새로 추가된 폼에도 JS 로직 적용
+            console.log("[ATTACHMENT] 새 폼에 setupAttachmentFormItem 적용 완료"); // ★★★
+
+            totalFormsInput.value = formIdx + 1;
+        });
+    }
+
+    // study_post_form.html의 JavaScript 최하단 또는 적절한 위치에 추가
+    $('form.study-post-form').on('submit', function(event) {
+        // 실제 제출을 막고 싶다면: event.preventDefault();
+        console.log("[FORM JS] Form submit event triggered.");
+        const $categoriesSelect = $('select[name="categories"]'); // 직접 이름으로 다시 선택
+        if ($categoriesSelect.length > 0) {
+            console.log("[FORM JS] On submit - Hidden select 'categories' name:", $categoriesSelect.attr('name'));
+            console.log("[FORM JS] On submit - Hidden select 'categories' value:", $categoriesSelect.val());
+        } else {
+            console.error("[FORM JS] On submit - CRITICAL: Hidden select 'categories' NOT FOUND!");
+        }
+        // 실제 제출을 계속하려면 이 함수에서 아무것도 반환하지 않거나 true를 반환합니다.
+    });
+});
+</script>
 {% endblock %}
