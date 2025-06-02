@@ -38,6 +38,7 @@ urlpatterns += [  # + 꼭 붙이기
     # path('multilang/', include('multilang.urls')),
     # path('tinymce/', include('tinymce.urls')), # django-tinymce 관리자 페이지용 URL
     path('flo/', include('flo.urls')),
+    path('flo_exam/', include('flo_exam.urls')), # 플로 프로그램 페이지 URL
 ]
 
 # 이미지는 web 경로를 쓰는데, 이를 허용하겠다.(요청 URL에 이미지를 요청하면 그 이미지를 보여주겠다.)

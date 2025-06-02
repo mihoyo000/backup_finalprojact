@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     # 'multilang.apps.MultilangConfig',  # 추가된 부분
     'tinymce',  # 추가된 부분
     'flo.apps.FloConfig',  # 추가된 부분
+    'flo_exam.apps.FloExamConfig' # 추가된 부분 / flo프로그램 페이지
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,114 @@
+{% load static i18n %}
+<header id="header">
+    <div class="container header-layout-container">
+        <div class="header-content-wrapper">
+            <div class="logo-container">
+                <a href="{% url 'flo:home' %}">
+                    <img id="header-logo" src="{% static 'flo/images/light/header/light-logo.png' %}" alt="Flo Logo">
+                </a>
+            </div>
+
+            <nav class="main-nav">
+                <ul class="main-menu">
+                    <li><a href="{% url 'upload_pdf' %}">{% translate "Flo와 문제 풀기" %}</a></li>
+                    <li>
+                        <a href="#">{% translate "스터디" %}</a>
+                        <ul class="sub-menu">
+                            <li><a href="#">{% translate "스터디 게시판" %}</a></li>
+                            <li><a href="#">{% translate "채팅" %}</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="{% url 'flo:study_post_list' %}">{% translate "커뮤니티" %}</a>
+                        <ul class="sub-menu">
+                            <li><a href="{% url 'flo:study_post_list' %}">{% translate "학습 게시판" %}</a></li>
+                            <li><a href="{% url 'flo:faq_list' %}">{% translate "FAQ" %}</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="header-right-controls">
+                <div class="auth-links ms-auto"> {# ms-auto는 Bootstrap 5에서 오른쪽 정렬 #}
+                    {% if user.is_authenticated %}
+                        <div class="dropdown">
+                            <a href="#" class="nav-link" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span>{{ user.username }}님</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li> {# 실제 계정 관리 페이지 URL로 변경 필요 #}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    {# 로그아웃은 POST 요청으로! #}
+                                    <form id="logoutForm" method="post" action="{% url 'flo:logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">{% translate "로그아웃" %}</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        {# 로그인 버튼의 id="btn-login"은 JS와 연동될 수 있으므로 유지하거나, 단순 링크로 변경 #}
+                        <a href="{% url 'flo:login' %}" id="btn-login" class="btn btn-outline-light">{% translate "로그인" %}</a>
+                    {% endif %}
+                </div>
+
+                <div class="theme-dropdown dropdown">
+                    <button type="button" id="theme-toggle-btn" class="btn theme-btn" title="{% translate "Change theme" %}" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img id="theme-toggle-icon" src="{% static 'flo/images/light/header/light-auto.png' %}" alt="Theme Icon">
+                    </button>
+                    <div class="dropdown-menu theme-dropdown-menu dropdown-menu-end" id="theme-menu">
+                        <button type="button" class="dropdown-item theme-item" data-theme-mode="light">
+                            {# START: 수정된 부분 - 테마 드롭다운 '라이트' 아이템 아이콘에 ID 추가 #}
+                            <img class="theme-item-icon" id="theme-item-icon-light" src="{% static 'flo/images/light/header/light-light.png' %}" alt="Light Mode Icon">
+                            {# END: 수정된 부분 #}
+                            <span class="theme-text">{% translate "Light" %}</span>
+                        </button>
+                        <button type="button" class="dropdown-item theme-item" data-theme-mode="dark">
+                            {# START: 수정된 부분 - 테마 드롭다운 '다크' 아이템 아이콘에 ID 추가 #}
+                            <img class="theme-item-icon" id="theme-item-icon-dark" src="{% static 'flo/images/light/header/light-dark.png' %}" alt="Dark Mode Icon">
+                            {# END: 수정된 부분 #}
+                            <span class="theme-text">{% translate "Dark" %}</span>
+                        </button>
+                        <button type="button" class="dropdown-item theme-item" data-theme-mode="auto">
+                            {# START: 수정된 부분 - 테마 드롭다운 '자동' 아이템 아이콘에 ID 추가 #}
+                            <img class="theme-item-icon" id="theme-item-icon-auto" src="{% static 'flo/images/light/header/light-auto.png' %}" alt="Auto Mode Icon">
+                            {# END: 수정된 부분 #}
+                            <span class="theme-text">{% translate "Auto" %}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="language-dropdown dropdown">
+                    <button class="btn lang-btn" type="button" id="languageMenuButton" data-bs-toggle="dropdown" aria-expanded="false" title="{% translate "Select language" %}">
+                        <img id="lang-toggle-icon" src="{% static 'flo/images/light/header/light-translate.png' %}" alt="Language Icon">
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageMenuButton">
+                        {% get_available_languages as AVAILABLE_LANGUAGES %}
+                        {% get_language_info_list for AVAILABLE_LANGUAGES as languages_info %}
+                        {% for lang_info in languages_info %}
+                            <li>
+                                <form action="{% url 'set_language' %}" method="post" class="language-form">
+                                    {% csrf_token %}
+                                    <input name="next" type="hidden" value="{{ request.get_full_path|urlencode }}">
+                                    <input name="language" type="hidden" value="{{ lang_info.code }}">
+                                    <button type="submit" class="dropdown-item {% if lang_info.code == LANGUAGE_CODE %}active{% endif %}">
+                                        {{ lang_info.name_local }} ({{ lang_info.code }})
+                                    </button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="main-content-area">
+    <main id="fullpage">
+        {% block content %}
+        {% endblock %}
+    </main>
+</div>
+{% block extra_js %}{% endblock %}
