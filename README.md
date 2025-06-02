@@ -16,3 +16,14 @@
 **Commit:** 530ff837eb9e061198c5a14ab4dcf19346482665\n
 **Date:** 2025-05-31 12:42:37\n\n
 
+
+### 📝 Commit Log
+
+**Author:** doyeon_L
+
+**Message:** Update update_readme_log.yml
+
+**Commit:** 81b7584c9547dc68ba6ad4c7ab219bf18bbcdd46
+
+**Date:** 2025-06-02 05:30:12
+
