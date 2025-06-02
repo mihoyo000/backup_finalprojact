@@ -1,141 +1,78 @@
 /* flo_exam/static/flo_exam/css/upload_page.css */
 body {
-    font-family: 'Malgun Gothic', '맑은 고딕', AppleSDGothicNeo-Regular, '돋움', dotum, sans-serif; /* 한국어 웹에서 자주 사용되는 폰트 우선 적용 */
+    font-family: 'Malgun Gothic', '맑은 고딕', AppleSDGothicNeo-Regular, '돋움', dotum, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #ffffff; /* 원본 이미지 배경색과 유사하게 흰색으로 변경 */
+    background-color: #ffffff;
     color: #212529;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
-/* 헤더 (다른 사람이 구현 예정이지만, 기본 스타일 제공) */
-.header-placeholder {
-    background-color: #000000; /* 검은색 배경 */
-    padding: 15px 40px; /* 상하 패딩 줄이고, 좌우 패딩 유지 */
-    display: flex;
-    justify-content: space-between; /* 로고와 로그인 버튼 양쪽 정렬 */
-    align-items: center;
-    border-bottom: 1px solid #333; /* 헤더 하단 구분선 */
-}
-
-.header-placeholder .logo img {
-    height: 35px; /* 로고 높이 조절 */
-    display: block; /* 이미지 하단 여백 제거 */
-}
-
-.header-placeholder nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-}
-
-.header-placeholder nav ul li {
-    margin-left: 25px; /* 메뉴 간 간격 */
-}
-
-.header-placeholder nav ul li a {
-    color: white;
-    text-decoration: none;
-    font-size: 0.95em;
-    padding: 8px 0;
-}
-
-.header-placeholder .right-menu {
-    display: flex;
-    align-items: center;
-}
-
-.header-placeholder .icon-button {
-    background: none;
-    border: none;
-    color: #ccc; /* 아이콘 색상 */
-    font-size: 1.3em; /* 아이콘 크기 */
-    margin-left: 20px;
-    cursor: pointer;
-}
-.header-placeholder .icon-button:hover {
-    color: white;
-}
-
-.header-placeholder .login-button {
-    background-color: transparent; /* 투명 배경 */
-    color: white;
-    border: 1px solid white; /* 흰색 테두리 */
-    padding: 7px 18px; /* 패딩 조절 */
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 0.9em;
-    margin-left: 20px;
-    transition: background-color 0.2s, color 0.2s;
-}
-.header-placeholder .login-button:hover {
-    background-color: white;
-    color: black;
-}
-
+/* 헤더 placeholder는 base_header.html 및 base.css에서 처리되므로 여기서는 생략 */
 
 .main-content {
     display: flex;
     flex: 1;
-    justify-content: space-between; /* 좌우 컨텐츠 분리, 간격은 padding으로 조절 */
-    align-items: flex-start; /* 상단 정렬 */
-    padding: 60px 5%; /* 상하, 좌우 패딩 */
-    max-width: 1300px; /* 최대 너비 제한 */
-    margin: 0 auto; /* 중앙 정렬 */
-    width: 90%; /* 반응형 너비 */
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 60px 5%;
+    max-width: 1300px;
+    margin: 0 auto;
+    width: 90%;
     box-sizing: border-box;
 }
 
 .intro-section {
-    flex-basis: 50%; /* 너비 비율 */
-    padding-right: 5%; /* 오른쪽 업로드 섹션과의 간격 */
+    flex-basis: 50%;
+    padding-right: 5%;
+    padding-top: 100px;
     box-sizing: border-box;
 }
 
 .intro-text h1 {
-    font-size: 3em; /* "공부하며 정리한" 크기 */
-    margin-top: 70px; /* 헤더와의 간격 */
-    margin-bottom: 5px; /* 아래 텍스트와의 간격 */
-    font-weight: 600; /* 약간 굵게 */
+    font-size: 3em;
+    margin-top: 20px;
+    margin-bottom: 5px;
+    font-weight: 600;
     color: #333;
 }
 .intro-text h2 {
-    font-size: 2.8em; /* "자료를 업로드하세요" 크기 */
-    margin-bottom: 40px; /* 이미지와의 간격 */
+    font-size: 2.8em;
+    margin-bottom: 40px;
     font-weight: 600;
     color: #333;
 }
 .robot-hand-image-container {
-    text-align: left; /* 이미지 왼쪽 정렬 */
-    margin-top: 20px; /* 위 텍스트와의 간격 */
+    text-align: left;
+    margin-top: 20px;
 }
 .robot-hand-image-container img {
-    max-width: 80%; /* 컨테이너 대비 이미지 크기 */
+    max-width: 80%;
     height: auto;
-    max-height: 350px; /* 이미지 최대 높이 */
+    max-height: 350px;
 }
 
 .upload-section-container {
-    flex-basis: 40%; /* 너비 비율 */
+    flex-basis: 40%;
     box-sizing: border-box;
 }
 
 .upload-section {
-    background-color: #000000; /* 검은색 배경 */
+    background-color: #000000;
     color: white;
     padding: 35px;
     border-radius: 8px;
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
-.upload-section h3 { /* "PDF 파일 업로드" 텍스트 */
+.upload-section h3 {
     font-size: 2.2em;
     text-align: center;
     margin-top: 0;
     margin-bottom: 30px;
     font-weight: bold;
+    color: white; /* 항상 흰색으로 고정! */
 }
 
 .form-group {
@@ -144,25 +81,23 @@ body {
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    font-weight: 500; /* 폼 레이블 굵기 */
+    font-weight: 500;
     font-size: 0.95em;
-    color: #e0e0e0; /* 레이블 색상 밝게 */
+    color: #e0e0e0;
 }
 .form-group input[type="text"],
-.form-group input[type="file"],
-.form-group .select-wrapper select { /* select 스타일링을 위해 wrapper 추가 고려 */
+.form-group input[type="file"] { /* subject_area의 input도 여기에 포함될 수 있음 */
     width: 100%;
     padding: 12px;
-    border: 1px solid #555; /* 어두운 테두리 */
+    border: 1px solid #555;
     border-radius: 4px;
-    background-color: #222; /* 어두운 입력 필드 배경 */
+    background-color: #222;
     color: white;
     font-size: 0.95em;
     box-sizing: border-box;
 }
 .form-group input[type="file"] {
-    padding: 8px 12px; /* 파일 입력 필드 패딩 조절 */
-    /* 파일 선택 버튼 스타일링은 브라우저마다 제한적 */
+    padding: 8px 12px;
 }
 .form-group input[type="file"]::file-selector-button {
     background-color: #444;
@@ -174,56 +109,79 @@ body {
     margin-right: 10px;
 }
 
-
 .form-group .radio-group {
     display: flex;
-    gap: 20px; /* 라디오 버튼 간 간격 */
-    align-items: center; /* 수직 정렬 */
+    gap: 20px;
+    align-items: center;
 }
-
 .form-group .radio-group label {
-    display: flex; /* 내부 아이템 정렬용 */
+    display: flex;
     align-items: center;
     font-weight: normal;
     color: #ccc;
     cursor: pointer;
-    margin-bottom: 0; /* radio-group 에서 간격 조절 */
+    margin-bottom: 0;
     font-size: 0.9em;
 }
 .form-group .radio-group input[type="radio"] {
     margin-right: 8px;
-    accent-color: #6200ea; /* 라디오 버튼 선택 시 색상 (일부 브라우저 지원) */
-    transform: scale(1.1); /* 라디오 버튼 크기 약간 키움 */
+    accent-color: #6200ea;
+    transform: scale(1.1);
 }
 
+/* === subject_area (MultiWidget) 스타일 === */
+/* MultiWidget의 각 위젯은 기본적으로 나란히 렌더링됨 */
+/* ID는 id_필드명_인덱스 (예: id_subject_area_0, id_subject_area_1) */
+#id_subject_area_0, /* Select 위젯 */
+#id_subject_area_1 { /* TextInput 위젯 */
+    display: inline-block;
+    vertical-align: middle; /* 수직 정렬 */
+    margin-bottom: 5px; /* 위젯 간 약간의 하단 마진 */
+}
 
-/* Django Form 에러 메시지 스타일 */
+#id_subject_area_0 { /* 드롭다운 (select) */
+    min-width: 180px; /* 최소 너비 */
+    padding: 11px 10px; /* 패딩 조절 */
+    border: 1px solid #555;
+    border-radius: 4px;
+    background-color: #222;
+    color: white;
+    font-size: 0.95em;
+    box-sizing: border-box;
+    margin-right: 8px; /* 오른쪽 위젯과의 간격 */
+}
+
+#id_subject_area_1 { /* 직접 입력 (text input) */
+    /* 너비는 부모 요소의 너비와 드롭다운 너비에 따라 유동적으로 조절 필요 */
+    /* 여기서는 calc를 사용한 예시 (정확한 값은 실제 렌더링 후 조절) */
+    width: calc(100% - 180px - 8px - 2px); /* 드롭다운너비 - 간격 - 테두리 등 고려 */
+    /* 나머지 스타일은 다른 input[type="text"]와 동일하게 적용될 수 있음 */
+    padding: 12px; /* 위 input[type="text"] 스타일과 일치 */
+    border: 1px solid #555;
+    border-radius: 4px;
+    background-color: #222;
+    color: white;
+    font-size: 0.95em;
+    box-sizing: border-box;
+}
+
+.form-help-text {
+    display: block;
+    font-size: 0.85em;
+    color: #aaa;
+    margin-top: 5px;
+}
+
 .form-group .errorlist {
     list-style-type: none;
     padding: 0;
     margin: 5px 0 0 0;
-    color: #ff7b7b; /* 에러 메시지 색상 */
+    color: #ff7b7b;
     font-size: 0.85em;
 }
 .form-group .errorlist li {
     margin-bottom: 3px;
 }
-
-.subject-area-input-group {
-    display: flex;
-}
-.subject-area-input-group select {
-    flex-grow: 1;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-right: none; /* 우측 테두리 제거하여 입력 필드와 연결된 것처럼 */
-}
-.subject-area-input-group input[type="text"] {
-    flex-grow: 2;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-}
-
 
 .submit-button {
     background-color: #333;
@@ -237,14 +195,14 @@ body {
     width: 100%;
     box-sizing: border-box;
     transition: background-color 0.3s ease, border-color 0.3s ease;
-    margin-top: 10px; /* 위 요소와의 간격 */
+    margin-top: 10px;
 }
 .submit-button:hover {
     background-color: #4e4e4e;
     border-color: #777;
 }
 
-.messages { /* Django 메시지 프레임워크용 스타일 */
+.messages {
     list-style-type: none;
     padding: 0;
     margin: 0 0 20px 0;
@@ -257,61 +215,36 @@ body {
     text-align: left;
     border: 1px solid transparent;
 }
-.messages li.success {
-    background-color: #d4edda;
-    color: #155724;
-    border-color: #c3e6cb;
-}
-.messages li.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
-}
-.messages li.info {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    border-color: #bee5eb;
-}
-.messages li.warning {
-    background-color: #fff3cd;
-    color: #856404;
-    border-color: #ffeeba;
-}
-
+.messages li.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+.messages li.error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+.messages li.info { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+.messages li.warning { background-color: #fff3cd; color: #856404; border-color: #ffeeba; }
 
 /* 반응형 디자인 */
 @media (max-width: 1024px) {
-    .main-content {
-        flex-direction: column;
-        align-items: center;
-        padding: 40px 5%;
-    }
-    .intro-section {
-        padding-right: 0;
-        margin-bottom: 40px;
-        text-align: center; /* 모바일에서 텍스트 중앙 정렬 */
-        flex-basis: auto; /* 너비 자동 조절 */
-        width: 100%;
-        max-width: 600px; /* 콘텐츠 최대 너비 */
-    }
+    .main-content { flex-direction: column; align-items: center; padding: 40px 5%; }
+    .intro-section { padding-right: 0; margin-bottom: 40px; text-align: center; flex-basis: auto; width: 100%; max-width: 600px; }
     .intro-text h1 { font-size: 2.5em; }
     .intro-text h2 { font-size: 2.3em; }
-    .robot-hand-image-container { text-align: center; } /* 이미지 중앙 정렬 */
+    .robot-hand-image-container { text-align: center; }
     .robot-hand-image-container img { max-width: 70%; max-height: 300px; }
-
-    .upload-section-container {
-        flex-basis: auto; /* 너비 자동 조절 */
-        width: 100%;
-        max-width: 600px; /* 업로드 폼 최대 너비 */
-    }
-    .header-placeholder nav { display: none; } /* 모바일에선 메뉴 숨김 (햄버거 메뉴 등으로 대체 필요) */
+    .upload-section-container { flex-basis: auto; width: 100%; max-width: 600px; }
 }
 
 @media (max-width: 768px) {
-    .header-placeholder { padding: 15px 20px; }
     .intro-text h1 { font-size: 2.2em; }
     .intro-text h2 { font-size: 2em; }
     .upload-section h3 { font-size: 1.8em; }
     .form-group .radio-group { flex-direction: column; align-items: flex-start; gap: 10px; }
     .form-group .radio-group label { margin-bottom: 5px; }
+    /* subject_area 위젯 모바일 반응형 처리 */
+    #id_subject_area_0,
+    #id_subject_area_1 {
+        width: 100%; /* 모바일에서는 각 위젯이 전체 너비를 차지하도록 */
+        margin-right: 0;
+        margin-bottom: 10px; /* 위젯 간 세로 간격 */
+    }
+    #id_subject_area_1 {
+        width: 100%; /* calc 없이 전체 너비 */
+    }
 }
