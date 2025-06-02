@@ -1,0 +1,374 @@
+{# flo/templates/study_post/study_post_form.html #}
+{% extends "flo/base.html" %}
+{% load static %}
+
+{% block title %}{{ form_title|default:"학습 게시판 글쓰기" }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'flo/css/study_post/study_post_form.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Select2 다중 선택 태그 및 드롭다운 스타일 (이전 답변의 CSS 참고 및 필요시 추가) */
+    .select2-container--default .select2-selection--multiple {
+        border: 1px solid var(--form-input-border) !important;
+        border-radius: 4px !important;
+        min-height: calc(1.5em + .75rem + 2px);
+        padding: .375rem .75rem; /* 패딩 추가 */
+    }
+    body:not(.theme-light) .select2-container--default .select2-selection--multiple {
+        background-color: #2c2c2c !important;
+        border-color: #444 !important;
+    }
+    body:not(.theme-light) .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #555;
+        border-color: #666;
+        color: #fff;
+    }
+    body:not(.theme-light) .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: #ccc;
+    }
+    /* 드롭다운 옵션의 계층 표시를 위한 스타일 (선택 사항) */
+    .select2-results__option .category-path {
+        font-size: 0.8em;
+        color: #888;
+        margin-left: 5px;
+    }
+    body:not(.theme-light) .select2-results__option .category-path {
+        color: #aaa;
+    }
+    .select2-results__option--highlighted .category-path {
+        color: #f0f0f0;
+    }
+    body.theme-light .select2-results__option--highlighted .category-path {
+         color: #555;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page-container">
+    <div class="form-main-content">
+        <h2 class="page-title">{{ form_title|default:"학습 게시판 글쓰기" }}</h2>
+        <div class="title-underline-container">
+            <hr class="title-underline">
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="study-post-form">
+            {% csrf_token %}
+            {# 숨겨진 input 필드: 선택된 카테고리 ID들을 저장 #}
+            {{ form.categories.as_hidden }}
+
+            <div class="form-row category-selection-area-wrapper">
+                <label class="form-label">카테고리 선택 (최대 5개)</label>
+                <div id="selected-categories-display" class="mb-2">
+                    {# JavaScript로 선택된 카테고리 태그들이 여기에 표시됨 #}
+                </div>
+                <div class="category-panel-container">
+                    {# 검색창 #}
+                    <div class="category-search-box mb-2">
+                        <input type="text" id="categorySearchInputInline" class="form-control" placeholder="카테고리 검색...">
+                    </div>
+                    {# 대/중/소 분류 패널 #}
+                    <div class="row">
+                        <div class="col-md-4 category-panel-col" id="majorCategoryPanelInline">
+                            <h6>대분류</h6>
+                            <ul class="list-group category-list-inline">
+                                {% for major_cat in major_categories %} {# View에서 전달받은 최상위 대분류 목록 #}
+                                    <li class="list-group-item category-item-inline" data-id="{{ major_cat.id }}" data-name="{{ major_cat.name }}" data-level="0">
+                                        {{ major_cat.name }}
+                                        {% if major_cat.children.exists %}<span class="category-arrow-inline float-end">></span>{% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-4 category-panel-col" id="mediumCategoryPanelInline" style="display:none;">
+                            <h6 id="mediumCategoryPanelTitleInline">중분류</h6>
+                            <ul class="list-group category-list-inline" id="mediumCategoryListInline"></ul>
+                        </div>
+                        <div class="col-md-4 category-panel-col" id="minorCategoryPanelInline" style="display:none;">
+                            <h6 id="minorCategoryPanelTitleInline">소분류</h6>
+                            <ul class="list-group category-list-inline" id="minorCategoryListInline"></ul>
+                        </div>
+                    </div>
+                </div>
+                {% if form.categories.errors %}
+                    {% for error in form.categories.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            {# ... title, content, attached_file, submit button ... #}
+            <div class="form-row">
+                <div class="form-group title-group">
+                    {{ form.title }}
+                    {% if form.title.errors %} <p class="error">{{ form.title.errors.as_text|striptags }}</p> {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group content-group">
+                    {{ form.content }}
+                    {% if form.content.errors %} <p class="error">{{ form.content.errors.as_text|striptags }}</p> {% endif %}
+                </div>
+            </div>
+
+            {% if form.attached_file %}
+            <div class="form-row">
+                <div class="form-group file-group">
+                    <label for="{{ form.attached_file.id_for_label }}">{{ form.attached_file.label }}</label>
+                    {{ form.attached_file }}
+                    {% if form.attached_file.errors %} <p class="error">{{ form.attached_file.errors.as_text|striptags }}</p> {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-row mt-4">
+                <button type="submit" class="btn-submit-form">
+                    <img src="{% static 'flo/images/icons/study_post/write-white.png' %}" alt="등록 아이콘">
+                    <span>{{ submit_text|default:"등록" }}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+    {{ form.media.css }}   {# TinyMCE 전용 CSS #}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.tiny.cloud/1/YOUR_TINYMCE_API_KEY/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script> {# API 키 변경 #}
+
+    <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM Content Loaded - Initializing Form JS");
+
+        // TinyMCE 초기화 (이전과 동일)
+        let contentFieldId = '{{ form.content.id_for_label }}';
+        if (document.getElementById(contentFieldId)) {
+            tinymce.init({
+                selector: 'textarea#' + contentFieldId,
+                height: 450,
+                placeholder: '내용을 입력하세요.',
+                plugins: [ 'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount', 'checklist', 'mediaembed', 'importword'],
+                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat | code',
+                content_style: "body { background-color: #FFFFFF; color: #212529; font-family: inherit; } body.mce-content-body::placeholder { color: #a0a0a0; opacity: 1; }",
+            });
+        } else {
+            console.warn("TinyMCE target element not found with ID: " + contentFieldId);
+        }
+
+        const MAX_CATEGORIES = 5;
+        let selectedCategories = new Map(); // key: id (string), value: {id, name, path}
+        const $hiddenSelectElement = $('select[name="{{ form.categories.html_name }}"]'); // HTML에 있는 <select multiple>
+        console.log("Hidden select for categories:", $hiddenSelectElement.length > 0 ? $hiddenSelectElement[0] : "Not found");
+
+        // --- 초기 선택값 로드 (수정 폼일 경우) ---
+        if ($hiddenSelectElement.length) {
+            $hiddenSelectElement.find('option:selected').each(function() {
+                const id = $(this).val();
+                const name = $(this).text(); // <option>의 텍스트 (카테고리 이름)
+                // data-path는 템플릿에서 option에 직접 설정했거나, AJAX로 가져와야 함.
+                // 여기서는 AJAX로 카테고리 정보를 다시 가져오는 것을 가정하지 않고,
+                // 템플릿에서 모든 카테고리 정보를 <option>에 data-path로 넣었다고 가정.
+                // 또는, 서버에서 초기 선택된 카테고리들의 full_path 정보를 별도로 전달받아 사용.
+                // 지금은 임시로 name을 path로 사용 (개선 필요)
+                const path = $(this).data('path') || name; // 템플릿의 <option data-path="..."> 값을 읽음
+
+                if (id && selectedCategories.size < MAX_CATEGORIES) {
+                    selectedCategories.set(id.toString(), { id: id.toString(), name: name, path: path });
+                }
+            });
+            renderSelectedCategories();
+            // updateHiddenSelect(); // 이미 selected 상태이므로 호출 불필요, 또는 중복 호출 방지
+        }
+
+
+        // --- 이벤트 핸들러 바인딩 ---
+
+        // 대분류 아이템 클릭: 중분류 로드
+        $('#majorCategoryPanelInline').on('click', '.category-item-inline', function() {
+            const $this = $(this);
+            console.log("Major category clicked:", $this.data('name'));
+            // 부모 패널의 다른 아이템 비활성화 (시각적 표시용)
+            $('#majorCategoryPanelInline .category-item-inline').removeClass('active-parent');
+            $this.addClass('active-parent');
+
+            // 중분류/소분류 패널 초기화
+            $('#mediumCategoryPanelInline').hide().find('.category-list-inline').empty();
+            $('#mediumCategoryPanelInline h6').text("중분류");
+            $('#minorCategoryPanelInline').hide().find('.category-list-inline').empty();
+            $('#minorCategoryPanelInline h6').text("소분류");
+
+            if ($this.find('.category-arrow-inline').length > 0) { // 하위가 있을 때만 로드
+                loadChildCategories($this.data('id'), '#mediumCategoryPanelInline', '#mediumCategoryListInline', 1, $this.data('name'));
+            } else { // 하위가 없는 대분류 -> 바로 선택 로직으로 (선택 사항)
+                handleCategorySelection($this);
+            }
+        });
+
+        // 중분류 아이템 클릭: 소분류 로드
+        $('#mediumCategoryPanelInline').on('click', '.category-item-inline', function() {
+            const $this = $(this);
+            console.log("Medium category clicked:", $this.data('name'));
+            $('#mediumCategoryPanelInline .category-item-inline').removeClass('active-parent');
+            $this.addClass('active-parent');
+
+            $('#minorCategoryPanelInline').hide().find('.category-list-inline').empty();
+            $('#minorCategoryPanelInline h6').text("소분류");
+
+            if ($this.find('.category-arrow-inline').length > 0) { // 하위가 있을 때만 로드
+                const parentPath = $('#majorCategoryPanelInline .category-item-inline.active-parent').data('name');
+                const currentBasePath = parentPath ? parentPath + " > " + $this.data('name') : $this.data('name');
+                loadChildCategories($this.data('id'), '#minorCategoryPanelInline', '#minorCategoryListInline', 2, currentBasePath);
+            } else { // 하위가 없는 중분류 -> 바로 선택 로직으로
+                handleCategorySelection($this);
+            }
+        });
+
+        // 소분류 아이템 클릭 (또는 선택 가능한 최하위 아이템 클릭)
+        $('#minorCategoryPanelInline').on('click', '.category-item-inline', function() {
+            const $this = $(this);
+            console.log("Minor category clicked (for selection):", $this.data('name'));
+            // 소분류는 항상 자식이 없다고 가정 (있다면 위 로직과 유사하게 처리)
+            handleCategorySelection($this);
+        });
+
+
+        // 카테고리 선택/해제 공통 로직 함수
+        function handleCategorySelection($item) {
+            const categoryId = $item.data('id').toString();
+            const categoryName = $item.data('name');
+            // data-path는 AJAX 응답을 통해 채워지거나, 초기 렌더링 시 <option>에 있어야 함
+            const fullPath = $item.data('path') || categoryName; // data-path가 최우선
+
+            if (selectedCategories.has(categoryId)) {
+                selectedCategories.delete(categoryId);
+                $item.removeClass('active');
+            } else {
+                if (selectedCategories.size < MAX_CATEGORIES) {
+                    selectedCategories.set(categoryId, { id: categoryId, name: categoryName, path: fullPath });
+                    $item.addClass('active');
+                } else {
+                    alert(`카테고리는 최대 ${MAX_CATEGORIES}개까지 선택할 수 있습니다.`);
+                    // $item.removeClass('active'); // 이미 선택된 것을 해제하지는 않음
+                    return; // 추가 선택 방지
+                }
+            }
+            renderSelectedCategories();
+            updateHiddenSelect();
+        }
+
+
+        // 하위 카테고리 로드 함수
+        function loadChildCategories(parentId, panelSelector, listSelector, level, basePathForTitle) {
+            const $list = $(listSelector);
+            const $panel = $(panelSelector);
+            const $panelTitle = $(panelSelector.replace('PanelInline', 'PanelTitleInline'));
+
+            $list.html('<li class="list-group-item disabled p-5 text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div></li>'); // 부트스트랩 스피너 예시
+            $panel.show();
+            $panelTitle.text((basePathForTitle || "하위") + " 카테고리");
+
+            console.log(`AJAX: Loading children for parentId: ${parentId}`);
+            $.ajax({
+                url: "{% url 'flo:ajax_get_child_categories' %}", // views.py에 정의된 AJAX URL
+                data: { 'parent_id': parentId },
+                dataType: 'json', // 응답 타입 명시
+                success: function(data) {
+                    console.log("AJAX success, data:", data);
+                    $list.empty();
+                    if (data.children && data.children.length > 0) {
+                        data.children.forEach(function(child) {
+                            // child 객체는 {id, name, full_path, has_children} 형태를 기대
+                            const listItem = $(`
+                                <li class="list-group-item category-item-inline" 
+                                    data-id="${child.id}" 
+                                    data-name="${child.name}" 
+                                    data-level="${level}" 
+                                    data-path="${child.full_path || child.name}">
+                                    ${child.name}
+                                    ${child.has_children ? '<span class="category-arrow-inline float-end">></span>' : ''}
+                                </li>
+                            `);
+                            if (selectedCategories.has(child.id.toString())) {
+                                listItem.addClass('active');
+                            }
+                            $list.append(listItem);
+                        });
+                    } else {
+                        $list.html('<li class="list-group-item disabled text-muted">하위 카테고리가 없습니다.</li>');
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX Error:", textStatus, errorThrown, jqXHR.responseText);
+                    $list.html('<li class="list-group-item text-danger">목록을 불러오는데 실패했습니다.</li>');
+                }
+            });
+        }
+
+        // 선택된 카테고리 태그 렌더링
+        function renderSelectedCategories() {
+            const $displayArea = $('#selected-categories-display');
+            $displayArea.empty();
+            selectedCategories.forEach(function(cat) {
+                // cat.path가 전체 경로를 가지고 있어야 함
+                const tag = $(`<span class="badge bg-primary me-1 mb-1 selected-category-tag" data-id="${cat.id}">${cat.path} <span class="remove-category" data-id="${cat.id}" title="선택 해제" style="cursor:pointer; font-weight:bold; margin-left:3px;">×</span></span>`);
+                $displayArea.append(tag);
+            });
+        }
+
+        // 선택된 태그의 x 버튼 클릭 시
+        $('#selected-categories-display').on('click', '.remove-category', function() {
+            const categoryIdToRemove = $(this).data('id').toString();
+            if (selectedCategories.has(categoryIdToRemove)) {
+                selectedCategories.delete(categoryIdToRemove);
+                // 패널의 해당 아이템에서 'active' 클래스 제거
+                $(`.category-panel-container .category-item-inline[data-id="${categoryIdToRemove}"]`).removeClass('active');
+                renderSelectedCategories();
+                updateHiddenSelect();
+            }
+        });
+
+        // 숨겨진 <select multiple> 요소 업데이트
+        function updateHiddenSelect() {
+            if (!$hiddenSelectElement.length) return;
+
+            let currentSelectedIds = Array.from(selectedCategories.keys());
+            $hiddenSelectElement.val(currentSelectedIds); // jQuery가 알아서 처리
+
+            // Django가 폼 유효성 검사 시 참고할 수 있도록,
+            // <select>에 없는 <option>이 선택되었다면 동적으로 추가 (선택사항, 보통은 queryset에 모든 카테고리가 있어야 함)
+            currentSelectedIds.forEach(function(id) {
+                if ($hiddenSelectElement.find(`option[value="${id}"]`).length === 0) {
+                    // 이 경우, selectedCategories Map에 있는 name 또는 path로 <option> 텍스트를 설정해야 함
+                    const catData = selectedCategories.get(id);
+                    $hiddenSelectElement.append(new Option(catData.name, id, true, true));
+                }
+            });
+        }
+
+        // 카테고리 검색 기능
+        $('#categorySearchInputInline').on('keyup', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            console.log("Searching for:", searchTerm);
+            // 검색 시, 현재 보이는 모든 패널의 아이템에 대해 필터링
+            $('.category-panel-container .category-item-inline').each(function() {
+                const itemName = $(this).data('name').toLowerCase();
+                const itemPath = ($(this).data('path') || '').toLowerCase(); // data-path가 없을 수 있음
+
+                if (itemName.includes(searchTerm) || itemPath.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+    });
+    </script>
+{% endblock %}

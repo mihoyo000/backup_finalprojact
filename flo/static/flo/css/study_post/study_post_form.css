@@ -1,0 +1,402 @@
+/* flo/static/flo/css/study_post/study_post_form.css */
+
+/* --- 기본 변수 및 레이아웃 (변경 없음) --- */
+:root {
+    --bg-page: #111111;
+    --text-main: #f1f1f1;
+    --line-sub: #f1f1f1;
+    --btn-bg: #2756ff; /* 글쓰기 폼 내 등록 버튼 등에 사용될 수 있음 */
+    --form-input-bg: #FFFFFF;
+    --form-input-text: #212529;
+    --form-input-border: #ced4da;
+    --form-input-placeholder: #6c757d;
+    --header-height: 60px; /* 예시 */
+    --footer-height: 80px; /* 예시 */
+
+    /* 잡코리아 스타일 카테고리 선택 UI를 위한 색상 (예시) */
+    --category-panel-bg: #f8f9fa; /* 라이트 모드 패널 배경 */
+    --category-panel-border: #e9ecef;
+    --category-item-text: #212529;
+    --category-item-hover-bg: #e9ecef;
+    --category-item-active-bg: #0d6efd; /* Bootstrap primary color */
+    --category-item-active-text: #fff;
+
+    /* 다크모드 카테고리 패널 */
+    --dark-category-panel-bg: #212529; /* 어두운 회색/검정 계열 */
+    --dark-category-panel-border: #343a40;
+    --dark-category-item-text: #f8f9fa;
+    --dark-category-item-hover-bg: #343a40;
+    --dark-category-item-active-bg: var(--btn-bg); /* 기존 --btn-bg 사용 가능 */
+    --dark-category-item-active-text: #fff;
+}
+
+.form-page-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    min-height: calc(100vh - var(--header-height) - var(--footer-height));
+    box-sizing: border-box;
+    background-color: var(--bg-page);
+}
+
+.form-main-content {
+    width: 100%;
+    max-width: 800px; /* 폼 전체 너비 */
+}
+
+.page-title {
+    color: var(--text-main);
+    font-size: 26px;
+    font-weight: 700;
+    text-align: left;
+    margin-bottom: 12px;
+}
+
+.title-underline-container {
+    margin-bottom: 30px;
+}
+
+.title-underline {
+    border: none;
+    height: 2px;
+    background-color: var(--line-sub);
+    margin: 0;
+}
+
+.study-post-form .form-row {
+    margin-bottom: 20px; /* 필드 간 간격 통일 */
+}
+.study-post-form .form-row:last-child {
+    margin-bottom: 0;
+}
+
+/* --- 잡코리아 스타일 카테고리 선택 UI --- */
+.category-selection-area-wrapper {
+    border: 1px solid var(--category-panel-border); /* 라이트 모드 테두리 */
+    padding: 20px;
+    border-radius: 4px;
+    background-color: #fff; /* 라이트 모드 배경 */
+    margin-bottom: 20px;
+}
+body:not(.theme-light) .category-selection-area-wrapper {
+    border-color: var(--dark-category-panel-border);
+    background-color: var(--dark-category-panel-bg);
+}
+
+.category-selection-area-wrapper > .form-label { /* "카테고리 선택 (최대 5개)" 레이블 */
+    font-size: 1.1rem; /* 약간 크게 */
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: block;
+    color: var(--text-main); /* 다크모드 */
+}
+body.theme-light .category-selection-area-wrapper > .form-label {
+    color: #333; /* 라이트모드 */
+}
+
+/* 선택된 카테고리 태그 표시 영역 */
+#selected-categories-display {
+    margin-bottom: 15px;
+    min-height: 28px; /* 태그 없을 때도 최소 높이 유지 */
+}
+#selected-categories-display .selected-category-tag {
+    display: inline-block;
+    font-size: 0.85rem;
+    padding: .3em .7em;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border-radius: .25rem;
+    background-color: var(--category-item-active-bg); /* 라이트모드 활성 아이템 배경 */
+    color: var(--category-item-active-text); /* 라이트모드 활성 아이템 텍스트 */
+    font-weight: 500;
+}
+body:not(.theme-light) #selected-categories-display .selected-category-tag {
+    background-color: var(--dark-category-item-active-bg);
+    color: var(--dark-category-item-active-text);
+}
+#selected-categories-display .remove-category {
+    margin-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    opacity: 0.7;
+}
+#selected-categories-display .remove-category:hover {
+    opacity: 1;
+}
+
+
+/* 카테고리 패널 컨테이너 (검색창 + 패널들) */
+/* .category-panel-container {
+
+} */
+
+/* 카테고리 검색창 */
+.category-search-box input[type="text"].form-control {
+    width: 100%;
+    padding: .5rem .75rem;
+    font-size: 0.9rem;
+    border-radius: .25rem;
+    background-color: var(--form-input-bg); /* 라이트 모드 */
+    color: var(--form-input-text); /* 라이트 모드 */
+    border: 1px solid var(--form-input-border); /* 라이트 모드 */
+    margin-bottom: 15px;
+}
+.category-search-box input[type="text"].form-control::placeholder {
+    color: var(--form-input-placeholder); /* 라이트모드 */
+}
+
+
+/* 각 카테고리 패널 (대/중/소) 컬럼 */
+.category-panel-col {
+    padding-right: 8px; /* 컬럼 간 간격 (row의 gutter 고려) */
+    padding-left: 8px;
+    /* min-height: 250px; */ /* 최소 높이, 스크롤바 위치 등 고려 */
+}
+.category-panel-col:not(:last-child) { /* 마지막 컬럼 제외하고 오른쪽에 구분선 */
+    border-right: 1px solid var(--category-panel-border); /* 라이트 모드 구분선 */
+}
+body:not(.theme-light) .category-panel-col:not(:last-child) {
+    border-right-color: var(--dark-category-panel-border);
+}
+
+
+/* 패널 제목 (h6) */
+.category-panel-col h6 {
+    font-size: 0.95rem; /* 제목 크기 */
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--category-panel-border); /* 라이트 모드 */
+    color: var(--text-main); /* 다크모드 */
+}
+body.theme-light .category-panel-col h6 {
+    color: #333; /* 라이트모드 */
+    border-bottom-color: var(--category-panel-border);
+}
+body:not(.theme-light) .category-panel-col h6 {
+    border-bottom-color: var(--dark-category-panel-border);
+}
+
+
+/* 카테고리 목록 (ul.list-group) */
+.category-list-inline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 220px; /* 스크롤 생성 높이 (잡코리아 UI와 유사하게 조절) */
+    overflow-y: auto;
+    /* 패널별 배경색은 .category-selection-area-wrapper 에서 이미 지정됨 */
+}
+
+/* 카테고리 목록 아이템 (li.list-group-item) */
+.category-item-inline {
+    display: flex; /* 내부 아이콘 오른쪽 정렬 위함 */
+    justify-content: space-between;
+    align-items: center;
+    padding: .5rem .75rem; /* 잡코리아와 유사한 패딩 */
+    cursor: pointer;
+    border-bottom: 1px solid transparent; /* 기본적으로는 투명, 호버/활성 시 색상 변경 가능 */
+    font-size: 0.9rem;
+    color: var(--category-item-text); /* 라이트 모드 */
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+}
+.category-item-inline:last-child {
+    border-bottom: none;
+}
+.category-item-inline:hover {
+    background-color: var(--category-item-hover-bg); /* 라이트 모드 */
+}
+
+/* 하위 카테고리를 표시 중인 부모 아이템 스타일 */
+.category-item-inline.active-parent {
+    background-color: #e9ecef; /* 라이트 모드: 연한 회색 (부트스트랩의 table-hover와 유사한 색상) */
+    /* 만약 hover 색상과 동일하다면 좀 더 구분되는 색으로 변경 가능합니다. 예: #e0e0e0 */
+    font-weight: 500; /* 약간 굵게 표시 */
+}
+
+/* 다크 모드에서 하위 카테고리를 표시 중인 부모 아이템 스타일 */
+body:not(.theme-light) .category-item-inline.active-parent {
+    background-color: #3e444a; /* 다크 모드: 기존 hover보다 약간 더 밝거나 다른 톤의 회색 */
+    /* 예: var(--dark-category-item-hover-bg) 보다 살짝 밝게 */
+}
+
+.category-item-inline.active { /* JavaScript로 추가/제거할 클래스 */
+    background-color: var(--category-item-active-bg) !important; /* 라이트 모드 (중요도 높여 오버라이드) */
+    color: var(--category-item-active-text) !important; /* 라이트 모드 */
+    font-weight: 500;
+}
+/* 다크 모드 카테고리 목록 아이템 */
+body:not(.theme-light) .category-item-inline {
+    color: var(--dark-category-item-text);
+}
+body:not(.theme-light) .category-item-inline:hover {
+    background-color: var(--dark-category-item-hover-bg);
+}
+body:not(.theme-light) .category-item-inline.active {
+    background-color: var(--dark-category-item-active-bg) !important;
+    color: var(--dark-category-item-active-text) !important;
+}
+
+body:not(.theme-light) .category-selection-area-wrapper-list { /* 목록 페이지용 클래스명 사용 */
+    border-color: var(--dark-category-panel-border);
+    background-color: var(--dark-category-panel-bg);
+}
+body:not(.theme-light) .category-selection-area-wrapper-list > .form-label {
+    color: var(--text-main); /* base.css의 다크모드 텍스트 변수 활용 */
+}
+body:not(.theme-light) .category-search-box input[type="text"].form-control {
+    background-color: #3e3e3e;
+    color: #f0f0f0;
+    border-color: #555;
+}
+body:not(.theme-light) .category-search-box input[type="text"].form-control::placeholder {
+    color: #888;
+}
+body:not(.theme-light) .category-panel-col h6 { /* 대분류, 중분류, 소분류 제목 */
+    color: var(--text-main); /* 또는 var(--dark-category-item-text) */
+    border-bottom-color: var(--dark-category-panel-border);
+}
+body:not(.theme-light) .category-list-inline .category-item-inline { /* 목록 아이템 */
+    color: var(--dark-category-item-text);
+}
+body:not(.theme-light) .category-list-inline .category-item-inline:hover {
+    background-color: var(--dark-category-item-hover-bg);
+}
+/* 현재 하위 메뉴를 보여주는 부모 아이템 (active-parent) 다크 모드 */
+body:not(.theme-light) .category-list-inline .category-item-inline.active-parent {
+    background-color: #3e444a; /* 예시 색상, var(--dark-category-item-hover-bg) 보다 약간 다르게 */
+    color: var(--dark-category-item-text); /* 텍스트 색상 유지 또는 변경 */
+}
+/* 최종 선택된 아이템 (active) 다크 모드 - 이건 파란색 배경이라 괜찮을 수 있음 */
+body:not(.theme-light) .category-list-inline .category-item-inline.active {
+    background-color: var(--dark-category-item-active-bg) !important;
+    color: var(--dark-category-item-active-text) !important;
+}
+body:not(.theme-light) .category-arrow-inline {
+    color: #888;
+}
+
+/* 카테고리 계층 화살표 (>) */
+.category-arrow-inline {
+    font-size: 0.8em;
+    color: #6c757d; /* 라이트 모드 */
+    font-weight: bold;
+}
+.category-item-inline.active .category-arrow-inline {
+    color: var(--category-item-active-text); /* 활성 시 텍스트 색상과 동일하게 */
+}
+
+
+/* --- 기존 폼 필드 스타일 (제목, 내용, 첨부파일 등) --- */
+.form-group input[type="text"],
+.form-group textarea { /* textarea도 포함 */
+    width: 100%;
+    padding: 10px 12px;
+    background-color: var(--form-input-bg);
+    color: var(--form-input-text);
+    border: 1px solid var(--form-input-border);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    line-height: 1.5;
+}
+body:not(.theme-light) .form-group input[type="text"],
+body:not(.theme-light) .form-group textarea {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border-color: #444;
+}
+.form-group input[type="text"]::placeholder,
+.form-group textarea::placeholder { /* TinyMCE placeholder는 JS에서 설정 */
+    color: var(--form-input-placeholder);
+}
+body:not(.theme-light) .form-group input[type="text"]::placeholder,
+body:not(.theme-light) .form-group textarea::placeholder {
+    color: #888;
+}
+
+/* TinyMCE 컨테이너 (테두리 등) */
+.content-group .tox-tinymce {
+    border: 1px solid var(--form-input-border) !important;
+    border-radius: 4px !important;
+}
+body:not(.theme-light) .content-group .tox-tinymce {
+    border-color: #444 !important;
+}
+
+/* 레이블 숨김 (필요시) */
+.title-group > label,
+.content-group > label { display: none; }
+
+/* 에러 메시지 */
+.error {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 5px;
+    display: block;
+}
+
+/* 첨부파일 */
+.file-group .form-label {
+    color: var(--text-main);
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+body.theme-light .file-group .form-label {
+    color: #495057;
+}
+.file-group input[type="file"] {
+    color: var(--text-main);
+    font-size: 0.9rem;
+    background-color: var(--form-input-bg);
+    border: 1px solid var(--form-input-border);
+    padding: 8px 12px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+body:not(.theme-light) .file-group input[type="file"] {
+    color: #e0e0e0;
+    background-color: #2c2c2c;
+    border-color: #444;
+}
+.file-group input[type="file"]::file-selector-button {
+    padding: 8px 15px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 3px;
+    background-color: var(--btn-bg);
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+
+/* --- 등록 버튼 스타일 --- */
+.btn-submit-form {
+    background-color: var(--btn-bg);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* 버튼 내용 중앙 정렬 */
+    gap: 8px;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+    /* height: fit-content; 제거 또는 다른 방식으로 높이 조절 */
+}
+.btn-submit-form:hover { opacity: 0.85; }
+.btn-submit-form img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+}
+
+/* Select2 사용하지 않으므로 관련 스타일은 제거했습니다. */
+/* 기존 모달 관련 스타일도 이 UI에서는 직접 사용되지 않으므로 제거했습니다. */

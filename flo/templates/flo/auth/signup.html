@@ -1,0 +1,16 @@
+{% extends "flo/base.html" %}
+{% load static %} {# 필요하다면 static 로드 #}
+
+{% block title %}회원가입{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 500px;"> {# 간단한 컨테이너 스타일 #}
+    <h2>회원가입</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }} {# Django 폼을 p 태그로 렌더링 #}
+        <button type="submit" class="btn btn-primary mt-3">회원가입</button>
+    </form>
+    <p class="mt-3">이미 계정이 있으신가요? <a href="{% url 'flo:login' %}">로그인</a></p>
+</div>
+{% endblock %}

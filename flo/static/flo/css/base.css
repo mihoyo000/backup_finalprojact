@@ -1,0 +1,543 @@
+/* static/flo/css/base.css */
+@font-face {
+    font-family: 'Pretendard-Regular';
+    src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+:root {
+    /* 라이트 모드 기본값 (JS에서 body에 theme-light 클래스 추가 시 활성화) */
+    --bg-color-html-light: #f8f8f8;
+    --bg-color-body-light: #ffffff; /* 페이지 전체 배경도 흰색으로 변경 가능 */
+    --text-color-default-light: #333333;
+    --text-color-heading-light: #111111;
+    --text-color-link-light: #007bff;
+    --border-color-default-light: #e0e0e0;
+
+    /* 활성 아이템 배경색 및 텍스트색 (새로운 변수 또는 직접 사용) */
+    --dropdown-item-active-bg: #3294e4;
+    --dropdown-item-active-text: #ffffff;
+
+    /* Header - Light Mode (스크린샷 기반: 흰색 배경, 어두운 요소) */
+    --header-bg-light: #ffffff;
+    --header-text-light: #333333; /* 메뉴 텍스트 */
+    --header-link-hover-light: #007bff; /* 메뉴 호버 */
+    --header-icon-button-hover-bg-light: rgba(0, 0, 0, 0.08); /* 아이콘 버튼 호버 배경 */
+    --header-login-btn-text-light: #333333;
+    --header-login-btn-border-light: #cccccc;
+    --header-login-btn-bg-light: transparent;
+    --header-login-btn-hover-text-light: #007bff;
+    --header-login-btn-hover-border-light: #007bff;
+    --header-login-btn-hover-bg-light: rgba(0, 123, 255, 0.05);
+    --header-user-text-light: #333333;
+    --header-icon-filter-light: none; /* 라이트 모드 아이콘은 별도 필터 불필요 */
+
+    /* 다크 모드 기본값 (JS에서 body에 theme-dark 클래스 추가 시 활성화) */
+    --bg-color-html-dark: #1a1d21;
+    --bg-color-body-dark: #121212; /* 더 어둡게 */
+    --text-color-default-dark: #ced4da;
+    --text-main: #f1f1f1; /* flo/css/study_post/study_post_form.css 에서 사용된 변수, base.css에도 있어야 함 */
+    --text-color-heading-dark: #e9ecef;
+    --text-color-link-dark: #e9ecef;
+    --border-color-default-dark: #495057;
+
+    /* Header - Dark Mode (스크린샷 기반: 어두운 배경, 밝은 요소) */
+    --header-bg-dark: #181818; /* 기존 값 또는 스크린샷의 검정색(#000000) */
+    --header-text-dark: #e0e0e0;
+    --header-link-hover-dark: #ffffff;
+    --header-icon-button-hover-bg-dark: rgba(255, 255, 255, 0.12); /* 아이콘 버튼 호버 배경 */
+    --header-login-btn-text-dark: #e0e0e0;
+    --header-login-btn-border-dark: #707070;
+    --header-login-btn-bg-dark: transparent;
+    --header-login-btn-hover-text-dark: #ffffff;
+    --header-login-btn-hover-border-dark: #e0e0e0;
+    --header-login-btn-hover-bg-dark: rgba(255, 255, 255, 0.1);
+    --header-user-text-dark: #e0e0e0;
+    --header-icon-filter-dark: none; /* 다크 모드 아이콘은 별도 필터 불필요 (별도 이미지 사용) */
+
+    /* Footer (다크 모드 기준, 라이트 모드 시 변경 가능) */
+    --footer-bg: #111111;
+    --footer-logo-height: 32px;
+    --footer-text: #a0a0a0;
+    --footer-link: #6c7889;
+    --footer-link-hover: #5d5d5d;
+    --footer-border: #B2B2B2;
+
+    /* Theme Dropdown (다크 모드 기준, 라이트 모드 시 변경 가능) */
+    --theme-dropdown-bg: #2D2D2D;
+    --theme-dropdown-border: rgba(255,255,255,0.15);
+    --theme-dropdown-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    --theme-item-text: #e0e0e0;
+    --theme-item-hover-bg: #404040;
+    --theme-item-hover-text: #ffffff;
+    --theme-item-active-bg: #007bff;
+    --theme-item-active-text: #ffffff;
+
+    /* 푸터 구분선 색상 변수 */
+    --footer-divider-color-light: #4B5563; /* 라이트 모드 구분선 */
+    --footer-divider-color-dark: #878381;   /* 다크 모드 구분선 */
+
+    /* 푸터 텍스트/링크 색상 (필요시 라이트/다크 모드 별도 정의) */
+    --footer-text-main-light: #555555;
+    --footer-link-main-light: #555555;
+    --footer-text-main-dark: var(--footer-text); /* 기존 다크모드 푸터 텍스트 색상 활용 */
+    --footer-link-main-dark: var(--footer-link); /* 기존 다크모드 푸터 링크 색상 활용 */
+
+    --footer-youtube-icon-height: 24px; /* 유튜브 아이콘 높이 */
+
+    /* 아이콘 이미지 크기 */
+    --header-icon-size: 20px;
+    --theme-dropdown-icon-size: 18px;
+    --header-logo-height: 40px;
+
+    /* 다크모드 카테고리 패널 (이런 변수들이 있어야 함) */
+    --dark-category-panel-bg: #2c2c2c;
+    --dark-category-panel-border: #343a40;
+    --dark-category-item-text: #e0e0e0; /* 매우 밝은 색 (예: 흰색 계열) */
+    --dark-category-item-hover-bg: #343a40;
+    --dark-category-item-active-bg: var(--btn-bg);
+    --dark-category-item-active-text: #fff;
+
+    --header-icon-profile-border-light: #4B5563;
+    --header-icon-profile-border-dark: #ffffff;
+    --profile-image-bg: transparent; /* 기본 배경색 (필요시) */
+}
+
+/* 기본 테마 (라이트 모드) */
+html {
+    height: 100%; /* html도 높이 100% */
+    background-color: var(--bg-color-html-light);
+}
+body {
+    font-family: 'Pretendard-Regular';
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0; /* body 기본 마진 제거 */
+    background-color: var(--bg-color-body-light);
+    color: var(--text-color-default-light);
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    overflow-x: hidden;
+}
+main { flex-grow: 1; }
+a { color: var(--text-color-link-light); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1, h2, h3, h4, h5, h6 { color: var(--text-color-heading-light); margin-bottom: 0.75em; font-weight: 600;}
+
+/* 다크 모드 스타일 */
+body.theme-dark {
+    background-color: var(--bg-color-body-dark);
+    color: var(--text-color-default-dark);
+}
+body.theme-dark html { background-color: var(--bg-color-html-dark); } /* 필요시 */
+body.theme-dark a { color: var(--text-color-link-dark); }
+body.theme-dark h1, body.theme-dark h2, body.theme-dark h3, body.theme-dark h4, body.theme-dark h5, body.theme-dark h6 { color: var(--text-color-heading-dark); }
+
+
+/* --- Header --- */
+#header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1030;
+    padding: 0 25px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    /* 기본 라이트 모드 헤더 스타일 */
+    background-color: var(--header-bg-light);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* 라이트 모드에선 그림자가 더 잘 보임 */
+}
+body.theme-dark #header {
+    background-color: var(--header-bg-dark);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* 다크 모드 그림자 */
+}
+.main-content-area {
+    flex-grow: 1; /* 사용 가능한 모든 수직 공간을 차지하도록 함 */
+    padding-top: 60px; /* 고정된 헤더 높이만큼 패딩을 주어 내용이 가려지지 않게 함 */
+    width: 100%; /* 너비 전체 사용 */
+}
+
+.header-layout-container { width: 100%; max-width: 100%; padding-left: 0; padding-right: 0; }
+.header-content-wrapper { display: flex; justify-content: space-between; align-items: center; width: 100%; height: 100%; }
+
+.logo-container { flex-shrink: 0; display: flex; align-items: center; height: 100%; }
+.logo-container img#header-logo {
+    margin: 30px;
+    height: var(--header-logo-height);
+    width: auto;
+    object-fit: contain; /* 이미지 비율 유지 */
+}
+/* body.theme-dark .logo-container img#header-logo { filter: var(--header-icon-filter-dark); } JS로 src 변경하므로 필터 불필요 */
+
+nav.main-nav { margin-left: 0; flex-grow: 1; display: flex; justify-content: center; align-items: center; height: 100%; }
+.main-menu { list-style: none; display: flex; align-items: center; padding: 0; margin: 0; height: 100%; }
+.main-menu > li { position: relative; margin: 0 25px; height: 100%; display: flex; align-items: center; }
+.main-menu > li > a {
+    display: flex; align-items: center; height: 100%; padding: 0 5px;
+    font-size: 0.95rem; font-weight: 500; text-decoration: none; transition: color 0.2s ease;
+    color: var(--header-text-light); /* 라이트 모드 메뉴 텍스트 */
+}
+body.theme-dark .main-menu > li > a { color: var(--header-text-dark); }
+.main-menu > li > a:hover { color: var(--header-link-hover-light); } /* 라이트 모드 호버 */
+body.theme-dark .main-menu > li > a:hover { color: var(--header-link-hover-dark); } /* 다크 모드 호버 */
+
+
+.sub-menu { /* 서브메뉴는 헤더 배경색을 따르도록 */
+    display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border-top: none; border-radius: 0 0 6px 6px; padding: 8px 0; margin: 0; min-width: 200px;
+    z-index: 80; list-style: none;
+    background-color: var(--header-bg-light); /* 라이트 모드 서브메뉴 배경 */
+    border: 1px solid var(--border-color-default-light);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+body.theme-dark .sub-menu {
+    background-color: var(--header-bg-dark);
+    border: 1px solid var(--border-color-default-dark);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+}
+.main-menu > li:hover .sub-menu { display: block; }
+.sub-menu li a {
+    display: block; padding: 10px 20px; font-size: 0.9rem; text-decoration: none; white-space: nowrap;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    color: var(--header-text-light); /* 라이트 모드 서브메뉴 텍스트 */
+}
+body.theme-dark .sub-menu li a { color: var(--header-text-dark); }
+.sub-menu li a:hover { background-color: rgba(0,0,0,0.05); color: var(--header-link-hover-light); }
+body.theme-dark .sub-menu li a:hover { background-color: rgba(255,255,255,0.08); color: var(--header-link-hover-dark); }
+
+
+.header-right-controls { display: flex; align-items: center; gap: 10px; height: 100%; }
+.header-right-controls .theme-dropdown,
+.header-right-controls .language-dropdown,
+.header-right-controls .auth-links { margin-left: 0; height: 100%; display: flex; align-items: center; }
+
+/* 아이콘 버튼 (Theme, Language) 이미지 스타일 */
+.header-right-controls .btn.theme-btn,
+.header-right-controls .btn.lang-btn {
+    background: none; border: none; padding: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    transition: background-color 0.2s ease; cursor: pointer;
+}
+.header-right-controls .btn.theme-btn img,
+.header-right-controls .btn.lang-btn img {
+    height: var(--header-icon-size);
+    width: var(--header-icon-size);
+    object-fit: contain;
+}
+/* body.theme-dark .header-right-controls .btn.theme-btn img,
+body.theme-dark .header-right-controls .btn.lang-btn img { filter: var(--header-icon-filter-dark); } JS로 src 변경 */
+
+/* 아이콘 버튼 호버 스타일 */
+.header-right-controls .btn.theme-btn:hover,
+.header-right-controls .btn.lang-btn:hover,
+.header-right-controls .theme-dropdown .dropdown-menu.show + .btn.theme-btn, /* 드롭다운 열렸을 때도 호버 스타일 적용 */
+.header-right-controls .language-dropdown .dropdown-menu.show + .btn.lang-btn {
+    background-color: var(--header-icon-button-hover-bg-light);
+}
+body.theme-dark .header-right-controls .btn.theme-btn:hover,
+body.theme-dark .header-right-controls .btn.lang-btn:hover,
+body.theme-dark .header-right-controls .theme-dropdown .dropdown-menu.show + .btn.theme-btn,
+body.theme-dark .header-right-controls .language-dropdown .dropdown-menu.show + .btn.lang-btn {
+    background-color: var(--header-icon-button-hover-bg-dark);
+}
+
+.auth-links { padding-left: 8px; }
+#btn-login { /* 로그인 버튼 */
+    font-size: 0.8rem; font-weight: 500; padding: 6px 14px; border-radius: 4px;
+    text-decoration: none; transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    white-space: nowrap;
+    color: var(--header-login-btn-text-light);
+    background-color: var(--header-login-btn-bg-light);
+    border: 1px solid var(--header-login-btn-border-light);
+}
+body.theme-dark #btn-login {
+    color: var(--header-login-btn-text-dark);
+    background-color: var(--header-login-btn-bg-dark);
+    border: 1px solid var(--header-login-btn-border-dark);
+}
+#btn-login:hover {
+    color: var(--header-login-btn-hover-text-light);
+    border-color: var(--header-login-btn-hover-border-light);
+    background-color: var(--header-login-btn-hover-bg-light);
+    text-decoration: none;
+}
+body.theme-dark #btn-login:hover {
+    color: var(--header-login-btn-hover-text-dark);
+    border-color: var(--header-login-btn-hover-border-dark);
+    background-color: var(--header-login-btn-hover-bg-dark);
+}
+
+/* 프로필 이미지를 감싸는 div에 원형 스타일 적용 */
+.profile-image-wrapper {
+    width: 32px; /* 최종 원의 너비 */
+    height: 32px; /* 최종 원의 높이 */
+    border-radius: 50%;
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--profile-image-border-light); /* 기본 라이트 모드 테두리 */
+    background-color: var(--profile-image-bg); /* 원의 배경색 */
+    margin-right: 8px;
+    display: flex; /* 내부 이미지를 중앙 정렬하기 위해 flex 사용 */
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* 내부 이미지가 원 밖으로 나가지 않도록 */
+    box-sizing: border-box;
+}
+
+/* 다크 모드일 때 wrapper의 테두리 및 배경색 변경 */
+body.theme-dark .profile-image-wrapper {
+    border-color: var(--profile-image-border-dark);
+    /* background-color: var(--profile-image-bg-dark); /* 다크모드용 배경색 필요시 */
+}
+
+/* 실제 이미지 태그 스타일 */
+.profile-image-wrapper img {
+    display: block; /* 불필요한 하단 공백 제거 */
+    width: 70%; /* 부모(wrapper) 너비의 75%. 이 값을 조절하여 아이콘 크기 변경 (예: 70%, 80%) */
+    height: 70%; /* 부모(wrapper) 높이의 75%. */
+    object-fit: contain; /* 이미지 비율 유지하며 내부 공간에 맞춤 */
+    /* padding을 제거하거나 0으로 설정 */
+}
+.user-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit; /* 부모 요소 색상 상속 */
+}
+.user-dropdown-toggle:hover {
+    /* 호버 스타일 (필요시) */
+    opacity: 0.8;
+}
+
+.auth-links .dropdown .auth-user-info {
+    text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; padding: 6px 0;
+    color: var(--header-user-text-light);
+}
+body.theme-dark .auth-links .dropdown .auth-user-info { color: var(--header-user-text-dark); }
+.auth-links .dropdown .auth-user-info:hover { color: var(--header-link-hover-light); text-decoration: none; }
+body.theme-dark .auth-links .dropdown .auth-user-info:hover { color: var(--header-link-hover-dark); }
+.auth-links .dropdown .auth-user-info span { margin-right: 6px; }
+.auth-links .dropdown .auth-user-info::after { /* 드롭다운 화살표 색상 */
+    border-top-color: var(--header-text-light); /* 화살표 색상을 텍스트 색상과 유사하게 */
+}
+body.theme-dark .auth-links .dropdown .auth-user-info::after {
+    border-top-color: var(--header-text-dark);
+}
+
+
+/* 드롭다운 메뉴 공통 스타일 (테마, 언어, 사용자) */
+.dropdown-menu { /* Bootstrap 기본 스타일 일부 오버라이드 */
+    border-radius: 8px;
+    box-shadow: var(--theme-dropdown-shadow); /* 다크모드 기준 그림자 */
+    padding: 8px;
+    font-size: 0.9rem;
+    /* 기본 라이트 모드 드롭다운 */
+    background-color: #ffffff;
+    border: 1px solid var(--border-color-default-light);
+}
+body.theme-dark .dropdown-menu {
+    background-color: var(--theme-dropdown-bg); /* 다크 모드 기준 배경 */
+    border: 1px solid var(--theme-dropdown-border); /* 다크 모드 기준 테두리 */
+}
+
+.dropdown-item {
+    display: flex; align-items: center; gap: 12px;
+    background: none; border: none; width: 100%; padding: 10px 12px;
+    text-align: left; cursor: pointer; border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    color: var(--text-color-default-light); /* 라이트 모드 드롭다운 아이템 텍스트 */
+}
+body.theme-dark .dropdown-item {
+    color: var(--theme-item-text); /* 다크 모드 드롭다운 아이템 텍스트 */
+}
+
+.dropdown-item:hover, .dropdown-item:focus {
+    background-color: rgba(0,0,0,0.05); /* 라이트 모드 호버 */
+    color: var(--text-color-heading-light);
+}
+body.theme-dark .dropdown-item:hover, body.theme-dark .dropdown-item:focus {
+    background-color: var(--theme-item-hover-bg); /* 다크 모드 호버 */
+    color: var(--theme-item-hover-text);
+}
+
+/* 모든 드롭다운 아이템의 .active 상태 스타일 통일 */
+.dropdown-item.active,
+.dropdown-item:active, /* 클릭 시 순간적인 active 상태 */
+.language-form button.dropdown-item.active { /* 언어 드롭다운의 활성 버튼 명시 */
+    font-weight: 500;
+    background-color: var(--dropdown-item-active-bg) !important;
+    color: var(--dropdown-item-active-text) !important;
+}
+
+
+/* 테마 드롭다운 아이템 내 이미지 */
+.dropdown-item.theme-item img.theme-item-icon {
+    height: var(--theme-dropdown-icon-size);
+    width: var(--theme-dropdown-icon-size);
+    object-fit: contain;
+}
+/* body.theme-dark .dropdown-item.theme-item img.theme-item-icon { filter: var(--header-icon-filter-dark); } JS로 src 변경 */
+
+
+.auth-links .dropdown-menu .dropdown-divider {
+    border-top-color: var(--border-color-default-light); /* 라이트 모드 구분선 */
+}
+body.theme-dark .auth-links .dropdown-menu .dropdown-divider {
+    border-top-color: var(--theme-dropdown-border); /* 다크 모드 구분선 */
+}
+
+.main-content-wrapper {
+    padding-top: 80px; /* 헤더 높이 + 여백 */
+}
+
+
+/* Footer (기존 스타일 유지, 테마에 따른 색상 변경은 base.js에서 body 클래스 변경 시 자동으로 CSS 변수 따라감) */
+.site-footer {
+    background-color: var(--footer-bg);
+    padding: 30px 0; /* 패딩 조정 */
+    color: var(--footer-text-main-dark); /* 기본 다크모드 텍스트 색상 */
+    font-size: 0.8rem; /* 폰트 크기 약간 줄임 */
+    position: relative;
+    z-index: 4;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border-top: 1px solid var(--footer-border); /* 이 border-top은 hr로 대체되므로 제거 또는 주석처리 */
+}
+
+/* 라이트 모드 푸터 스타일 */
+body:not(.theme-dark) .site-footer {
+    background-color: #f0f0f0; /* 두 번째 이미지와 유사한 밝은 회색 배경 */
+    color: var(--footer-text-main-light);
+    border-top: 1px solid var(--footer-border);
+}
+body:not(.theme-dark) .site-footer a { color: var(--footer-link-main-light); }
+body:not(.theme-dark) .site-footer a:hover { color: #555555; } /* 라이트 모드 링크 호버 */
+body:not(.theme-dark) .site-footer .footer-logo-text { color: #555555; }
+body:not(.theme-dark) .site-footer .footer-bottom-line { border-top-color: #dcdcdc; }
+
+
+.footer-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 25px;
+}
+/* 로고 섹션 */
+.footer-logo-section {
+    text-align: left; /* 로고 왼쪽 정렬 */
+    margin-bottom: 15px; /* 로고와 아래 구분선 사이 간격 */
+}
+.site-footer img#footer-logo {
+    height: var(--footer-logo-height);
+    width: auto;
+    object-fit: contain;
+}
+.site-footer .footer-logo-link:hover {
+    opacity: 0.9;
+}
+
+/* 푸터 구분선 스타일 */
+hr.footer-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--footer-divider-color-light); /* 기본 라이트 모드 구분선 */
+    margin: 20px 0; /* 구분선 위아래 간격 */
+}
+body.theme-dark hr.footer-divider {
+    background-color: var(--footer-divider-color-dark); /* 다크 모드 구분선 */
+}
+
+/* 정보 및 링크 섹션 */
+.footer-main-content {
+    font-size: 0.75rem; /* 이 섹션의 텍스트를 더 작게 */
+    line-height: 1.6;
+}
+.footer-info-links-row {
+    display: flex;
+    justify-content: space-between; /* 양쪽 끝으로 정렬 */
+    align-items: center;
+    flex-wrap: wrap; /* 창 크기 작을 때 줄바꿈 */
+    gap: 10px; /* 요소들 사이 간격 */
+    margin-bottom: 8px; /* 이메일 줄과의 간격 */
+}
+.footer-developer-info span {
+    color: inherit; /* 부모(.site-footer)의 color를 따름 */
+}
+.footer-nav-links a {
+    text-decoration: none;
+    margin-left: 15px; /* 링크들 사이 간격 */
+    color: inherit;
+    transition: color 0.2s ease;
+}
+.footer-nav-links a:first-child {
+    margin-left: 0;
+}
+
+.footer-email-row {
+    text-align: left; /* 이메일 왼쪽 정렬 */
+}
+.footer-email-row span {
+    color: inherit;
+}
+.footer-email-row a {
+    text-decoration: none;
+    color: var(--footer-link-main-light); /* 라이트 모드 기본 이메일 링크 색상 */
+    /* 다크 모드에서는 .site-footer a 규칙을 따름 */
+}
+.footer-email-row a:hover {
+    text-decoration: underline;
+}
+
+/* 소셜 아이콘 섹션 */
+.footer-social-section {
+    text-align: left; /* 유튜브 아이콘 왼쪽 정렬 */
+    margin-top: 15px; /* 위 구분선과의 간격 */
+    /* display: flex; align-items: center; justify-content: space-between; /* 저작권 텍스트와 함께 배치시 */
+}
+.footer-social-section .social-icon-link {
+    display: inline-block; /* 아이콘 크기에 맞게 */
+    line-height: 0; /* 이미지와 관련된 불필요한 하단 공백 제거 */
+}
+.footer-social-section .footer-youtube-icon {
+    height: var(--footer-youtube-icon-height);
+    width: auto;
+    vertical-align: middle; /* 혹시 모를 수직 정렬 문제 방지 */
+}
+.footer-social-section .social-icon-link:hover {
+    opacity: 0.8;
+}
+
+.site-footer .footer-links-section { display: flex; align-items: center; gap: 25px; margin-bottom: 2rem; flex-wrap: wrap; }
+.site-footer .footer-logo-text { text-decoration: none; font-size: 1.3rem; font-weight: bold; color: var(--footer-link-hover); } /* 다크모드 기준 */
+.site-footer .footer-logo-text:hover { opacity: 0.9; }
+.site-footer .footer-links-section .links { display: flex; gap: 20px; flex-wrap: wrap; }
+.site-footer .footer-links-section .links a { text-decoration: none; font-size: 0.85rem; transition: color 0.2s ease; color: var(--footer-link); } /* 다크모드 기준 */
+.site-footer .footer-links-section .links a:hover { text-decoration: none; color: var(--footer-link-hover); } /* 다크모드 기준 */
+.site-footer .footer-info-section p { margin-bottom: 0.5rem; font-size: 0.85rem; line-height: 1.7; }
+.site-footer .footer-info-section a { text-decoration: none; transition: color 0.2s ease; color: var(--footer-link); } /* 다크모드 기준 */
+.site-footer .footer-info-section a:hover { text-decoration: underline; color: var(--footer-link-hover); } /* 다크모드 기준 */
+.site-footer .footer-bottom-line { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.5rem; font-size: 0.8rem; border-top: 1px solid var(--footer-border); } /* 다크모드 기준 */
+
+#scroll-to-top {
+    display: none; opacity: 0; transition: opacity 0.3s ease-in-out, background-color 0.2s ease;
+    position: fixed; bottom: 30px; right: 30px; z-index: 100;
+    cursor: pointer; padding: 8px 10px; border-radius: 5px;
+    font-size: 12px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    text-align: center;
+    background-color: rgba(200,200,200,0.7); /* 라이트 모드 스크롤탑 배경 */
+    color: #333;
+    border: 1px solid #bbb;
+}
+body.theme-dark #scroll-to-top {
+    background-color: rgba(70,70,70,0.8);
+    color: #f0f0f0;
+    border-color: rgba(255,255,255,0.3);
+}
+#scroll-to-top:hover { filter: brightness(110%); }
+#scroll-to-top .arrow-up { display: block; font-size: 12px; margin-bottom: 1px; }
+
+li { list-style-type: none; }
