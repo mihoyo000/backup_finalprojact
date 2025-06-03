@@ -469,6 +469,10 @@ body.theme-light .file-group .form-label {
     overflow: hidden; /* 파일명이 길 경우 ... 처리 (필요시) */
     text-overflow: ellipsis; /* 파일명이 길 경우 ... 처리 (필요시) */
     white-space: nowrap; /* 파일명이 길 경우 한 줄로 (필요시) */
+    color: var(--text-main);
+}
+body:not(.theme-light) .selected-file-name {
+    color: var(--dark-text-main) !important;
 }
 
 /* 선택 취소 X 버튼 */
@@ -592,6 +596,10 @@ body:not(.theme-light) .file-group input[type="file"] {
     /* Bootstrap btn-sm, btn-outline-secondary 와 유사한 스타일 또는 커스텀 */
     padding: .25rem .75rem;
     font-size: 0.875rem;
+}
+
+body:not(.theme-light) .form-text {
+    color: var(--dark-text-main);
 }
 
 /* --- 등록 버튼 스타일 --- */

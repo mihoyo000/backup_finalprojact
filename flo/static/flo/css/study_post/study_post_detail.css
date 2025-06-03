@@ -8,7 +8,7 @@
     --border-color: #dee2e6;
     --background-color-page: #f8f9fa; /* 페이지 배경 */
     --background-color-content: #fff; /* 컨텐츠 영역 배경 */
-    --button-primary-bg: #0d6efd;
+    --button-primary-bg: #3294E4;
     --button-primary-text: #fff;
     --button-secondary-bg: #6c757d;
     --button-secondary-text: #fff;
@@ -21,7 +21,7 @@
     --dark-border-color: #495057;
     --dark-background-color-page: #1a1a1a; /* 어두운 페이지 배경 */
     --dark-background-color-content: #2c2c2c; /* 어두운 컨텐츠 영역 배경 */
-    --dark-button-primary-bg: #378bf9;
+    --dark-button-primary-bg: #3294E4;
     --dark-button-secondary-bg: #5a6268;
     --dark-avatar-border-color: #555;
 
@@ -169,17 +169,15 @@ body:not(.theme-light) .post-stats > span:not(:last-child)::after {
 }
 
 #attachments-list-container {
-    /* margin-top, margin-bottom, border-top, padding-top 등 기존 스타일 유지 */
-    /* ★★★ 배경색 추가 ★★★ */
-    background-color: var(--background-color-page); /* 라이트 모드: 페이지 배경과 유사하게 또는 약간 다르게 */
-    border: 1px solid var(--border-color); /* 테두리 추가하여 구분 명확히 */
-    border-radius: 4px; /* 약간의 둥근 모서리 */
-    padding: 15px; /* 내부 여백 */
-    margin-bottom: 20px; /* 본문과의 하단 여백 */
+    background-color: var(--background-color-page);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 15px; /* post-meta-info 와의 간격 */
+    margin-bottom: 20px;
 }
 body:not(.theme-light) #attachments-list-container {
-    background-color: #252528; /* 다크 모드: 컨텐츠 영역보다 약간 다른 어두운 색 */
-    /* 또는 var(--dark-background-color-content) 보다 살짝 다른 톤으로 */
+    background-color: #252528;
     border-color: var(--dark-border-color);
 }
 

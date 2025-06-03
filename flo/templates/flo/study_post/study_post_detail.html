@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <form id="edit-comment-form-${data.comment_id}" class="edit-comment-form" style="display:none;" data-edit-url="{% url 'flo:study_post_comment_edit' 0 %}".replace('0', data.comment_id)>
                                 <input type="hidden" name="csrfmiddlewaretoken" value="${csrftoken}">
-                                <textarea name="content" class="form-control" rows="2">${data.content_raw || data.content}</textarea>
+                                <textarea name="content" class="form-control" rows="2">${data.content_raw || data.content}</textarea> {/* data.content_raw 사용 고려 */}
                                 <div class="edit-form-actions">
                                     <button type="submit" class="btn btn-primary btn-sm">수정 완료</button>
                                     <button type="button" class="btn btn-secondary btn-sm cancel-edit">취소</button>
@@ -402,10 +402,29 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Delete response status:', response.status); // 응답 상태 코드 확인
+            // 만약 response.ok (상태 코드가 200-299)가 아니라면 여기서 에러 처리 가능
+            if (!response.ok) {
+                // 서버가 에러 상태 코드를 반환했지만, JSON 본문을 가질 수도 있음 (예: {'status':'error', 'message':...})
+                // 또는 아예 JSON이 아닐 수도 있음.
+                // response.text() 등으로 내용을 확인 후 처리할 수도 있습니다.
+                console.error('Server returned an error:', response.statusText);
+                // 여기서 사용자에게 알림을 띄울 수 있습니다.
+                // alert('댓글 삭제 중 서버 오류가 발생했습니다.'); // 이 방식은 JSON 파싱 전이라 data.message를 못 씀
+                // return Promise.reject('Server error'); // 이렇게 하면 catch 블록으로 바로 넘어감
+            }
+            return response.json(); // 여기서 에러가 날 수 있음 (응답이 JSON이 아니면)
+        })
         .then(data => {
+            console.log('Delete response data:', data); // ★★★ 서버로부터 받은 데이터 확인 ★★★
             if (data.status === 'success') {
-                document.getElementById(`comment-${data.deleted_comment_id}`).remove();
+                const commentElement = document.getElementById(`comment-${data.deleted_comment_id}`);
+                if (commentElement) {
+                    commentElement.remove();
+                } else {
+                    console.warn(`Comment element with id comment-${data.deleted_comment_id} not found.`);
+                }
                 document.getElementById('comment-total-count').textContent = data.comment_count;
                 if (data.comment_count === 0 && !document.getElementById('no-comments')) {
                     document.getElementById('comment-list').innerHTML = '<li id="no-comments" class="no-comments-message">아직 댓글이 없습니다.</li>';
@@ -414,7 +433,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert(data.message || '댓글 삭제에 실패했습니다.');
             }
         })
-        .catch(error => console.error('Comment delete error:', error));
+        .catch(error => {
+            console.error('Comment delete error:', error);
+            alert('댓글 삭제 처리 중 오류가 발생했습니다. 페이지를 새로고침하거나 다시 시도해주세요.');
+        });
     }
 
 

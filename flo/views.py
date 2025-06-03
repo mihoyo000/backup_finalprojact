@@ -1,4 +1,6 @@
 # flo/views.py
+import os
+from django.conf import settings # settings.STATIC_URL 사용을 위해 추가
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
@@ -9,7 +11,7 @@ from django.db.models.functions import Lower, Coalesce # ★★★ Lower, Coales
 from django.db.models import Value                     # ★★★ Value 임포트 확인/추가 (Coalesce와 함께 사용 시) ★★★
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.contrib import messages
-from .models import Post, Attachment, Comment, Category, FAQCategory, FAQItem
+from .models import Post, Attachment, Comment, Category, FAQCategory, FAQItem, Profile
 from .forms import PostForm, AttachmentForm, CommentForm
 from django.forms import inlineformset_factory
 
@@ -122,20 +124,19 @@ def study_post_list(request):
 
 # 글 상세보기 (post_detail.html)
 def study_post_detail(request, pk):
-    # Post 객체를 가져올 때 categories도 prefetch_related로 가져옵니다.
     post = get_object_or_404(
-        Post.objects.select_related('author').prefetch_related('comments__author', 'likes', 'categories'), # 'categories' 추가
+        Post.objects.select_related('author').prefetch_related('comments__author', 'likes', 'categories'),
         pk=pk
     )
-    comments = post.comments.all() # 모델에서 정렬 순서 지정됨
+    comments = post.comments.all()
     comment_form = CommentForm()
 
-    # 조회수 증가 (세션 이용 중복 방지)
-    session_key = f'post_viewed_{pk}'
-    if not request.session.get(session_key, False):
-        post.views += 1
-        post.save(update_fields=['views'])
-        request.session[session_key] = True
+    # --- 조회수 증가 로직 (페이지 접근 시마다 증가) ---
+    post.views += 1
+    post.save(update_fields=['views']) # 'views' 필드만 업데이트하여 저장
+
+    # 디버깅용 print문 (필요시 사용, 배포 시 제거)
+    print(f"게시글 PK={pk} 조회. 현재 DB 조회수: {post.views}")
 
     is_liked = False
     if request.user.is_authenticated and post.likes.filter(pk=request.user.pk).exists():
@@ -146,6 +147,7 @@ def study_post_detail(request, pk):
         'comments': comments,
         'comment_form': comment_form,
         'is_liked': is_liked,
+        # post 객체 자체에 views가 포함되어 템플릿에 전달됩니다.
     }
     return render(request, 'flo/study_post/study_post_detail.html', context)
 
@@ -305,13 +307,15 @@ def study_post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
     major_categories_list = Category.objects.filter(parent__isnull=True).order_by('name')
 
+    # Attachment 모델과 Post 모델을 연결하는 inlineformset_factory
+    # Attachment 모델에 post 외래 키가 있고, related_name이 'post_attachments' (또는 기본값)라고 가정
     AttachmentFormSet = inlineformset_factory(
         Post,
-        Attachment,
-        form=AttachmentForm,
-        fk_name='post',
-        extra=1,
-        can_delete=True
+        Attachment, # Attachment 모델 사용
+        form=AttachmentForm, # AttachmentForm 사용
+        fk_name='post', # Attachment 모델의 Post 외래 키 필드명
+        extra=1, # 추가할 수 있는 빈 폼의 개수
+        can_delete=True # 기존 첨부파일 삭제 기능 활성화
     )
 
     if request.user != post.author:
@@ -368,7 +372,7 @@ def study_post_edit(request, pk):
                 if 'DELETE' in fs_form.cleaned_data and fs_form.cleaned_data.get('DELETE'):
                     can_delete_checked = True
             elif 'DELETE' in fs_form.fields and fs_form.data.get(fs_form.prefix + '-DELETE'): # cleaned_data 접근 전, raw data 확인
-                 can_delete_checked = True
+                can_delete_checked = True
 
 
             print(f"  Form {i} instance in view: {fs_form.instance}, PK: {instance_pk_in_view}, Has Changed: {has_changed}, Is New: {is_new}, DELETE checked: {can_delete_checked}")
@@ -391,24 +395,36 @@ def study_post_edit(request, pk):
                 # 개별 폼 에러는 위 루프에서 이미 출력됨
             messages.error(request, '게시글 수정에 실패했습니다. 입력 내용을 확인해주세요.')
 
-    else: # GET 요청
+    else: # GET 요청 (수정 폼을 처음 보여줄 때)
         form = PostForm(instance=post)
+        
+        existing_attachments_list = list(post.post_attachments.all()) # QuerySet을 리스트로 변환하여 수정 용이하게
+        for attachment_instance in existing_attachments_list:
+            if attachment_instance.file:
+                # ★★★ 속성 이름을 '_display_filename'으로 변경 ★★★
+                attachment_instance._display_filename = os.path.basename(attachment_instance.file.name)
+            else:
+                attachment_instance._display_filename = "파일 없음"
+
         formset = AttachmentFormSet(
             instance=post,
             prefix='attachments',
-            queryset=post.post_attachments.all()
+            # queryset 대신 initial 데이터로 전달하거나, 폼셋이 이 속성을 무시하도록 해야 할 수 있음
+            # 여기서는 queryset을 사용하되, 템플릿에서 _display_filename을 사용
+            queryset=Attachment.objects.filter(pk__in=[att.pk for att in existing_attachments_list]) # 원본 queryset 사용
         )
-        # ... (GET 요청 시 폼 인스턴스 출력 로직은 이전과 동일) ...
-        print("--- study_post_edit: GET - Formset forms instances (after formset creation) ---")
-        for i, fs_form in enumerate(formset.forms):
-            instance_pk_in_view = getattr(fs_form.instance, 'pk', 'No PK Attr')
-            print(f"  Form {i} instance in view: {fs_form.instance}, PK: {instance_pk_in_view}")
+        
+        # 폼셋의 각 폼에 _display_filename을 다시 설정 (queryset을 사용하면 인스턴스가 새로 로드될 수 있으므로)
+        # 또는, initial 데이터로 전달하는 것이 더 안정적일 수 있습니다.
+        # 아래는 formset.forms를 통해 접근하는 방법입니다.
+        for i, form_in_formset in enumerate(formset.forms):
+            if i < len(existing_attachments_list): # 기존 폼들에 대해서만
+                form_in_formset.instance._display_filename = existing_attachments_list[i]._display_filename
+
 
     initial_selected_categories_for_js = []
-    current_post_for_initial_data = post
-    if request.method == 'POST' and hasattr(form, 'instance') and form.instance: # form.instance가 None이 아닌지 확인
-        current_post_for_initial_data = form.instance
-
+    current_post_for_initial_data = form.instance if request.method == 'POST' and hasattr(form, 'instance') and form.instance.pk else post
+    
     if current_post_for_initial_data and current_post_for_initial_data.pk:
         initial_selected_categories_for_js = [
             {'id': str(cat.id), 'name': cat.name, 'path': cat.get_full_path_name, 'slug': cat.slug}
@@ -474,18 +490,44 @@ def study_post_comment_create(request, post_pk):
             comment.save()
 
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                # 사용자 프로필 정보 가져오기 (안전하게)
+                author_display_name = comment.author.username # 기본값은 username
+                author_profile_image_url = None # 기본값은 None (JS에서 기본 이미지 사용)
+                
+                # request.user.profile이 아닌 comment.author.profile을 사용해야 합니다.
+                try:
+                    profile = comment.author.profile # User와 Profile이 OneToOne으로 연결되어 있다고 가정
+                    author_display_name = profile.get_display_name
+                    if profile.has_custom_profile_image: # 커스텀 이미지가 있을 경우
+                        author_profile_image_url = profile.get_profile_image_url
+                    # else인 경우 author_profile_image_url은 None으로 유지되어 JS에서 기본 이미지 경로를 사용하게 됩니다.
+                    # 또는 여기서 직접 기본 이미지 경로를 지정할 수도 있습니다.
+                    # else:
+                    #    author_profile_image_url = settings.STATIC_URL + 'flo/images/icons/profile/default_profile_light.png'
+                except Profile.DoesNotExist: # Profile이 없는 예외적인 경우 처리
+                    pass # 기본값 사용
+                except AttributeError: # .profile 접근 시 발생할 수 있는 다른 에러
+                    pass # 기본값 사용
+
                 return JsonResponse({
                     'status': 'success',
                     'comment_id': comment.id,
-                    'author_username': comment.author.username, # 이미지에 username 표시
-                    'content': comment.content,
-                    'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M'), # 형식 맞추기
+                    'author_username': comment.author.username,
+                    'author_display_name': author_display_name, # 추가된 정보
+                    'author_profile_image_url': author_profile_image_url, # 추가된 정보
+                    'content': comment.content, # HTML 렌더링용 (linebreaksbr 처리된)
+                    'content_raw': comment.content, # 수정 폼에 들어갈 원본 내용
+                    'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M'),
                     'comment_count': post.comment_count,
-                    # 프로필 이미지 URL 등 추가 정보 필요시 전달
                 })
             messages.success(request, '댓글이 작성되었습니다.')
-            return redirect(post.get_absolute_url() + f'#comment-{comment.id}') # 댓글 위치로 이동
-    # GET 요청이거나 폼 유효성 실패 시 (보통 상세페이지에서 바로 처리)
+            return redirect(post.get_absolute_url() + f'#comment-{comment.id}')
+    
+    # AJAX 요청이 아니고, 폼 유효성 검사에 실패했거나 GET 요청일 경우
+    # (이 부분은 현재 로직상 AJAX 실패 시 도달하지는 않을 것으로 보입니다.)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'status': 'error', 'errors': form.errors if 'form' in locals() else 'Unknown error'}, status=400)
+    
     messages.error(request, '댓글 작성에 실패했습니다.')
     return redirect(post.get_absolute_url())
 
@@ -528,21 +570,30 @@ def study_post_comment_edit(request, pk):
 def study_post_comment_delete(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
     post = comment.post # 삭제 후 게시글 댓글 수 업데이트 위해
+    
     if request.user != comment.author:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'status': 'error', 'message': '권한이 없습니다.'}, status=403)
+            return JsonResponse({'status': 'error', 'message': '삭제 권한이 없습니다.'}, status=403)
         messages.error(request, '삭제 권한이 없습니다.')
         return redirect(post.get_absolute_url())
 
+    if request.method == 'POST':
+        comment_id = comment.id # 삭제 전에 ID 저장
+        comment.delete() # 실제 DB에서 삭제
 
-    if request.method == 'POST': # POST 요청으로만 삭제
-        comment_id = comment.id
-        comment.delete()
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'status': 'success', 'deleted_comment_id': comment_id, 'comment_count': post.comment_count})
+            # 성공적으로 삭제되었으므로, JSON 응답 반환
+            return JsonResponse({
+                'status': 'success',
+                'deleted_comment_id': comment_id, # 삭제된 댓글 ID 전달
+                'comment_count': post.comment_count # 최신 댓글 수 전달
+            })
+        
         messages.success(request, '댓글이 삭제되었습니다.')
         return redirect(post.get_absolute_url())
-    return HttpResponseBadRequest("잘못된 요청입니다.")
+    
+    # POST 요청이 아닐 경우 (AJAX는 POST로 보내므로 이 경우는 드묾)
+    return HttpResponseBadRequest("잘못된 요청입니다. POST 요청만 허용됩니다.")
 
 
 # FAQ 목록 (faq.html)

@@ -1,6 +1,7 @@
 {# flo/templates/study_post/study_post_form.html #}
 {% extends "flo/base.html" %}
 {% load static %}
+{% load custom_filters %}  {# 순수 파일명만 추출하는 커스텀 템플릿 필터 #}
 
 {% block title %}{{ form_title|default:"학습 게시판 글쓰기" }}{% endblock %}
 
@@ -132,74 +133,93 @@
             <div class="form-row attachment-formset-container">
                 <label class="form-label">첨부파일</label>
                 {{ formset.management_form }}
+                
                 <div id="attachment-forms-wrapper">
                     {% for attachment_form in formset %}
                         <div class="attachment-form-item mb-3 p-3 border rounded">
-                            {# ★★★ 숨겨진 ID 필드 추가 (가장 중요) ★★★ #}
-                            {# attachment_form.id는 <input type="hidden" name="attachments-{{ forloop.counter0 }}-id" value="{{ attachment_form.instance.pk }}"> 와 같이 렌더링됩니다. #}
-                            {# Django 폼 시스템이 formset의 각 form에 instance를 바인딩하면, .id를 통해 해당 필드에 접근할 수 있습니다. #}
-                            {# 만약 instance가 없는 새 폼이라면 이 필드는 렌더링되지 않거나 value가 비어있게 됩니다. #}
                             {{ attachment_form.id }}
-
-                            {# 숨겨진 삭제 체크박스, JS에서 제어 #}
-                            {{ attachment_form.DELETE }}
+                            <div style="display:none;">{{ attachment_form.DELETE }}</div>
 
                             {% if attachment_form.instance.pk and attachment_form.instance.file %}
-                                {# --- 1. 기존 저장된 파일 정보 --- #}
                                 <div class="current-attachment-display mb-2">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <p class="mb-0">
-                                            <span class="attachment-label-text" style="font-weight: 500;">첨부된 파일:</span>
-                                            <a href="{{ attachment_form.instance.file.url }}" target="_blank"
-                                            title="{{ attachment_form.instance.filename }} 새 창으로 열기"
-                                            class="ms-1 current-file-link">
-                                                {{ attachment_form.instance.filename }}
+                                    <p class="mb-1">
+                                        <span class="attachment-label-text" style="font-weight: 500;">첨부된 파일:</span>
+                                        <a href="{{ attachment_form.instance.file.url }}"
+                                            download="{{ attachment_form.instance.filename }}" {# 여기에 사용됨 #}
+                                            title="다운로드: {{ attachment_form.instance.filename }}" {# 여기에 사용됨 #}
+                                            class="ms-1">
+                                                {{ attachment_form.instance.filename }} {# 여기에 사용됨 #}
                                             </a>
-                                        </p>
-                                        {% if attachment_form.can_delete %} {# formset에서 can_delete=True로 설정되어 있다면 이 조건만으로 충분할 수 있음 #}
+                                        {% if attachment_form.instance.file.size %}
+                                        <span class="small">({{ attachment_form.instance.file.size|filesizeformat }})</span>
+                                        {% endif %}
+                                    </p>
+                                    <p class="mb-2">
+                                        <span class="attachment-label-text" style="font-weight: 500;">현재 파일 새 창으로 열기:</span>
+                                        <a href="{{ attachment_form.instance.file.url }}" target="_blank"
+                                           title="{{ attachment_form.instance.file.name|basename }} 새 창으로 열기" {# 수정 #}
+                                           class="ms-1">
+                                            {{ attachment_form.instance.file.name|basename }} {# 수정 #}
+                                        </a>
+                                    </p>
+                                    {% if attachment_form.can_delete %}
+                                        <div class="d-flex justify-content-end">
                                             <button type="button" class="btn btn-sm btn-outline-danger delete-existing-file-btn"
                                                     data-checkbox-id="{{ attachment_form.DELETE.id_for_label }}"
-                                                    title="이 파일 삭제">X</button>
-                                        {% endif %}
-                                    </div>
+                                                    title="이 파일 삭제">기존 파일 삭제 X</button>
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <label for="{{ attachment_form.file.id_for_label }}" class="form-label-attachment-change small d-block mb-1">파일 변경:</label>
+                                <hr class="my-2">
+                                <label for="{{ attachment_form.file.id_for_label }}" class="form-label-attachment-change small d-block mb-1 fw-bold">파일 변경:</label>
                             {% else %}
-                                <label for="{{ attachment_form.file.id_for_label }}" class="form-label-attachment-new small d-block mb-1">새 파일 첨부:</label>
+                                <label for="{{ attachment_form.file.id_for_label }}" class="form-label-attachment-new small d-block mb-1 fw-bold">새 파일 첨부:</label>
                             {% endif %}
 
-                            {# 커스텀 파일 입력 UI 유지 #}
                             <div class="attachment-file-input-wrapper d-flex align-items-center">
-                                {# 실제 파일 input. name과 id는 Django 폼 필드에서 자동으로 생성됩니다. #}
-                                {# attachment_form.file을 직접 렌더링하면 ClearableFileInput 위젯이 나오므로, 커스텀 UI를 위해서는 숨겨진 input과 버튼을 사용합니다. #}
-                                {# views.py의 AttachmentForm Meta widgets에서 이 필드의 attrs에 d-none 클래스를 추가하는 것이 더 명확할 수 있습니다. #}
-                                {# 또는, 여기서 직접 input type="file"을 만들되, name과 id는 Django 규칙을 따라야 합니다. #}
-                                {{ attachment_form.file }} {# 이렇게 하면 ClearableFileInput 전체가 렌더링 됩니다. 아래 커스텀 UI와 중복될 수 있으니 주의. #}
-                                {# 만약 위 {{ attachment_form.file }}을 사용하지 않고 아래 커스텀 UI를 그대로 사용하려면, #}
-                                {# forms.py의 AttachmentForm 위젯에서 'd-none' 클래스를 추가하거나, #}
-                                {# 여기서 <input type="file" name="{{ attachment_form.file.html_name }}" id="{{ attachment_form.file.auto_id }}" class="d-none attachment-true-input"> #}
-                                {# 와 같이 수동으로 렌더링하고, JS가 이 input을 클릭하도록 해야 합니다. #}
-                                {# 현재 JavaScript 로직은 attachment-true-input 클래스를 가진 숨겨진 input을 사용하고 있습니다. #}
-                                {# 따라서 {{ attachment_form.file }} 대신 아래와 같이 명시적으로 input을 다시 만들거나, #}
-                                {# {{ attachment_form.file }}이 렌더링하는 input에 JavaScript가 사용하는 클래스를 부여해야 합니다. #}
-                                {# 가장 간단한 방법은 forms.py의 위젯에 class: 'd-none attachment-true-input'를 모두 주는 것입니다. #}
-
-                                {# --- 아래는 이전 커스텀 UI 유지 시 --- #}
                                 <input type="file" name="{{ attachment_form.file.html_name }}" id="{{ attachment_form.file.auto_id }}" class="d-none attachment-true-input">
                                 <button type="button" class="btn btn-sm btn-primary select-file-button me-2">파일 선택</button>
                                 <span class="selected-file-name small flex-grow-1">선택된 파일 없음</span>
-                                <button type="button" class="btn btn-sm btn-outline-secondary clear-newly-selected-file" style="display:none;" title="선택한 파일 취소">X</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary clear-newly-selected-file ms-1" style="display:none;" title="선택한 파일 취소">X</button>
                             </div>
 
-                            {# 에러 메시지 표시 #}
-                            {% if attachment_form.file.errors %}{% for error in attachment_form.file.errors %}<p class="error mt-1 small">{{ error }}</p>{% endfor %}{% endif %}
-                            {% if attachment_form.id.errors %}{% for error in attachment_form.id.errors %}<p class="error mt-1 small">ID 오류: {{ error }}</p>{% endfor %}{% endif %} {# ID 필드 에러 #}
-                            {% for error in attachment_form.non_field_errors %}<p class="error mt-1 small">{{ error }}</p>{% endfor %}
+                            {% if attachment_form.file.errors %}{% for error in attachment_form.file.errors %}<p class="error mt-1 small text-danger">{{ error }}</p>{% endfor %}{% endif %}
+                            {% if attachment_form.id.errors %}{% for error in attachment_form.id.errors %}<p class="error mt-1 small text-danger">ID 오류: {{ error }}</p>{% endfor %}{% endif %}
+                            {% for error in attachment_form.non_field_errors %}<p class="error mt-1 small text-danger">{{ error }}</p>{% endfor %}
                         </div>
                     {% endfor %}
                 </div>
                 <button type="button" id="add-attachment-form" class="btn btn-outline-secondary btn-sm mt-2">파일 추가</button>
-                <small class="form-text text-muted d-block mt-1">새 파일을 추가하거나 기존 파일을 변경/삭제할 수 있습니다.</small>
+                <small class="form-text d-block mt-1">새 파일을 추가하거나 기존 파일을 변경/삭제할 수 있습니다.</small>
+            </div>
+            {# === 폼셋(다중 첨부파일) 렌더링 끝 === #}
+
+            {# JavaScript에서 사용할 빈 폼 템플릿 (숨겨둠) #}
+            <div id="empty-attachment-form" style="display:none;">
+                <div class="attachment-form-item mb-3 p-3 border rounded">
+                    <div style="display:none;"><input type="checkbox" name="attachments-__prefix__-DELETE" id="id_attachments-__prefix__-DELETE"></div>
+                    <label for="id_attachments-__prefix__-file" class="form-label-attachment-new small d-block mb-1 fw-bold">새 파일 첨부:</label>
+                    <div class="attachment-file-input-wrapper d-flex align-items-center">
+                        <input type="file" name="attachments-__prefix__-file" id="id_attachments-__prefix__-file" class="d-none attachment-true-input">
+                        <button type="button" class="btn btn-sm btn-primary select-file-button me-2">파일 선택</button>
+                        <span class="selected-file-name small flex-grow-1">선택된 파일 없음</span> {# JS에서 text-muted 클래스 제어 #}
+                        <button type="button" class="btn btn-sm btn-outline-secondary clear-newly-selected-file ms-1" style="display:none;" title="선택한 파일 취소">X</button>
+                    </div>
+                </div>
+            </div>
+
+            {# JavaScript에서 사용할 빈 폼 템플릿 (숨겨둠) #}
+            <div id="empty-attachment-form" style="display:none;">
+                <div class="attachment-form-item mb-3 p-3 border rounded">
+                    <div style="display:none;"><input type="checkbox" name="attachments-__prefix__-DELETE" id="id_attachments-__prefix__-DELETE"></div>
+                    <label for="id_attachments-__prefix__-file" class="form-label-attachment-new small d-block mb-1 fw-bold">새 파일 첨부:</label>
+                    <div class="attachment-file-input-wrapper d-flex align-items-center">
+                        <input type="file" name="attachments-__prefix__-file" id="id_attachments-__prefix__-file" class="d-none attachment-true-input">
+                        <button type="button" class="btn btn-sm btn-primary select-file-button me-2">파일 선택</button>
+                        <span class="selected-file-name small flex-grow-1">선택된 파일 없음</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary clear-newly-selected-file ms-1" style="display:none;" title="선택한 파일 취소">X</button>
+                    </div>
+                </div>
             </div>
 
             {# JavaScript에서 사용할 빈 폼 템플릿 (숨겨둠) #}
