@@ -30,7 +30,7 @@
             {% if post.categories.all %}
             <div class="post-categories-display mb-2">
                 {% for category in post.categories.all %}
-                    <span class="badge bg-light text-dark border me-1">{{ category.get_full_path_name }}</span>
+                    <span class="badge border me-1">{{ category.get_full_path_name }}</span>
                 {% endfor %}
             </div>
             {% endif %}
@@ -95,11 +95,12 @@
                             {{ attachment.filename }}
                         </span>
                         {# ★★★ 다운로드 버튼만 링크와 download 속성 가짐 ★★★ #}
-                        <a href="{{ attachment.file.url }}" download="{{ attachment.download_filename }}" class="btn btn-sm btn-outline-secondary download-btn-icon" title="다운로드">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
-                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
-                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L6.354 8.146a.5.5 0 1 0-.708.708z"/>
-                            </svg>
+                        <a href="{{ attachment.file.url }}" download="{{ attachment.download_filename }}" class="btn btn-sm btn-outline-secondary" title="다운로드">
+                            <img src="{% static 'flo/images/icons/study_post/download-light.png' %}"
+                                alt="다운로드"
+                                class="download-icon-img"
+                                width="18" height="18"
+                                style="vertical-align: middle;">
                         </a>
                     </li>
                     {% endfor %}
@@ -119,13 +120,13 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16" style="margin-right: 5px;">
                     <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
                   </svg>
-                추천 <span id="like-count">{{ post.total_likes }}</span>
+                추천&nbsp; <span id="like-count">{{ post.total_likes }}</span>
             </button>
             <span class="comment-count-display">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-text-fill" viewBox="0 0 16 16" style="margin-right: 5px;">
                     <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793zm3.5 1a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 2.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 2.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1z"/>
                   </svg>
-                댓글 <span id="comment-total-count">{{ post.comment_count }}</span>
+                댓글&nbsp; <span id="comment-total-count">{{ post.comment_count }}</span>
             </span>
         </div>
 
@@ -453,22 +454,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 기본 프로필 이미지 다크모드 대응
-    function setDefaultAvatarTheme() {
+    // 기본 프로필 이미지 및 아이콘 다크모드/라이트모드 대응
+    function setDefaultThemeAssets() {
         const isDarkMode = !document.body.classList.contains('theme-light');
+
+        // 1. 기본 아바타 이미지 처리
         const defaultAvatarSrcLight = "{% static 'flo/images/icons/profile/default_profile_light.png' %}";
         const defaultAvatarSrcDark = "{% static 'flo/images/icons/profile/default_profile_dark.png' %}";
-
         document.querySelectorAll('img.default-avatar').forEach(img => {
-            // 현재 이미지 소스가 라이트/다크 기본 이미지 중 하나일 때만 변경
-            if (img.src.endsWith('default_profile_light.png') || img.src.endsWith('default_profile_dark.png')) {
-                 img.src = isDarkMode ? defaultAvatarSrcDark : defaultAvatarSrcLight;
+            // 이미지 URL에 'default_profile_light.png' 또는 'default_profile_dark.png'가 포함되어 있는지 확인하여 더 안전하게 변경
+            if (img.src.includes('default_profile_light.png') || img.src.includes('default_profile_dark.png')) {
+                img.src = isDarkMode ? defaultAvatarSrcDark : defaultAvatarSrcLight;
             }
         });
+
+        // 2. 다운로드 아이콘 이미지 처리
+        const downloadIconSrcLight = "{% static 'flo/images/icons/study_post/download-light.png' %}";
+        const downloadIconSrcDark = "{% static 'flo/images/icons/study_post/download-dark.png' %}"; // 이 경로가 정확한지 확인하세요!
+        document.querySelectorAll('img.download-icon-img').forEach(img => {
+            // 초기 src는 라이트 모드 아이콘이므로, 현재 테마에 따라 항상 업데이트합니다.
+            img.src = isDarkMode ? downloadIconSrcDark : downloadIconSrcLight;
+        });
     }
-    setDefaultAvatarTheme();
-    // 테마 변경 이벤트 리스너가 있다면 그곳에서도 호출
-    // 예: document.body.addEventListener('themeChanged', setDefaultAvatarTheme);
+    setDefaultThemeAssets(); // DOMContentLoaded 시 호출
+
+    // 테마 변경 이벤트 리스너가 있다면 그곳에서도 호출 (이벤트 이름은 실제 구현에 따라 다를 수 있음)
+    // 예시: document.body.addEventListener('themeChanged', setDefaultThemeAssets);
+    // 또는 MutationObserver를 body 클래스 변경 감지에 사용
+    const themeObserver = new MutationObserver(function(mutationsList, observer) {
+        for(const mutation of mutationsList) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                setDefaultThemeAssets(); // body의 class 속성이 변경되면 함수 호출
+            }
+        }
+    });
+    themeObserver.observe(document.body, { attributes: true }); // document.body의 속성 변경 감시 시작
 
 
     // 첨부파일 드롭다운 토글

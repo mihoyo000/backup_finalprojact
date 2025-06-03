@@ -12,7 +12,7 @@
     --bg-color-body-light: #ffffff; /* 페이지 전체 배경도 흰색으로 변경 가능 */
     --text-color-default-light: #333333;
     --text-color-heading-light: #111111;
-    --text-color-link-light: #007bff;
+    --text-color-link-light: #2d2d2d;
     --border-color-default-light: #e0e0e0;
 
     /* 활성 아이템 배경색 및 텍스트색 (새로운 변수 또는 직접 사용) */

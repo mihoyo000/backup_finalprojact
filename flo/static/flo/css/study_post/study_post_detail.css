@@ -45,8 +45,18 @@ body:not(.theme-light) {
     background-color: var(--dark-background-color-page);
     color: var(--dark-text-color-main);
 }
-body:not(.theme-light) a {
+body:not(.theme-light) a#attachments-dropdown-toggle{
     color: var(--dark-link-color);
+}
+
+.badge {
+    border-color: var(--text-color-main);
+    color: var(--text-color-main);
+}
+
+body:not(.theme-light) .badge {
+    border-color: var(--background-color-content);
+    color: var(--background-color-content);
 }
 
 
