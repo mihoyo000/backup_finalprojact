@@ -51,7 +51,7 @@ class Category(models.Model):
         'self',
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.SET_NULL, # 또는 CASCADE, 상황에 따라
         related_name='children',
         verbose_name="상위 카테고리"
     )
@@ -60,11 +60,11 @@ class Category(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = "전체 카테고리" # 모든 계층을 포함하는 원본
+        verbose_name = "전체 카테고리"
         verbose_name_plural = "전체 카테고리 목록"
-        ordering = ['name']
+        ordering = ['name'] # 또는 다른 정렬 기준
 
-    def get_level(self): # 계층 깊이 반환
+    def get_level(self):
         level = 0
         p = self.parent
         while p:
@@ -80,6 +80,37 @@ class Category(models.Model):
             path.insert(0, current.name)
             current = current.parent
         return " > ".join(path)
+
+    # ★★★ 최하위 자손 카테고리를 찾는 메소드 추가 ★★★
+    def get_leaf_nodes(self):
+        """
+        현재 카테고리 자신 또는 그 자손들 중에서 최하위(자식이 없는) 카테고리들을 반환합니다.
+        """
+        leaves = set()
+        if not self.children.exists(): # 현재 노드가 이미 최하위인 경우
+            leaves.add(self)
+        else:
+            # 모든 직접적인 자식들을 순회
+            for child in self.children.all().prefetch_related('children'): # N+1 방지를 위해 prefetch
+                leaves.update(child.get_leaf_nodes()) # 재귀적으로 자식들의 최하위 노드 탐색
+        return list(leaves) # 중복 제거를 위해 set을 사용하고 list로 변환하여 반환
+
+    # ★★★ 특정 카테고리의 모든 자손을 찾는 메소드 (get_leaf_nodes에서 사용) - 선택적이지만 있으면 좋음 ★★★
+    def get_all_descendants(self, include_self=False):
+        """
+        현재 카테고리의 모든 자손 카테고리들을 재귀적으로 찾아 리스트로 반환합니다.
+        include_self가 True이면 자기 자신도 포함합니다.
+        """
+        descendants = set()
+        if include_self:
+            descendants.add(self)
+
+        # children QuerySet을 가져올 때 prefetch_related를 사용하여 DB 히트 줄이기
+        children_qs = self.children.all().prefetch_related('children')
+        for child in children_qs:
+            descendants.add(child)
+            descendants.update(child.get_all_descendants(include_self=False)) # 재귀 호출
+        return list(descendants)
 
 # --- 대분류 프록시 모델 ---
 class MajorCategory(Category):

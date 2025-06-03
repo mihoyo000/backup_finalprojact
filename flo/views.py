@@ -7,7 +7,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Prefetch
 from django.db.models.functions import Lower, Coalesce # ★★★ Lower, Coalesce 임포트 확인/추가 ★★★
 from django.db.models import Value                     # ★★★ Value 임포트 확인/추가 (Coalesce와 함께 사용 시) ★★★
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
@@ -282,63 +282,72 @@ def ajax_get_child_categories(request): # 함수 이름 확인!
 
 # AJAX로 하위 카테고리 목록을 가져오는 뷰
 def ajax_search_categories(request):
-    query = request.GET.get('q', '').strip() # JavaScript에서 이미 소문자로 변환되어 올 것임
+    query = request.GET.get('q', '').strip()
     page = request.GET.get('page', 1)
     ITEMS_PER_PAGE = 15
+    current_page_num = int(page)
 
     categories_data = []
     has_next_page = False
     total_results_count = 0
 
-    if query: # query는 이미 소문자라고 가정
-        final_results_set = set()
-        
-        # ★★★ 모델 필드 값을 소문자로 변환하여 비교 ★★★
-        direct_matches = Category.objects.annotate(
+    if query:
+        # 1단계: 검색어(query)와 이름이 일치하는 모든 카테고리(대/중/소 무관)를 찾습니다.
+        # prefetch_related를 사용하여 get_leaf_nodes 호출 시 DB 접근을 줄이도록 시도합니다.
+        # 깊이가 깊은 경우, 이 prefetch만으로는 부족할 수 있습니다.
+        matched_categories_qs = Category.objects.annotate(
             name_lower=Lower('name')
-        ).filter(name_lower__contains=query) # query는 이미 소문자이므로 그대로 사용
+        ).filter(
+            name_lower__icontains=query
+        ).prefetch_related( # 재귀 호출에 대비한 prefetch
+            Prefetch('children', queryset=Category.objects.all().prefetch_related(
+                Prefetch('children', queryset=Category.objects.all().prefetch_related('children')) # 최대 3단계까지
+            ))
+        ).distinct() # 중복 제거 (필요시)
 
-        for category in direct_matches:
-            # ... (기존 카테고리 처리 로직 동일) ...
-            final_results_set.add(category)
-            level = category.get_level()
-            if level == 1:
-                for child in category.children.all().filter(children__isnull=True):
-                    final_results_set.add(child)
-            elif level == 0:
-                for medium_child in category.children.all():
-                    if medium_child.get_level() == 1:
-                        for minor_child in medium_child.children.all().filter(children__isnull=True):
-                            final_results_set.add(minor_child)
+        # 2단계: 찾은 카테고리들 각각에 대해, 그 자신 또는 자손들 중 최하위 노드들을 수집합니다.
+        leaf_categories_to_display = set()
+        for category_match in matched_categories_qs:
+            # 모델에 추가한 get_leaf_nodes() 메소드 사용
+            leaves_from_match = category_match.get_leaf_nodes()
+            leaf_categories_to_display.update(leaves_from_match)
         
-        all_sorted_results = sorted(list(final_results_set), key=lambda cat: (cat.get_level(), cat.get_full_path_name))
-        total_results_count = len(all_sorted_results)
+        # 3단계: 수집된 최하위 카테고리들을 정렬하고 페이지네이션합니다.
+        # Category 모델에 get_full_path_name @property가 있다고 가정
+        all_sorted_leaf_categories = sorted(
+            list(leaf_categories_to_display), 
+            key=lambda cat: cat.get_full_path_name  # 정렬 기준
+        )
+        
+        total_results_count = len(all_sorted_leaf_categories)
 
-        paginator = Paginator(all_sorted_results, ITEMS_PER_PAGE)
+        paginator = Paginator(all_sorted_leaf_categories, ITEMS_PER_PAGE)
         try:
-            results_page = paginator.page(page)
+            results_page_obj = paginator.page(current_page_num)
         except PageNotAnInteger:
-            results_page = paginator.page(1)
+            results_page_obj = paginator.page(1)
+            current_page_num = 1
         except EmptyPage:
-            results_page = paginator.page(paginator.num_pages)
-
-        for cat in results_page:
+            # 페이지 번호가 범위를 벗어난 경우, 마지막 페이지로 설정 (또는 1페이지로)
+            results_page_obj = paginator.page(paginator.num_pages if paginator.num_pages > 0 else 1)
+            current_page_num = results_page_obj.number
+        
+        for cat in results_page_obj:
             categories_data.append({
                 'id': cat.id,
-                'name': cat.name,
+                'name': cat.name, 
                 'slug': cat.slug,
-                'full_path': cat.get_full_path_name,
-                'level': cat.get_level(),
-                'has_children': cat.children.exists()
+                'full_path': cat.get_full_path_name, # @property 호출
+                'is_leaf': True, # 이 로직에서는 항상 leaf 노드만 반환
             })
         
-        has_next_page = results_page.has_next()
+        has_next_page = results_page_obj.has_next()
 
     return JsonResponse({
         'categories': categories_data,
         'has_next_page': has_next_page,
         'total_results': total_results_count,
-        'current_page': int(page)
+        'current_page': current_page_num
     })
 
 # 글 수정 (post_form.html)

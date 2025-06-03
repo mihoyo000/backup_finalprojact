@@ -362,20 +362,45 @@ $(document).ready(function() {
     });
     $clearSearchInputListBtn.on('click', function() { $categorySearchInputList.val('').focus(); $categorySearchInputList.trigger('input'); });
     $loadMoreButtonList.on('click', function() { if (currentSearchTermList) { fetchSearchResultsList(currentSearchTermList, currentPageList); } });
-    function fetchSearchResultsList(term, page) { /* 이전과 동일 */
-        $loadMoreButtonList.prop('disabled', true).text('로딩 중...');
-        $.ajax({
-            url: "{% url 'flo:ajax_search_categories' %}", data: { 'q': term, 'page': page }, dataType: 'json',
-            success: function(data) {
-                if (page === 1) { $resultsListList.empty(); }
-                if (data.categories && data.categories.length > 0) {
-                    data.categories.forEach(function(cat) {
-                        const listItem = $(`<li class="list-group-item category-item-inline search-result-item ${selectedCategoriesForFilter.has(cat.slug) ? 'active' : ''}" data-id="${cat.id}" data-name="${cat.name}" data-slug="${cat.slug}" data-path="${cat.full_path}" data-level="${cat.level}" style="cursor:pointer;"><span class="search-result-path">${cat.full_path}</span>${cat.has_children ? '<span class="search-result-arrow category-arrow-inline text-muted float-end">></span>' : ''}</li>`);
-                        $resultsListList.append(listItem);
-                    });
-                    if (data.has_next_page) { $loadMoreContainerList.show(); currentPageList = data.current_page + 1; } else { $loadMoreContainerList.hide(); }
-                } else { if (page === 1) { $resultsListList.html('<li class="list-group-item disabled text-muted">검색 결과가 없습니다.</li>'); } $loadMoreContainerList.hide(); }
-            }, error: function() { if (page === 1) { $resultsListList.html('<li class="list-group-item text-danger">검색 중 오류가 발생했습니다.</li>'); } $loadMoreContainerList.hide(); },
+    function fetchSearchResultsList(term, page) { // 목록 페이지 필터용
+    $loadMoreButtonList.prop('disabled', true).text('로딩 중...');
+    $.ajax({
+        url: "{% url 'flo:ajax_search_categories' %}",
+        data: { 'q': term, 'page': page },
+        dataType: 'json',
+        success: function(data) {
+            if (page === 1) { $resultsListList.empty(); }
+            if (data.categories && data.categories.length > 0) {
+                data.categories.forEach(function(cat) {
+                    // 백엔드에서 이미 최하위만 보내므로 is_leaf, has_children 등으로 UI를 바꿀 필요 없음
+                    const listItem = $(`
+                        <li class="list-group-item category-item-inline search-result-item" 
+                            data-id="${cat.id}" 
+                            data-name="${cat.name}" 
+                            data-slug="${cat.slug}" 
+                            data-path="${cat.full_path}" 
+                            style="cursor:pointer;">
+                            <span class="search-result-path">${cat.full_path}</span>
+                            {# cat.has_children 조건부 화살표 제거 또는 항상 없음 처리 #}
+                        </li>`);
+                    if (selectedCategoriesForFilter.has(cat.slug)) {
+                        listItem.addClass('active');
+                    }
+                    $resultsListList.append(listItem);
+                });
+                if (data.has_next_page) { 
+                    $loadMoreContainerList.show(); 
+                    currentPageList = data.current_page + 1; 
+                } else { 
+                    $loadMoreContainerList.hide(); 
+                }
+            } else { 
+                if (page === 1) { 
+                    $resultsListList.html('<li class="list-group-item disabled text-muted">검색 결과가 없습니다.</li>'); 
+                } 
+                $loadMoreContainerList.hide(); 
+            }
+        }, error: function() { if (page === 1) { $resultsListList.html('<li class="list-group-item text-danger">검색 중 오류가 발생했습니다.</li>'); } $loadMoreContainerList.hide(); },
             complete: function() { $loadMoreButtonList.prop('disabled', false).text('더보기'); }
         });
     }
