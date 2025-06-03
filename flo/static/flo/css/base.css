@@ -80,9 +80,9 @@
 
     /* 푸터 텍스트/링크 색상 (필요시 라이트/다크 모드 별도 정의) */
     --footer-text-main-light: #555555;
-    --footer-link-main-light: #555555;
+    --footer-link-main-light: #3294E4;
     --footer-text-main-dark: var(--footer-text); /* 기존 다크모드 푸터 텍스트 색상 활용 */
-    --footer-link-main-dark: var(--footer-link); /* 기존 다크모드 푸터 링크 색상 활용 */
+    --footer-link-main-dark: #3294E4; /* 기존 다크모드 푸터 링크 색상 활용 */
 
     --footer-youtube-icon-height: 24px; /* 유튜브 아이콘 높이 */
 
@@ -492,6 +492,9 @@ body.theme-dark hr.footer-divider {
     text-decoration: none;
     color: var(--footer-link-main-light); /* 라이트 모드 기본 이메일 링크 색상 */
     /* 다크 모드에서는 .site-footer a 규칙을 따름 */
+}
+body:not(.theme-light) .footer-email-row a{
+    color: var(--footer-link-main-dark);
 }
 .footer-email-row a:hover {
     text-decoration: underline;
