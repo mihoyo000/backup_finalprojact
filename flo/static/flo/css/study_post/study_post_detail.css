@@ -122,17 +122,7 @@ body:not(.theme-light) .post-meta-info {
     margin-right: 20px; /* 오른쪽 여백 */
     margin-bottom: 5px; /* 작은 화면 줄바꿈 시 하단 여백 */
 }
-.author-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    margin-right: 8px;
-    border: 1px solid var(--avatar-border-color);
-    object-fit: cover;
-}
-body:not(.theme-light) .author-avatar {
-    border-color: var(--dark-avatar-border-color);
-}
+
 .author-name {
     font-weight: 500;
     color: var(--text-color-main);
@@ -214,6 +204,95 @@ hr.post-divider {
 }
 body:not(.theme-light) hr.post-divider {
     border-top-color: var(--dark-border-color);
+}
+
+/* --- 공통 아바타 Wrapper 스타일 --- */
+.avatar-wrapper {
+    border-radius: 50%;
+    border-width: 1px; /* 요청하신 1px 테두리 */
+    border-style: solid;
+    /* 배경색은 base.css의 --profile-image-bg를 따르거나, 여기서 지정 가능
+       기본 아이콘의 경우 배경이 투명하거나 흰색/검은색일 수 있으므로, 
+       wrapper에 배경색을 명시적으로 주는 것이 좋을 수 있습니다.
+       예: background-color: var(--background-color-content); (콘텐츠 영역 배경색과 동일하게)
+       또는 background-color: transparent; */
+    background-color: var(--profile-image-bg, transparent); /* base.css 에 정의된 변수 활용 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* 내부 이미지가 원 밖으로 나가지 않도록 중요 */
+    box-sizing: border-box;
+    flex-shrink: 0; /* Flex 아이템일 경우 크기 유지 */
+}
+
+/* 라이트 모드 테두리 (CSS 변수로 이미 처리) */
+.avatar-wrapper {
+    border-color: var(--avatar-border-color);
+}
+
+/* 다크 모드 테두리 (CSS 변수로 이미 처리) */
+body:not(.theme-light) .avatar-wrapper {
+    border-color: var(--dark-avatar-border-color);
+}
+
+/* --- 공통 아바타 Wrapper 스타일 --- */
+.avatar-wrapper {
+    border-radius: 50%;
+    border-width: 1px; /* 테두리 두께 1px */
+    border-style: solid;
+    /* 라이트 모드 기본 테두리 색상 */
+    border-color: var(--avatar-border-color); /* study_post_detail.css의 :root 또는 base.css의 :root 변수 */
+
+    background-color: var(--profile-image-bg, transparent); /* 배경색 (선택적) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+/* 다크 모드일 때 Wrapper의 테두리 색상 변경 */
+body:not(.theme-light) .avatar-wrapper {
+    border-color: var(--dark-avatar-border-color); /* study_post_detail.css의 :root 또는 base.css의 :root 변수 */
+}
+
+/* --- 공통 내부 이미지 스타일 --- */
+.avatar-wrapper .avatar-img {
+    display: block;
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+}
+
+.avatar-wrapper .avatar-img:not(.default-avatar) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- 각 위치별 아바타 Wrapper 크기 및 마진 설정 --- */
+.author-avatar-wrapper {
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+}
+
+.author-avatar-small-wrapper {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+}
+
+.commenter-avatar-wrapper {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+
+.current-user-avatar-wrapper {
+    width: 40px;
+    height: 40px;
 }
 
 /* 게시글 본문 */
@@ -317,17 +396,6 @@ body:not(.theme-light) .author-profile-more {
     display: flex;
     align-items: center;
 }
-.author-avatar-small {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 12px;
-    border: 1px solid var(--avatar-border-color);
-    object-fit: cover;
-}
-body:not(.theme-light) .author-avatar-small {
-     border-color: var(--dark-avatar-border-color);
-}
 
 .author-name-link {
     font-size: 0.95rem;
@@ -410,17 +478,7 @@ body:not(.theme-light) .comment-item-wrapper {
     align-items: center;
     margin-bottom: 8px;
 }
-.commenter-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
-    border: 1px solid var(--avatar-border-color);
-    object-fit: cover;
-}
-body:not(.theme-light) .commenter-avatar {
-    border-color: var(--dark-avatar-border-color);
-}
+
 .comment-author-details .commenter-name {
     font-weight: 500;
     font-size: 0.9rem;
@@ -496,16 +554,6 @@ body:not(.theme-light) .new-comment-form {
 }
 .comment-form-author-avatar {
     margin-right: 15px;
-}
-.current-user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid var(--avatar-border-color);
-    object-fit: cover;
-}
-body:not(.theme-light) .current-user-avatar {
-    border-color: var(--dark-avatar-border-color);
 }
 
 .comment-form-input-area {

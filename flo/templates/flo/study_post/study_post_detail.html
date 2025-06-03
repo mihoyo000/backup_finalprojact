@@ -37,11 +37,15 @@
 
             <div class="post-meta-info">
                 <div class="author-info">
-                    {% if post.author.profile.has_custom_profile_image %}
-                        <img src="{{ post.author.profile.get_profile_image_url }}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar">
-                    {% else %}
-                        <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar default-avatar">
-                    {% endif %}
+                    {# === 변경 시작 === #}
+                    <div class="avatar-wrapper author-avatar-wrapper"> {# (1) Wrapper div 추가 및 클래스 지정 #}
+                        {% if post.author.profile.has_custom_profile_image %}
+                            <img src="{{ post.author.profile.get_profile_image_url }}" alt="{{ post.author.profile.get_display_name }}" class="avatar-img"> {# (2) 내부 img 태그에는 공통 클래스 #}
+                        {% else %}
+                            <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ post.author.profile.get_display_name }}" class="avatar-img default-avatar">
+                        {% endif %}
+                    </div>
+                    {# === 변경 끝 === #}
                     <span class="author-name">{{ post.author.profile.get_display_name }}</span>
                 </div>
                 <div class="post-stats">
@@ -132,11 +136,15 @@
 
         <div class="author-profile-more">
             <div class="author-profile-box">
-                 {% if post.author.profile.has_custom_profile_image %}
-                    <img src="{{ post.author.profile.get_profile_image_url }}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar-small">
-                {% else %}
-                    <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar-small default-avatar">
-                {% endif %}
+                {# === 변경 시작 === #}
+                <div class="avatar-wrapper author-avatar-small-wrapper"> {# (1) Wrapper div 추가 및 클래스 지정 #}
+                    {% if post.author.profile.has_custom_profile_image %}
+                        <img src="{{ post.author.profile.get_profile_image_url }}" alt="{{ post.author.profile.get_display_name }}" class="avatar-img"> {# (2) 내부 img 태그에는 공통 클래스 #}
+                    {% else %}
+                        <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ post.author.profile.get_display_name }}" class="avatar-img default-avatar">
+                    {% endif %}
+                </div>
+                {# === 변경 끝 === #}
                 <span class="author-name-link">
                     {{ post.author.profile.get_display_name }}
                     <a href="#">님의 게시글 더보기 ></a> {# 링크 URL 수정 필요 #}
@@ -160,11 +168,15 @@
                 {% for comment in comments %}
                 <li id="comment-{{ comment.id }}" class="comment-item-wrapper">
                     <div class="comment-author-meta">
-                        {% if comment.author.profile.has_custom_profile_image %}
-                            <img src="{{ comment.author.profile.get_profile_image_url }}" alt="{{ comment.author.profile.get_display_name }}" class="commenter-avatar">
-                        {% else %}
-                             <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ comment.author.profile.get_display_name }}" class="commenter-avatar default-avatar">
-                        {% endif %}
+                        {# === 변경 시작 === #}
+                        <div class="avatar-wrapper commenter-avatar-wrapper"> {# (1) Wrapper div 추가 및 클래스 지정 #}
+                            {% if comment.author.profile.has_custom_profile_image %}
+                                <img src="{{ comment.author.profile.get_profile_image_url }}" alt="{{ comment.author.profile.get_display_name }}" class="avatar-img"> {# (2) 내부 img 태그에는 공통 클래스 #}
+                            {% else %}
+                                <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ comment.author.profile.get_display_name }}" class="avatar-img default-avatar">
+                            {% endif %}
+                        </div>
+                        {# === 변경 끝 === #}
                         <div class="comment-author-details">
                             <strong class="commenter-name">{{ comment.author.profile.get_display_name }}</strong>
                             <span class="comment-date">{{ comment.created_at|date:"Y-m-d H:i" }}</span>
