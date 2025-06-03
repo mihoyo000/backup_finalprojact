@@ -47,55 +47,67 @@
                 <form method="post" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
                     
+                    {# PDF 파일 선택 필드 #}
                     <div class="form-group">
-                        {{ form.pdf_file.label_tag }}
+                        {{ form.pdf_file.label_tag }}  {# PDF 파일 선택: #}
                         {{ form.pdf_file }}
                         {% if form.pdf_file.errors %}
                             <ul class="errorlist">{% for error in form.pdf_file.errors %}<li>{{ error }}</li>{% endfor %}</ul>
                         {% endif %}
                     </div>
 
+                    {#  문항수 필드 #}
                     <div class="form-group">
-                        {{ form.num_questions.label_tag }}
+                        {{ form.num_questions_requested.label_tag }} {# 문항수: #}
                         <div class="radio-group">
-                        {% for radio in form.num_questions %}
+                        {% for radio in form.num_questions_requested %}
                             <label for="{{ radio.id_for_label }}">
                                 {{ radio.tag }}
-                                {{ radio.choice_label }}
+                                <span class="radio-label-text">{{ radio.choice_label }}</span>
                             </label>
                         {% endfor %}
                         </div>
-                        {% if form.num_questions.errors %}
-                            <ul class="errorlist">{% for error in form.num_questions.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                        {% if form.num_questions_requested.errors %}
+                            <ul class="errorlist">{% for error in form.num_questions_requested.errors %}<li>{{ error }}</li>{% endfor %}</ul>
                         {% endif %}
                     </div>
 
+                    {#  문제 유형 필드 #}
                     <div class="form-group">
-                        {{ form.question_type.label_tag }}
+                        {{ form.question_type_requested.label_tag }} {# 문제 유형: #}
                         <div class="radio-group">
-                        {% for radio in form.question_type %}
+                        {% for radio in form.question_type_requested %}
                             <label for="{{ radio.id_for_label }}">
                                 {{ radio.tag }}
-                                {{ radio.choice_label }}
+                                <span class="radio-label-text">{{ radio.choice_label }}</span>
                             </label>
                         {% endfor %}
                         </div>
-                        {% if form.question_type.errors %}
-                            <ul class="errorlist">{% for error in form.question_type.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                        {% if form.question_type_requested.errors %}
+                            <ul class="errorlist">{% for error in form.question_type_requested.errors %}<li>{{ error }}</li>{% endfor %}</ul>
                         {% endif %}
                     </div>
-                    
-                    {# === 수정된 subject_area 필드 === #}
+                            
+                    {# 분야필드(드롭다운+직접입력) #}
                     <div class="form-group">
-                        {{ form.subject_area.label_tag }}
+                        {{ form.subject_area.label_tag }} {# 분야: #}
                         {{ form.subject_area }} {# MultiWidget이 여기서 렌더링됨 #}
                         {% if form.subject_area.help_text %}
                             <small class="form-help-text">{{ form.subject_area.help_text }}</small>
                         {% endif %}
+                        {# MultiValueField의 에러는 리스트의 리스트일 수 있음 #}
                         {% if form.subject_area.errors %}
-                            <ul class="errorlist">{% for error_list in form.subject_area.errors %}{% for error in error_list %}<li>{{ error }}</li>{% endfor %}{% endfor %}</ul>
+                            <ul class="errorlist">
+                                {% for error_list in form.subject_area.errors %}
+                                    {% for error in error_list %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
                         {% endif %}
                     </div>
+
+                    {# 제목 필드 #}
 
                     <div class="form-group">
                         {{ form.title.label_tag }}

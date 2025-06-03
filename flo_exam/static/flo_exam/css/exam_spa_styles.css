@@ -1,0 +1,63 @@
+/* FLO/flo_exam/static/flo_exam/css/exam_spa_styles.css */
+.page-container.spa-container {
+    position: relative; /* 로봇 이미지 고정 기준 */
+    padding-bottom: 50px; 
+}
+
+#dynamic-content-area {
+    /* 필요에 따라 최소 높이 등을 설정하여 내용이 없을 때도 공간 유지 */
+    min-height: 300px; 
+}
+
+/* --- 로딩 UI 스타일 (loading_generating_problems.html 참고) --- */
+.loading-container-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(70vh - 80px); /* 헤더 높이 고려, 뷰포트 높이의 일부 */
+    text-align: center;
+    padding: 20px;
+}
+.loading-text {
+    font-size: 1.8em;
+    font-weight: 500;
+    color: var(--bs-body-color); /* Bootstrap 테마 색상 변수 활용 */
+    margin-bottom: 30px;
+}
+/* 다크모드 .loading-text는 body[data-bs-theme="dark"] 선택자로 base.css나 여기서 처리 */
+
+/* --- 문제 풀이 UI 스타일 --- */
+.solve-exam-content .card-text { white-space: pre-wrap; }
+.solve-exam-content .form-check { margin-bottom: 0.5rem; }
+
+/* --- 결과 UI 스타일 --- */
+.exam-result-content .result-summary p { margin-bottom: 0.5rem; }
+.exam-result-content .flo-comment p { margin-bottom: 0; }
+.exam-result-content .download-buttons a,
+.exam-result-content .action-links a { margin-bottom: 0.5rem; } /* 모바일에서 버튼 간격 */
+
+/* --- 고정 로봇 이미지 스타일 --- */
+.fixed-robot-image-container {
+    position: fixed;
+    right: 3vw;  /* 오른쪽에서 화면 너비의 % */
+    bottom: 3vh; /* 아래쪽에서 화면 높이의 % */
+    width: 35%;  /* 너비는 화면 비율에 따라 조절 */
+    max-width: 400px; /* 최대 너비 제한 */
+    z-index: 10; /* 다른 컨텐츠보다 위에 올 수 있도록 (필요시 조절) */
+    opacity: 0.9;
+    pointer-events: none; /* 로봇 이미지 위로 마우스 이벤트가 통과하도록 */
+}
+.fixed-robot-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Bootstrap Card 색상 테마 대응 (선택 사항, Bootstrap이 어느정도 처리해줌) */
+body[data-bs-theme="dark"] .bg-body-tertiary {
+    background-color: var(--bs-gray-800) !important; /* 다크모드 카드 배경 예시 */
+    border-color: var(--bs-gray-700) !important;
+}
+body[data-bs-theme="dark"] .border-success { border-color: var(--bs-success-text-emphasis) !important; }
+body[data_bs-theme="dark"] .border-danger { border-color: var(--bs-danger-text-emphasis) !important; }

@@ -12,7 +12,7 @@ class ExamDocument(models.Model):
         (20, '20문제'),
         (25, '25문제'),
     ]
-    num_questions = models.IntegerField(
+    num_questions_requested = models.IntegerField(
         choices=NUM_QUESTIONS_CHOICES,
         default=10,
         verbose_name="문항수"
@@ -22,7 +22,7 @@ class ExamDocument(models.Model):
         ('객관식', '객관식(4지선다)'),
         ('단답형', '단답형'),
     ]
-    question_type = models.CharField(
+    question_type_requested = models.CharField(
         max_length=20,
         choices=QUESTION_TYPE_CHOICES,
         default='객관식',
