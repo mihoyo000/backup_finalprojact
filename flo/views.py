@@ -1,6 +1,7 @@
 # flo/views.py
 import os
 from django.conf import settings # settings.STATIC_URL 사용을 위해 추가
+from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
@@ -122,21 +123,60 @@ def study_post_list(request):
     }
     return render(request, 'flo/study_post/study_post_list.html', context)
 
-# 글 상세보기 (post_detail.html)
+def ajax_get_comments(request, post_pk):
+    post = get_object_or_404(Post, pk=post_pk)
+    sort_order = request.GET.get('sort', 'created_at') # 기본 정렬: 등록순
+
+    if sort_order == '-created_at': # 최신순
+        comments_qs = post.comments.order_by('-created_at').select_related('author__profile')
+    else: # 등록순 (기본)
+        comments_qs = post.comments.order_by('created_at').select_related('author__profile')
+
+    # 댓글 데이터를 JSON으로 직렬화하기 좋은 형태로 가공
+    comments_data = []
+    for comment in comments_qs:
+        author_profile_image_url = None
+        if comment.author.profile.has_custom_profile_image:
+            author_profile_image_url = comment.author.profile.get_profile_image_url
+        # else: # 기본 프로필 이미지는 클라이언트에서 처리 가능
+            # author_profile_image_url = request.build_absolute_uri(settings.STATIC_URL + 'flo/images/icons/profile/default_profile_light.png') # 필요시
+
+        comments_data.append({
+            'id': comment.id,
+            'author_display_name': comment.author.profile.get_display_name,
+            'author_profile_image_url': author_profile_image_url,
+            'has_custom_profile_image': comment.author.profile.has_custom_profile_image,
+            'content': comment.content, # 원본 content (JS에서 linebreaksbr 처리)
+            'created_at': comment.created_at.strftime("%Y-%m-%d %H:%M"),
+            'can_edit_delete': request.user.is_authenticated and request.user == comment.author,
+            # 수정/삭제 URL은 클라이언트에서 생성하거나 여기서 미리 만들어 전달
+            'edit_url': reverse('flo:study_post_comment_edit', args=[comment.pk]),
+            'delete_url': reverse('flo:study_post_comment_delete', args=[comment.pk]),
+        })
+
+    return JsonResponse({'comments': comments_data})
+
+
+# 기존 study_post_detail 뷰는 초기 로드 시 댓글 정렬을 적용하도록 수정
 def study_post_detail(request, pk):
     post = get_object_or_404(
-        Post.objects.select_related('author').prefetch_related('comments__author', 'likes', 'categories'),
+        Post.objects.select_related('author').prefetch_related('likes', 'categories'), # comments는 아래에서 정렬
         pk=pk
     )
-    comments = post.comments.all()
     comment_form = CommentForm()
 
-    # --- 조회수 증가 로직 (페이지 접근 시마다 증가) ---
+    # --- 조회수 증가 로직 ---
     post.views += 1
-    post.save(update_fields=['views']) # 'views' 필드만 업데이트하여 저장
+    post.save(update_fields=['views'])
 
-    # 디버깅용 print문 (필요시 사용, 배포 시 제거)
-    print(f"게시글 PK={pk} 조회. 현재 DB 조회수: {post.views}")
+    # 초기 댓글 정렬 (기본: 등록순)
+    # URL 파라미터로 sort를 받을 수도 있지만, AJAX로 처리하므로 초기엔 고정하거나 세션/쿠키로 기억
+    initial_sort_order = request.GET.get('sort', 'created_at') # 또는 'created_at' 고정
+    if initial_sort_order == '-created_at':
+        comments = post.comments.order_by('-created_at').select_related('author__profile')
+    else:
+        comments = post.comments.order_by('created_at').select_related('author__profile')
+
 
     is_liked = False
     if request.user.is_authenticated and post.likes.filter(pk=request.user.pk).exists():
@@ -144,10 +184,10 @@ def study_post_detail(request, pk):
 
     context = {
         'post': post,
-        'comments': comments,
+        'comments': comments, # 정렬된 댓글 전달
         'comment_form': comment_form,
         'is_liked': is_liked,
-        # post 객체 자체에 views가 포함되어 템플릿에 전달됩니다.
+        'current_sort_order': initial_sort_order, # 현재 정렬 상태 전달 (JS에서 초기 active 클래스 설정용)
     }
     return render(request, 'flo/study_post/study_post_detail.html', context)
 

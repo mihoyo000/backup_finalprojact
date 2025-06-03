@@ -27,6 +27,7 @@ urlpatterns = [
     path('study_post/<int:post_pk>/comment/new/', views.study_post_comment_create, name='study_post_comment_create'),
     path('comment/<int:pk>/edit/', views.study_post_comment_edit, name='study_post_comment_edit'), # (선택적 AJAX)
     path('comment/<int:pk>/delete/', views.study_post_comment_delete, name='study_post_comment_delete'), # (선택적 AJAX)
+    path('study_post/<int:post_pk>/comments/', views.ajax_get_comments, name='ajax_get_comments'), # 댓글 AJAX 로드용 URL
 
     # FAQ
     path('faq/', views.faq_list, name='faq_list'),

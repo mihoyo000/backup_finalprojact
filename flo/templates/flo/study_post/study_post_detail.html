@@ -150,8 +150,9 @@
             <div class="comments-header">
                 <span class="comments-title">댓글</span>
                 <div class="comment-sort-options">
-                    <a href="#" class="sort-option active" data-sort="created_at">등록순</a>
-                    <a href="#" class="sort-option" data-sort="-created_at">최신순</a>
+                    {# data-sort 값은 views.py의 정렬 기준과 일치해야 함 #}
+                    <a href="#" class="sort-option {% if current_sort_order == 'created_at' %}active{% endif %}" data-sort="created_at">등록순</a>
+                    <a href="#" class="sort-option {% if current_sort_order == '-created_at' %}active{% endif %}" data-sort="-created_at">최신순</a>
                 </div>
             </div>
 
@@ -283,6 +284,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     const noCommentsLi = document.getElementById('no-comments');
                     if (noCommentsLi) noCommentsLi.remove();
 
+                    const currentUserAvatarElement = document.querySelector('.new-comment-form .current-user-avatar');
+                    const defaultProfileImageUrl = "{% static 'flo/images/icons/profile/default_profile_light.png' %}";
+                    const currentUserAvatarUrl = currentUserAvatarElement ? currentUserAvatarElement.src : defaultProfileImageUrl;
+
                     const authorProfileImageUrl = data.author_profile_image_url || currentUserAvatarUrl;
                     const authorDisplayName = data.author_display_name || data.author_username;
 
@@ -302,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <form id="edit-comment-form-${data.comment_id}" class="edit-comment-form" style="display:none;" data-edit-url="{% url 'flo:study_post_comment_edit' 0 %}".replace('0', data.comment_id)>
                                 <input type="hidden" name="csrfmiddlewaretoken" value="${csrftoken}">
-                                <textarea name="content" class="form-control" rows="2">${data.content_raw || data.content}</textarea> {/* data.content_raw 사용 고려 */}
+                                <textarea name="content" class="form-control" rows="2">${data.content_raw || data.content}</textarea>
                                 <div class="edit-form-actions">
                                     <button type="submit" class="btn btn-primary btn-sm">수정 완료</button>
                                     <button type="button" class="btn btn-secondary btn-sm cancel-edit">취소</button>
@@ -312,14 +317,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     commentList.insertAdjacentHTML('beforeend', newCommentHtml);
                     this.reset();
                     document.getElementById('comment-total-count').textContent = data.comment_count;
-                    bindCommentActionButtons(document.getElementById(`comment-${data.comment_id}`));
-                    setDefaultAvatarTheme();
+                    
+                    const newCommentElement = document.getElementById(`comment-${data.comment_id}`);
+                    if (newCommentElement) { // 새로 추가된 요소가 확실히 존재하는지 확인
+                        bindCommentActionButtons(newCommentElement);
+                        setDefaultThemeAssets(); // ★★★ 함수 이름 수정: setDefaultAvatarTheme -> setDefaultThemeAssets ★★★
+                    } else {
+                        console.error('Failed to find the newly added comment element for post-processing.');
+                    }
+
                 } else {
                     alert(data.errors || data.message || '댓글 작성에 실패했습니다.');
                 }
             })
             .catch(error => {
-                console.error('Comment submit error:', error);
+                console.error('Comment submit error:', error); // 이 부분에서 해당 오류가 출력되었을 것입니다.
                 alert('댓글 작성 중 오류가 발생했습니다.');
             });
         });
@@ -449,9 +461,90 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.sort-option').forEach(option => {
         option.addEventListener('click', function(e) {
             e.preventDefault();
+            const sortOrder = this.dataset.sort;
+            const currentPostPk = "{{ post.pk }}"; // 현재 게시글의 PK 가져오기
+
+            // 모든 정렬 옵션에서 'active' 클래스 제거
             document.querySelectorAll('.sort-option').forEach(opt => opt.classList.remove('active'));
+            // 현재 클릭된 옵션에 'active' 클래스 추가
             this.classList.add('active');
-            // 서버에 정렬 요청 로직 추가
+
+            fetch(`/flo/study_post/${currentPostPk}/comments/?sort=${sortOrder}`, {
+                method: 'GET', // 댓글 목록 조회는 GET
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest', // AJAX 요청임을 명시 (선택적)
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const commentListUl = document.getElementById('comment-list');
+                commentListUl.innerHTML = ''; // 기존 댓글 목록 비우기
+
+                if (data.comments && data.comments.length > 0) {
+                    data.comments.forEach(commentData => {
+                        // 서버에서 받은 author_profile_image_url이 없거나,
+                        // has_custom_profile_image가 false이면 기본 이미지 사용
+                        let profileImgSrc = commentData.author_profile_image_url;
+                        let imgClass = "commenter-avatar";
+
+                        if (!commentData.has_custom_profile_image) {
+                             // 기본 이미지 경로 (라이트/다크 모드는 setDefaultThemeAssets에서 처리)
+                            profileImgSrc = "{% static 'flo/images/icons/profile/default_profile_light.png' %}";
+                            imgClass += " default-avatar";
+                        } else if (!profileImgSrc) { // 커스텀 이미지가 있는데 URL이 없는 예외적 경우 (거의 없음)
+                            profileImgSrc = "{% static 'flo/images/icons/profile/default_profile_light.png' %}";
+                            imgClass += " default-avatar";
+                        }
+
+
+                        // 댓글 수정/삭제 버튼 HTML (로그인 사용자이고 본인 댓글일 경우)
+                        let actionsHtml = '';
+                        if (commentData.can_edit_delete) {
+                            actionsHtml = `
+                                <div class="comment-item-actions">
+                                    <button class="btn-link-style edit-comment" data-comment-id="${commentData.id}">수정</button>
+                                    <button class="btn-link-style delete-comment" data-comment-id="${commentData.id}" data-delete-url="${commentData.delete_url}">삭제</button>
+                                </div>
+                                <form id="edit-comment-form-${commentData.id}" class="edit-comment-form" style="display:none;" data-edit-url="${commentData.edit_url}">
+                                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrftoken}">
+                                    <textarea name="content" class="form-control" rows="2">${commentData.content}</textarea> {# 원본 content 사용 #}
+                                    <div class="edit-form-actions">
+                                        <button type="submit" class="btn btn-primary btn-sm">수정 완료</button>
+                                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">취소</button>
+                                    </div>
+                                </form>
+                            `;
+                        }
+
+                        const commentHtml = `
+                            <li id="comment-${commentData.id}" class="comment-item-wrapper">
+                                <div class="comment-author-meta">
+                                    <img src="${profileImgSrc}" alt="${commentData.author_display_name}" class="${imgClass}">
+                                    <div class="comment-author-details">
+                                        <strong class="commenter-name">${commentData.author_display_name}</strong>
+                                        <span class="comment-date">${commentData.created_at}</span>
+                                    </div>
+                                </div>
+                                <p class="comment-content-text" id="comment-text-${commentData.id}">${commentData.content.replace(/\n/g, '<br>')}</p>
+                                ${actionsHtml}
+                            </li>
+                        `;
+                        commentListUl.insertAdjacentHTML('beforeend', commentHtml);
+                        // 새로 추가된 댓글 아이템에 대해 이벤트 바인딩
+                        const newCommentItem = document.getElementById(`comment-${commentData.id}`);
+                        if (newCommentItem) {
+                             bindCommentActionButtons(newCommentItem);
+                        }
+                    });
+                    setDefaultThemeAssets(); // 전체 댓글 목록 다시 그린 후 테마 적용
+                } else {
+                    commentListUl.innerHTML = '<li id="no-comments" class="no-comments-message">아직 댓글이 없습니다.</li>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching sorted comments:', error);
+                alert('댓글을 정렬하는 중 오류가 발생했습니다.');
+            });
         });
     });
 
