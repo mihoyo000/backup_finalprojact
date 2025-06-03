@@ -14,3 +14,9 @@ def basename(value):
 @register.filter
 def filename_only(value): # 위 basename과 동일한 기능이므로 하나만 사용해도 됩니다.
     return basename(value)
+
+@register.filter
+def truncate_chars(value, max_length):
+    if len(value) > max_length:
+        return value[:max_length] + "..."
+    return value

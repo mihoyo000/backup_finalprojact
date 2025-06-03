@@ -75,6 +75,9 @@
     --dark-list-category-dropdown-border: #495057;
     --dark-list-category-dropdown-text: #f1f1f1;
     --dark-list-category-dropdown-item-hover-bg: #383838;
+
+    --category-fixed-width: 180px; /* 카테고리 영역 고정 너비 변수화 */
+    --category-title-gap: 8px;   /* 카테고리와 제목 사이 간격 변수화 */
 }
 /* ... (페이지 레이아웃, 카테고리 필터 UI, 검색폼, 테이블, 페이지네이션 등의 CSS는 이전 답변과 동일하게 유지) ... */
 .board-page-wrapper {
@@ -339,62 +342,163 @@ body:not(.theme-light) .board-table-custom .notice-row td { background-color: #3
 body:not(.theme-light) .board-table-custom .notice-row td:first-child { color: #ede7f6; }
 .board-table-custom .notice-row .title-cell a { color: #6a1b9a; }
 body:not(.theme-light) .board-table-custom .notice-row .title-cell a { color: #e6ceff; }
+
 /* 게시물 제목 셀 스타일 수정 */
 .title-cell {
     text-align: left;
-    padding-left: 15px;
-    display: flex; /* Flexbox를 사용하여 아이템 정렬 */
-    align-items: center; /* 수직 중앙 정렬 */
-    gap: 0.5rem; /* 카테고리 태그와 제목 사이 간격 */
+    padding-left: 15px; /* td 셀 자체의 왼쪽 여백 */
+    display: flex;
+    align-items: center;
+    overflow: hidden; 
 }
+/* 게시물 제목 링크 */
 .post-title-link {
-    color: #1E3A8A; /* 라이트모드 제목 링크 */
     text-decoration: none;
-    font-weight: 400;
-    flex-grow: 1; /* 제목이 남은 공간을 차지하도록 */
-    /* white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 필요시 */
-}
-body:not(.theme-light) .post-title-link { color: #e8e8e8; }
-.post-title-link:hover { text-decoration: underline; }
-body.theme-light .post-title-link:hover { color: #0d1f59; }
-body:not(.theme-light) .post-title-link:hover { color: #ffffff; }
+    font-weight: 400; 
 
+    flex-grow: 1; 
+    min-width: 0; 
+    
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+}
+
+body.theme-light .post-title-link { color: #1E3A8A; } /* 일반-라이트 */
+body:not(.theme-light) .post-title-link { color: #e8e8e8; } /* 일반-다크 */
+body.theme-light .notice-row .title-cell a.post-title-link { color: #6a1b9a; } /* 공지-라이트 */
+body:not(.theme-light) .notice-row .title-cell a.post-title-link { color: #e6ceff; } /* 공지-다크 */
+
+.post-title-link:hover {
+    text-decoration: underline;
+}
+
+body.theme-light .post-title-link:hover {
+    color: #0d1f59;
+}
+
+body:not(.theme-light) .post-title-link:hover {
+    color: #ffffff;
+}
+
+body.theme-light .notice-row .title-cell a.post-title-link:hover { color: #4a148c; }
+body:not(.theme-light) .notice-row .title-cell a.post-title-link:hover { color: #f3e5f5; }
+
+/* 댓글 수 뱃지 */
 .comment-count-badge {
     font-size: 0.8em;
-    margin-left: 6px; /* 제목과의 간격 유지 */
     font-weight: 500;
-    color: #4caf50;
-    flex-shrink: 0; /* 댓글 뱃지 크기 유지 */
+    color: #4caf50; 
+    flex-shrink: 0; 
+    white-space: nowrap; 
+    margin-left: 8px; 
 }
-body:not(.theme-light) .comment-count-badge { color: #a5d6a7; }
+body:not(.theme-light) .comment-count-badge {
+    color: #a5d6a7; 
+}
+
+/* ★★★ 공지사항 제목의 왼쪽 마진 (카테고리 영역만큼 공간 확보) ★★★ */
+.notice-row .title-cell .post-title-link {
+    /* .post-category-display-wrapper가 없을 때, 해당 영역의 width + margin-right 만큼 왼쪽 여백 */
+    margin-left: calc(var(--category-fixed-width) + var(--category-title-gap)); 
+}
+
+/* ★★★ 카테고리가 없는 일반 게시물 제목의 왼쪽 마진 (카테고리 영역만큼 공간 확보) ★★★ */
+.no-category-post .post-title-link {
+    /* .post-category-display-wrapper가 없을 때, 해당 영역의 width + margin-right 만큼 왼쪽 여백 */
+    margin-left: calc(var(--category-fixed-width) + var(--category-title-gap));
+}
 
 
 /* --- 게시물 목록의 카테고리 드롭다운 스타일 --- */
+/* 게시물 목록의 카테고리 표시 래퍼 */
 .post-category-display-wrapper {
-    position: relative; 
+    position: relative;
     display: inline-flex; 
     align-items: center;
+    
+    width: var(--category-fixed-width); 
+    min-width: var(--category-fixed-width); 
+    
     flex-shrink: 0; 
+    margin-right: var(--category-title-gap); 
+    
+    overflow: hidden; 
 }
 
+/* 카테고리 태그 내부의 텍스트(실제 카테고리명, "외 N개")가 넘칠 때 */
+/* 말줄임표를 보이게 하려면, 이 요소들이 너비를 가져야 합니다. */
+/* 현재는 .post-category-display-wrapper 에서 overflow:hidden 으로 제어합니다. */
+.post-category-display-wrapper .post-category-tag,
+.post-category-display-wrapper .post-category-more-count {
+    /* 예시: 필요하다면 이 요소들에도 text-overflow 적용 가능 */
+    display: inline-block;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* "외 N개" 텍스트 */
+.post-category-display-wrapper .post-category-more-count {
+    font-size: 0.8em;
+    color: var(--text-main-list); /* 일반 텍스트 색상 */
+    margin-right: 3px; 
+    flex-shrink: 0; 
+}
+body:not(.theme-light) .post-category-display-wrapper .post-category-more-count {
+    color: var(--dark-text-main-list);
+}
+
+/* 드롭다운 화살표 아이콘 */
+.post-category-display-wrapper .dropdown-arrow-icon {
+    flex-shrink: 0; /* 줄어들지 않도록 */
+    fill: currentColor;
+    transition: transform 0.2s ease-in-out;
+}
+
+/* 카테고리 토글 버튼 자체 (내부의 텍스트+아이콘) */
 .post-category-list-dropdown-toggle {
-    cursor: pointer;
-    display: inline-flex; /* 내부 아이템 정렬 */
+    display: inline-flex;
     align-items: center;
-    padding: 2px 4px; /* 내부 패딩 약간 */
+    width: 100%; 
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow: ellipsis; 
+    padding: 2px 4px; 
     border-radius: 3px;
+    cursor: pointer;
     transition: background-color 0.2s;
-    /* font-size: 0.85em; .post-category-tag에서 상속받도록 */
-    /* color: var(--text-main-list); .post-category-tag에서 상속받도록 */
+    justify-content: space-between; 
 }
 /* body:not(.theme-light) .post-category-list-dropdown-toggle {
     color: var(--dark-text-main-list);
 } */
+
+/* 카테고리 태그 ([카테고리명]) */
+.post-category-display-wrapper .post-category-tag {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.85em;
+    color: var(--text-main-list); /* 일반 태그 색상 */
+    border: 1px solid var(--line-sub-list);
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-right: 4px; 
+    /* display: inline-block; /* 필요시 */
+    /* max-width: 120px; /* 예시: 태그 자체의 최대 너비, 부모 너비 내에서 조절 */
+}
+body:not(.theme-light) .post-category-display-wrapper .post-category-tag {
+    color: var(--dark-text-main-list);
+    border-color: var(--dark-line-sub-list);
+}
+
 .post-category-list-dropdown-toggle:hover,
-.post-category-list-dropdown-toggle:focus { /* 포커스 스타일 추가 */
-    background-color: var(--category-item-hover-bg); /* 호버 시 배경 변경 */
-    outline: none; /* 기본 포커스 아웃라인 제거 */
-    box-shadow: 0 0 0 2px rgba(var(--category-item-active-bg-rgb, 50, 148, 228), 0.25); /* 커스텀 포커스 스타일 */
+.post-category-list-dropdown-toggle:focus { 
+    background-color: var(--category-item-hover-bg); 
+    outline: none; 
+    box-shadow: 0 0 0 2px rgba(var(--category-item-active-bg-rgb, 50, 148, 228), 0.25); 
 }
 body:not(.theme-light) .post-category-list-dropdown-toggle:hover,
 body:not(.theme-light) .post-category-list-dropdown-toggle:focus {
@@ -463,7 +567,7 @@ body:not(.theme-light) .post-category-dropdown-content {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: default; /* 드롭다운 내 아이템은 클릭 대상이 아님을 명시 */
+    cursor: pointer;
 }
 body:not(.theme-light) .post-category-dropdown-content li {
     color: var(--dark-list-category-dropdown-text);

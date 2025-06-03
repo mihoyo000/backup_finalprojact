@@ -56,20 +56,21 @@
 
         <form method="post" enctype="multipart/form-data" class="study-post-form">
             {% csrf_token %}
-                <div style="display: none;">
-                    {{ form.categories }}
-                </div>
+            
+            {{ form.categories }} {# MultipleHiddenInput으로 렌더링됨 #}
 
             <div class="form-row category-selection-area-wrapper">
-                <label class="form-label">카테고리 선택 (최대 5개)</label>
+                <label class="form-label" for="categorySearchInputInline">{{ form.categories.label }}</label>
+                {% if form.categories.help_text %}
+                    <small class="form-text text-muted d-block mb-2" id="{{ form.categories.auto_id }}_helptext">{{ form.categories.help_text }}</small>
+                {% endif %}
+
+
                 <div id="selected-categories-display" class="mb-2">
                     {# JavaScript로 선택된 카테고리 태그들이 여기에 표시됨 #}
                 </div>
                 <div class="category-panel-container">
                     {# 검색창 #}
-                    <!-- <div class="category-search-box mb-2">
-                        <input type="text" id="categorySearchInputInline" class="form-control" placeholder="카테고리 검색...">
-                    </div> -->
                     <div class="category-search-box mb-2 position-relative"> {# position-relative 추가 #}
                         <input type="text" id="categorySearchInputInline" class="form-control" placeholder="카테고리 검색...">
                         <span id="clearSearchInput" class="clear-search-btn" style="display:none;">×</span> {# ×는 'x' 문자입니다 #}
@@ -197,34 +198,6 @@
             {# JavaScript에서 사용할 빈 폼 템플릿 (숨겨둠) #}
             <div id="empty-attachment-form" style="display:none;">
                 <div class="attachment-form-item mb-3 p-3 border rounded">
-                    <div style="display:none;"><input type="checkbox" name="attachments-__prefix__-DELETE" id="id_attachments-__prefix__-DELETE"></div>
-                    <label for="id_attachments-__prefix__-file" class="form-label-attachment-new small d-block mb-1 fw-bold">새 파일 첨부:</label>
-                    <div class="attachment-file-input-wrapper d-flex align-items-center">
-                        <input type="file" name="attachments-__prefix__-file" id="id_attachments-__prefix__-file" class="d-none attachment-true-input">
-                        <button type="button" class="btn btn-sm btn-primary select-file-button me-2">파일 선택</button>
-                        <span class="selected-file-name small flex-grow-1">선택된 파일 없음</span> {# JS에서 text-muted 클래스 제어 #}
-                        <button type="button" class="btn btn-sm btn-outline-secondary clear-newly-selected-file ms-1" style="display:none;" title="선택한 파일 취소">X</button>
-                    </div>
-                </div>
-            </div>
-
-            {# JavaScript에서 사용할 빈 폼 템플릿 (숨겨둠) #}
-            <div id="empty-attachment-form" style="display:none;">
-                <div class="attachment-form-item mb-3 p-3 border rounded">
-                    <div style="display:none;"><input type="checkbox" name="attachments-__prefix__-DELETE" id="id_attachments-__prefix__-DELETE"></div>
-                    <label for="id_attachments-__prefix__-file" class="form-label-attachment-new small d-block mb-1 fw-bold">새 파일 첨부:</label>
-                    <div class="attachment-file-input-wrapper d-flex align-items-center">
-                        <input type="file" name="attachments-__prefix__-file" id="id_attachments-__prefix__-file" class="d-none attachment-true-input">
-                        <button type="button" class="btn btn-sm btn-primary select-file-button me-2">파일 선택</button>
-                        <span class="selected-file-name small flex-grow-1">선택된 파일 없음</span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary clear-newly-selected-file ms-1" style="display:none;" title="선택한 파일 취소">X</button>
-                    </div>
-                </div>
-            </div>
-
-            {# JavaScript에서 사용할 빈 폼 템플릿 (숨겨둠) #}
-            <div id="empty-attachment-form" style="display:none;">
-                <div class="attachment-form-item mb-3 p-3 border rounded">
                     {# ★★★ Django Formset의 DELETE 필드 추가 (숨김 처리) ★★★ #}
                     <input type="checkbox" name="attachments-__prefix__-DELETE" id="id_attachments-__prefix__-DELETE" style="display:none;">
                     <label for="id_attachments-__prefix__-file" class="form-label-attachment-new small d-block mb-1">새 파일 첨부:</label>
@@ -281,7 +254,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- 카테고리 관련 변수 및 초기화 ---
     const MAX_CATEGORIES = 5;
-    let selectedCategories = new Map(); // key: categoryId (string), value: {id, name, path, slug}
+    let selectedCategories = new Map();
+    const categoriesInputName = "{{ form.categories.html_name }}";
+    const $form = $('form.study-post-form'); // 폼 요소를 미리 캐싱
+    const $submitButton = $form.find('button[type="submit"].btn-submit-form'); // 제출 버튼 캐싱
+
     const $hiddenSelectElement = $('#id_categories'); // ★★★ ID로 직접 선택 ★★★
     console.log(`[FORM JS] Hidden select for 'categories' (Selector: '#id_categories' | Found ID: ${$hiddenSelectElement.attr('id')} | Found Name: ${$hiddenSelectElement.attr('name')}):`, $hiddenSelectElement.length > 0 ? "Found" : "NOT FOUND - Check rendered HTML for #id_categories");
 
@@ -307,22 +284,53 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         renderSelectedCategories();
-        updateHiddenSelect();
+        updateHiddenInputs();
         updatePanelActiveStates();
     } else {
         console.log("[FORM JS] Create Form or Edit Form with no initial categories.");
         // 글쓰기 시에도 updateHiddenSelect()를 호출하여 빈 값으로 명시적 초기화
         if ($hiddenSelectElement.length > 0) { // $hiddenSelectElement가 존재할 때만 호출
-             updateHiddenSelect();
+            updateHiddenInputs();
         }
     }
 
-    /* // 이전 방식의 초기 선택값 로드 로직 (주석 처리 - 위 방식으로 통합)
-    if ($hiddenSelectElement.length && '{{ form.instance.pk|default:"" }}') {
-        console.log("[FORM JS] (Old method) Edit Form: Loading initial categories from hidden select options.");
-        // ...
-    }
-    */
+    // --- 통합된 폼 제출 시 유효성 검사 및 hidden input 업데이트 ---
+    $form.off('submit').on('submit', function(event) { 
+        console.log("[FORM JS] Unified Form submit event triggered. HANDLER ID: MAIN_STUDY_POST_FORM_HANDLER");
+
+        $submitButton.prop('disabled', true).css('opacity', 0.7);
+        updateHiddenInputs(); 
+        console.log("[FORM JS] Hidden inputs updated before validation on submit (Unified Handler).");
+
+        let proceedWithSubmit = true;
+        let alertMessage = "";
+
+        if (selectedCategories.size === 0) {
+            alertMessage = '카테고리를 최소 1개 이상 선택해주세요.';
+            proceedWithSubmit = false;
+            console.log("[FORM JS] Category not selected. Submission will be prevented (Unified Handler).");
+        } else if (selectedCategories.size > MAX_CATEGORIES) {
+            alertMessage = `카테고리는 최대 ${MAX_CATEGORIES}개까지 선택할 수 있습니다. 현재 ${selectedCategories.size}개 선택됨.`;
+            proceedWithSubmit = false;
+            console.log("[FORM JS] Too many categories selected. Submission will be prevented (Unified Handler).");
+        }
+        
+        if (!proceedWithSubmit) {
+            console.log("[FORM JS DEBUG] Alerting with message: " + alertMessage + " (HANDLER ID: MAIN_STUDY_POST_FORM_HANDLER)");
+            alert(alertMessage); 
+            event.preventDefault(); 
+            $submitButton.prop('disabled', false).css('opacity', 1); 
+            
+            const categoryArea = document.querySelector('.category-selection-area-wrapper');
+            if (categoryArea) {
+                categoryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            console.log("[FORM JS] Form submission prevented by JS validation (Unified Handler).");
+            return false; 
+        }
+        
+        console.log("[FORM JS] JS Form validation passed. Allowing form submission (Unified Handler).");
+    });
 
     // --- 카테고리 UI 업데이트 함수들 ---
     function renderSelectedCategories() {
@@ -335,15 +343,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function updateHiddenSelect() {
-        if (!$hiddenSelectElement || $hiddenSelectElement.length === 0) {
-            console.error(`[FORM JS] CRITICAL: Hidden select element '{{ form.categories.html_name }}' NOT FOUND. Cannot update form values for submission.`);
-            return;
-        }
+    function updateHiddenInputs() { 
+        $(`input[type="hidden"][name="${categoriesInputName}"]`).remove();
         let currentSelectedIds = Array.from(selectedCategories.keys());
-        $hiddenSelectElement.val(currentSelectedIds);
-        $hiddenSelectElement.trigger('change');
-        console.log(`[FORM JS] updateHiddenSelect: Set hidden <select name="${$hiddenSelectElement.attr('name')}"> to values:`, $hiddenSelectElement.val());
+        if ($form.length === 0) { return; }
+        currentSelectedIds.forEach(function(id) {
+            $form.append(
+                $('<input>').attr({ type: 'hidden', name: categoriesInputName, value: id })
+            );
+        });
     }
 
     function updatePanelActiveStates() {
@@ -400,8 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         renderSelectedCategories();
-        updateHiddenSelect();
-        // updatePanelActiveStates(); // handleCategorySelection에서 active/inactive 직접 처리하므로 여기서 중복 호출 불필요
+        updateHiddenInputs();
     }
 
 
@@ -467,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 검색 결과 패널의 아이템도 active 해제 (만약 있다면)
             $(`#ajaxSearchResultsPanel .category-search-result-item[data-id="${categoryIdToRemove}"]`).removeClass('active');
             renderSelectedCategories();
-            updateHiddenSelect();
+            updateHiddenInputs();
         }
     });
 
@@ -764,20 +771,6 @@ document.addEventListener('DOMContentLoaded', function() {
             totalFormsInput.value = formIdx + 1;
         });
     }
-
-    // study_post_form.html의 JavaScript 최하단 또는 적절한 위치에 추가
-    $('form.study-post-form').on('submit', function(event) {
-        // 실제 제출을 막고 싶다면: event.preventDefault();
-        console.log("[FORM JS] Form submit event triggered.");
-        const $categoriesSelect = $('select[name="categories"]'); // 직접 이름으로 다시 선택
-        if ($categoriesSelect.length > 0) {
-            console.log("[FORM JS] On submit - Hidden select 'categories' name:", $categoriesSelect.attr('name'));
-            console.log("[FORM JS] On submit - Hidden select 'categories' value:", $categoriesSelect.val());
-        } else {
-            console.error("[FORM JS] On submit - CRITICAL: Hidden select 'categories' NOT FOUND!");
-        }
-        // 실제 제출을 계속하려면 이 함수에서 아무것도 반환하지 않거나 true를 반환합니다.
-    });
 });
 </script>
 {% endblock %}

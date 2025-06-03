@@ -1,6 +1,7 @@
 {# flo/templates/flo/study_post/study_post_list.html #}
 {% extends "flo/base.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}학습 게시판{% endblock %}
 
@@ -112,18 +113,18 @@
                         <span class="post-category-display-wrapper">
                             {# 토글 버튼에 data-target-dropdown 속성으로 내용물 ID 연결 #}
                             <span class="post-category-list-dropdown-toggle" 
-                                  id="post-cat-toggle-{{ post.id }}" 
-                                  data-target-dropdown="#post-cat-content-{{ post.id }}"
-                                  tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
-                                <span class="post-category-tag 대표-카테고리">
-                                    [{{ post.categories.all.0.name }}]
+                                          id="post-cat-toggle-{{ post.id }}" 
+                                          data-target-dropdown="#post-cat-content-{{ post.id }}"
+                                          tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
+                                <span class="post-category-tag">
+                                    [{{ post.categories.all.0.name }}] {# 카테고리 이름 자르기 제거 #}
                                 </span>
                                 {% if post.categories.all|length > 1 %}
                                     <span class="post-category-more-count">외 {{ post.categories.all|length|add:"-1" }}개</span>
-                                    <svg class="dropdown-arrow-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-                                    </svg>
                                 {% endif %}
+                                <svg class="dropdown-arrow-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                </svg>
                             </span>
                             {% if post.categories.all|length > 0 %}
                             {# 드롭다운 내용물에도 고유 ID 부여 #}
@@ -141,7 +142,9 @@
                         </span>
                         {% endif %}
                         {# === 게시물 제목 링크 === #}
-                        <a href="{{ post.get_absolute_url }}" class="post-title-link">{{ post.title }}</a>
+                        <a href="{{ post.get_absolute_url }}" class="post-title-link" title="{{ post.title }}">
+                            {{ post.title|truncate_chars:30 }}
+                        </a>
                         
                         {% if post.comment_count > 0 %}
                             <span class="comment-count-badge">[{{ post.comment_count }}]</span>

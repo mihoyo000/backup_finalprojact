@@ -33,17 +33,17 @@ class AttachmentForm(forms.ModelForm):
 class PostForm(forms.ModelForm):
     categories = forms.ModelMultipleChoiceField(
         queryset=Category.objects.all().order_by('name'),
-        widget=forms.SelectMultiple(attrs={'class': 'categories-select2-target'}),
-        required=False,
-        label="카테고리 선택 (최대 5개)",
-        help_text="게시글과 관련된 카테고리를 최대 5개까지 선택해주세요."
+        # ★★★ 위젯을 MultipleHiddenInput으로 변경 ★★★
+        widget=forms.MultipleHiddenInput(attrs={'class': 'categories-hidden-inputs'}), 
+        required=True,
+        label="카테고리 선택 (최소 1개, 최대 5개)",
+        help_text="게시글과 관련된 카테고리를 최소 1개, 최대 5개까지 선택해주세요."
+        # error_messages는 JS alert로 대체하므로 제거된 상태 유지
     )
 
     class Meta:
         model = Post
-        # 'attached_file' 필드 제거 -> Attachment 모델과 인라인 폼셋으로 관리
         fields = ['categories', 'title', 'content']
-
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -58,17 +58,24 @@ class PostForm(forms.ModelForm):
             'content': '',
         }
 
-    # 카테고리 초기값 설정을 위해 __init__ 수정 (문제 3-1 관련)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance and self.instance.pk: # 수정 폼일 경우
-            # 초기 카테고리 값 설정 (뷰에서 전달된 instance의 categories)
+        if self.instance and self.instance.pk:
             self.fields['categories'].initial = self.instance.categories.all()
 
     def clean_categories(self):
         selected_categories = self.cleaned_data.get('categories')
+        # required=True 때문에 selected_categories가 비어있는 경우는 Django가 이미 처리.
+        # 여기서는 최대 개수만 체크.
         if selected_categories and len(selected_categories) > 5:
             raise forms.ValidationError("카테고리는 최대 5개까지만 선택할 수 있습니다.")
+        
+        # ★★★ 중요: 여기서 selected_categories가 비어있을 때 에러를 발생시키면 안 됩니다. ★★★
+        # JS에서 alert를 띄우고 제출을 막는 것이 우선입니다.
+        # 만약 JS를 우회하여 제출된 경우, required=True에 의해 Django의 기본 'This field is required.' 메시지가 나올 것입니다.
+        # 사용자 정의 메시지를 원한다면 forms.py의 error_messages를 사용하고, JS alert는 보조 수단으로 사용해야 합니다.
+        # 지금은 JS alert를 우선하므로, 여기서 추가적인 'required' 관련 에러 발생은 불필요합니다.
+
         return selected_categories
 
 class CommentForm(forms.ModelForm):
