@@ -189,10 +189,18 @@ body:not(.theme-light) #applyCategoryFilterButton {
     color: var(--dark-btn-filter-apply-text);
 }
 
+#categoryTreePanelList {
+    margin-top: 25px;
+}
 .category-search-box input[type="text"].form-control {
-    width: 100%; padding: .5rem .75rem; padding-right: 2.5rem; font-size: 0.9rem;
-    border-radius: .25rem; background-color: var(--form-input-bg);
-    color: var(--form-input-text); border: 1px solid var(--form-input-border);
+    width: 100%; 
+    padding: .5rem .75rem; 
+    padding-right: 2.5rem; 
+    font-size: 0.9rem;
+    border-radius: .25rem; 
+    background-color: var(--form-input-bg);
+    color: var(--form-input-text); 
+    border: 1px solid var(--form-input-border);
 }
 .category-search-box input[type="text"].form-control::placeholder { color: var(--form-input-placeholder); }
 body:not(.theme-light) .category-search-box input[type="text"].form-control {
