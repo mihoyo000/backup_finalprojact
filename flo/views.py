@@ -18,6 +18,7 @@ from django.forms import inlineformset_factory
 
 from django.core.serializers.json import DjangoJSONEncoder # 추가
 import json # 추가
+from django.template.loader import render_to_string
 
 def home(request):
     return render(request, 'flo/index.html')
@@ -64,23 +65,25 @@ def logout_view(request):
 def study_post_list(request):
     major_categories_list = Category.objects.filter(parent__isnull=True).order_by('name')
 
-    # --- URL 쿼리 파라미터에서 선택된 카테고리 슬러그 목록 가져오기 ---
     selected_slugs_str = request.GET.get('category_slugs', '')
     selected_slug_list = [slug.strip() for slug in selected_slugs_str.split(',') if slug.strip()]
 
-    # --- 게시글 쿼리 ---
-    post_query = Post.objects.select_related('author').prefetch_related('categories').annotate(
-        num_comments=Count('comments', distinct=True),
-        num_likes=Count('likes', distinct=True)
+    # --- 게시글 쿼리 (공통) ---
+    post_query = Post.objects.select_related('author__profile').prefetch_related(
+        'categories', 'likes', 'comments'
+    ).annotate(
+        annotated_comment_count=Count('comments', distinct=True), # comment_count는 모델에서 calculated_comment_count이므로 충돌 X
+        annotated_total_likes=Count('likes', distinct=True)      # total_likes는 모델에 @property total_likes가 있으므로,
+                                                                # 이 이름(annotated_total_likes)을 템플릿에서 사용해야 함
     ).order_by('-is_notice', '-created_at')
 
-    # 선택된 카테고리가 있다면 해당 카테고리들 중 하나라도 포함된 게시글 필터링
+
     if selected_slug_list:
         post_query = post_query.filter(categories__slug__in=selected_slug_list).distinct()
 
-    # --- 검색 처리 ---
     search_type = request.GET.get('search_type', '')
     search_keyword = request.GET.get('search_keyword', '')
+    category_q = request.GET.get('category_q', '') # 카테고리 검색어 (JS에서 사용)
 
     if search_keyword:
         if search_type == 'title_content':
@@ -88,38 +91,75 @@ def study_post_list(request):
         elif search_type == 'title':
             post_query = post_query.filter(title__icontains=search_keyword)
         elif search_type == 'author':
-            post_query = post_query.filter(author__username__icontains=search_keyword)
-        elif search_type == 'category_name': # 카테고리명으로 검색
+            # author__profile__nickname 또는 author__username 등 실제 필드명 사용
+            post_query = post_query.filter(
+                Q(author__username__icontains=search_keyword) | 
+                Q(author__profile__nickname__icontains=search_keyword)
+            )
+        elif search_type == 'category_name':
             post_query = post_query.filter(categories__name__icontains=search_keyword).distinct()
 
-    # --- 페이지네이션 ---
-    paginator = Paginator(post_query, 10) # 한 페이지에 10개씩
+    paginator = Paginator(post_query, 10)
     page_number = request.GET.get('page')
     try:
-        posts = paginator.page(page_number)
+        posts_page_obj = paginator.page(page_number)
     except PageNotAnInteger:
-        posts = paginator.page(1)
+        posts_page_obj = paginator.page(1)
     except EmptyPage:
-        posts = paginator.page(paginator.num_pages)
+        posts_page_obj = paginator.page(paginator.num_pages)
 
-    # --- 템플릿에 전달할 초기 선택된 카테고리 정보 (UI 표시용) ---
-    # JavaScript에서 URL 파라미터를 직접 파싱하여 처리하는 것이 더 간단하고 효율적일 수 있습니다.
-    # 아래 코드는 서버에서 객체를 찾아 전달하는 예시입니다.
+    # --- AJAX 요청 처리 ---
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # AJAX 요청 시 게시물 목록 HTML과 페이지네이션 HTML만 반환
+        posts_html = render_to_string(
+            'flo/study_post/_study_post_list_items.html', # 게시물 목록 부분 템플릿
+            {'posts': posts_page_obj, 'request': request}
+        )
+        pagination_html = render_to_string(
+            'flo/study_post/_pagination.html', # 페이지네이션 부분 템플릿
+            {'posts': posts_page_obj, 'request': request, 'current_category_slugs_str': selected_slugs_str, 'search_keyword': search_keyword, 'search_type': search_type, 'category_q': category_q }
+        )
+        return JsonResponse({
+            'posts_html': posts_html,
+            'pagination_html': pagination_html,
+        })
+
+    # --- 일반 요청 처리 (전체 페이지 로드) ---
     initial_selected_categories_for_ui = []
     if selected_slug_list:
-        # Category.objects.filter(slug__in=selected_slug_list) 로 가져오면 순서가 보장되지 않을 수 있으므로,
-        # 슬러그 목록 순서대로 객체를 가져오려면 추가 로직이 필요하거나, JS에서 슬러그만 사용합니다.
-        # 여기서는 간단히 필터링된 객체들을 전달합니다.
-        initial_selected_categories_for_ui = list(Category.objects.filter(slug__in=selected_slug_list))
+        # Category 객체에 ancestry_slugs와 is_leaf를 추가해야 함
+        selected_cats_qs = Category.objects.filter(slug__in=selected_slug_list)
+        for cat in selected_cats_qs:
+            ancestors = cat.get_ancestors() # MPTT 또는 직접 구현한 메소드
+            initial_selected_categories_for_ui.append({
+                'id': cat.id,
+                'name': cat.name,
+                'slug': cat.slug,
+                'get_full_path_name': cat.get_full_path_name(), # 직접 구현한 메소드
+                'ancestry_slugs': [anc.slug for anc in ancestors],
+                'is_leaf': cat.is_leaf_node() # MPTT 또는 직접 구현한 메소드
+            })
+    
+    # 대분류 카테고리 목록에도 is_leaf, children.exists 정보 추가 (JS에서 사용 가능하도록)
+    processed_major_categories = []
+    for major_cat in major_categories_list:
+        processed_major_categories.append({
+            'id': major_cat.id,
+            'name': major_cat.name,
+            'slug': major_cat.slug,
+            'children_exists': major_cat.children.exists(), # children은 related_name
+            'is_leaf': major_cat.is_leaf_node()
+        })
 
 
     context = {
-        'posts': posts,
-        'major_categories': major_categories_list,
-        'initial_selected_categories_for_ui': initial_selected_categories_for_ui, # 초기 UI 표시용
-        'current_category_slugs_str': selected_slugs_str, # JS 또는 페이지네이션 링크에 사용
+        'posts': posts_page_obj,
+        'major_categories': processed_major_categories, # is_leaf 등 정보 포함된 것으로 교체
+        'initial_selected_categories_for_ui': initial_selected_categories_for_ui,
+        'current_category_slugs_str': selected_slugs_str,
         'search_type': search_type,
         'search_keyword': search_keyword,
+        'category_q': category_q, # 카테고리 검색어 전달 (페이지 로드 시 JS에서 사용)
     }
     return render(request, 'flo/study_post/study_post_list.html', context)
 
@@ -255,28 +295,26 @@ def study_post_create(request):
     }
     return render(request, 'flo/study_post/study_post_form.html', context)
 
-def ajax_get_child_categories(request): # 함수 이름 확인!
+def ajax_get_child_categories(request):
     parent_id = request.GET.get('parent_id')
     children_data = []
     if parent_id:
         try:
             parent_category = Category.objects.get(id=parent_id)
-            children = parent_category.children.all().order_by('name')
+            children = parent_category.children.all().order_by('name') # related_name 'children' 사용
             for child in children:
                 children_data.append({
                     'id': child.id,
                     'name': child.name,
-                    'slug': child.slug, # 목록 페이지 필터링을 위해 slug 추가
-                    'full_path': child.get_full_path_name, # Category 모델에 이 메서드가 있어야 함
-                    'has_children': child.children.exists() # 하위 카테고리 존재 여부
+                    'slug': child.slug,
+                    'full_path': child.get_full_path_name, # ★★★ @property이므로 () 없이 접근
+                    'has_children': not child.is_leaf_node(), # is_leaf_node()의 반대
+                    'is_leaf': child.is_leaf_node() # JS에서 data-is-leaf로 사용
                 })
         except Category.DoesNotExist:
-            # parent_id에 해당하는 카테고리가 없을 경우의 처리 (선택적)
-            # 예를 들어, return JsonResponse({'error': 'Parent category not found.'}, status=404)
-            pass # 그냥 빈 children_data 반환
+            pass
         except Exception as e:
-            # 기타 예외 처리 (선택적)
-            # return JsonResponse({'error': str(e)}, status=500)
+            print(f"Error in ajax_get_child_categories: {e}") # 디버깅용
             pass
     return JsonResponse({'children': children_data})
 

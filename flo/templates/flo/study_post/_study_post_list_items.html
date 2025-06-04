@@ -1,0 +1,54 @@
+{# flo/templates/flo/study_post/_study_post_list_items.html #}
+{% load custom_filters %} {# 필요한 경우 로드 #}
+{% load static %}      {# 필요한 경우 로드 #}
+
+{% for post in posts %}
+<tr {% if post.is_notice %}class="notice-row"{% endif %}>
+    <td>{% if post.is_notice %}<strong>공지</strong>{% else %}{{ post.id }}{% endif %}</td>
+    <td class="title-cell">
+        {% if post.categories.all %}
+        <span class="post-category-display-wrapper">
+            <span class="post-category-list-dropdown-toggle"
+                  id="post-cat-toggle-{{ post.id }}"
+                  data-target-dropdown="#post-cat-content-{{ post.id }}" {# 이 ID가 tbody 내에서 고유해야 함 #}
+                  tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
+                <span class="post-category-tag">
+                    [{{ post.categories.all.0.name }}]
+                </span>
+                {% if post.categories.all|length > 1 %}
+                    <span class="post-category-more-count">외 {{ post.categories.all|length|add:"-1" }}개</span>
+                {% endif %}
+                <svg class="dropdown-arrow-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </span>
+            {# 드롭다운 내용물. 이 부분은 AJAX로 목록이 교체될 때마다 새로 생성되므로 ID 충돌 문제는 적음 #}
+            <div class="post-category-dropdown-content" id="post-cat-content-{{ post.id }}">
+                <ul>
+                    {% for category in post.categories.all %}
+                        <li data-id="{{ category.id }}"
+                            data-name="{{ category.name }}"
+                            data-slug="{{ category.slug }}"
+                            data-path="{{ category.get_full_path_name }}">{{ category.get_full_path_name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </span>
+        {% endif %}
+        <a href="{{ post.get_absolute_url }}" class="post-title-link" title="{{ post.title }}">
+            {{ post.title|truncate_chars:30 }}
+        </a>
+        {% if post.annotated_comment_count > 0 %} {# 변경된 이름 사용 #}
+            <span class="comment-count-badge">[{{ post.annotated_comment_count }}]</span>
+        {% endif %}
+    </td>
+    <td>{{ post.author.profile.get_display_name }}</td> {# views에서 select_related('author__profile') 필요 #}
+    <td>{{ post.created_at|date:"Y-m-d" }}</td>
+    <td>{{ post.views }}</td>
+    <td>{{ post.annotated_total_likes }}</td> {# 변경된 이름 사용 (total_likes가 property인 경우) #}
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" class="text-center py-4">게시글이 없습니다.</td>
+</tr>
+{% endfor %}

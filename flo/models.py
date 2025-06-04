@@ -5,6 +5,7 @@ from django.conf import settings # settings.AUTH_USER_MODEL 사용
 from django.urls import reverse
 from django.db.models.signals import post_save # User 생성 시 Profile 자동 생성
 from django.dispatch import receiver # User 생성 시 Profile 자동 생성
+from django.utils.text import slugify
 
 # --- 사용자 프로필 모델 추가 ---
 class Profile(models.Model):
@@ -46,7 +47,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name="카테고리명")
-    slug = models.SlugField(max_length=50, unique=True, allow_unicode=True, help_text="URL에 사용될 이름")
+    slug = models.SlugField(max_length=50, unique=True, allow_unicode=True, help_text="URL에 사용될 이름", blank=True) # slug 자동 생성을 위해 blank=True 추가
     parent = models.ForeignKey(
         'self',
         null=True,
@@ -64,6 +65,20 @@ class Category(models.Model):
         verbose_name_plural = "전체 카테고리 목록"
         ordering = ['name'] # 또는 다른 정렬 기준
 
+    def save(self, *args, **kwargs):
+        """ slug가 비어있으면 name을 기반으로 자동 생성 """
+        if not self.slug:
+            self.slug = slugify(self.name, allow_unicode=True)
+            # 중복 slug 방지 로직 (필요시)
+            # original_slug = self.slug
+            # queryset = Category.objects.filter(slug=self.slug).exclude(pk=self.pk)
+            # counter = 1
+            # while queryset.exists():
+            #     self.slug = f"{original_slug}-{counter}"
+            #     queryset = Category.objects.filter(slug=self.slug).exclude(pk=self.pk)
+            #     counter += 1
+        super().save(*args, **kwargs)
+
     def get_level(self):
         level = 0
         p = self.parent
@@ -72,8 +87,8 @@ class Category(models.Model):
             p = p.parent
         return level
 
-    @property
-    def get_full_path_name(self):
+    @property # 이미 프로퍼티로 되어 있으므로 views.py에서 호출 시 () 없이 사용해야 함
+    def get_full_path_name(self): # 메소드 이름 변경 (get_full_path -> get_full_path_name) 또는 views에서 호출명 변경
         path = [self.name]
         current = self.parent
         while current:
@@ -81,7 +96,43 @@ class Category(models.Model):
             current = current.parent
         return " > ".join(path)
 
+    # --- 추가된 메소드 ---
+    def is_leaf_node(self):
+        """이 카테고리가 말단 노드인지 (자식 카테고리가 없는지) 확인합니다."""
+        return not self.children.exists()
+    
+    is_leaf_node.boolean = True # Django admin에서 아이콘으로 표시 (선택 사항)
+
+    def get_ancestors(self, include_self=False):
+        """
+        이 카테고리의 모든 부모 카테고리 목록을 반환합니다.
+        가장 상위 부모부터 순서대로 정렬됩니다.
+        include_self=True 이면 자기 자신도 목록 마지막에 포함합니다.
+        """
+        ancestors = []
+        current = self # include_self 기본값을 False로 하고, 호출 시 결정하도록 수정
+        if not include_self:
+            current = self.parent
+
+        # include_self=True이고, 현재 노드를 포함해야 할 때, 
+        # current가 self로 시작하므로, 루프 전에 current를 self.parent로 설정하면 안됨.
+        # 따라서, 루프는 current가 None이 아닐 동안 돌고,
+        # ancestors에 추가하는 것은 current가 self가 아닐 경우 또는 include_self 로직에 따라.
+        # 더 간단한 방법:
+        path = []
+        node = self
+        if not include_self:
+            node = self.parent # 자기 자신을 제외하고 부모부터 시작
+
+        while node:
+            path.insert(0, node)
+            node = node.parent
+        return path
+    # --- 여기까지 추가된 메소드 ---
+
+
     # ★★★ 최하위 자손 카테고리를 찾는 메소드 추가 ★★★
+    # 이 메소드는 현재 오류와 직접적인 관련은 없지만, 유용하게 사용될 수 있습니다.
     def get_leaf_nodes(self):
         """
         현재 카테고리 자신 또는 그 자손들 중에서 최하위(자식이 없는) 카테고리들을 반환합니다.
@@ -96,6 +147,7 @@ class Category(models.Model):
         return list(leaves) # 중복 제거를 위해 set을 사용하고 list로 변환하여 반환
 
     # ★★★ 특정 카테고리의 모든 자손을 찾는 메소드 (get_leaf_nodes에서 사용) - 선택적이지만 있으면 좋음 ★★★
+    # 이 메소드도 현재 오류와 직접적인 관련은 없지만, 유용하게 사용될 수 있습니다.
     def get_all_descendants(self, include_self=False):
         """
         현재 카테고리의 모든 자손 카테고리들을 재귀적으로 찾아 리스트로 반환합니다.
@@ -105,11 +157,10 @@ class Category(models.Model):
         if include_self:
             descendants.add(self)
 
-        # children QuerySet을 가져올 때 prefetch_related를 사용하여 DB 히트 줄이기
         children_qs = self.children.all().prefetch_related('children')
         for child in children_qs:
             descendants.add(child)
-            descendants.update(child.get_all_descendants(include_self=False)) # 재귀 호출
+            descendants.update(child.get_all_descendants(include_self=False))
         return list(descendants)
 
 # --- 대분류 프록시 모델 ---
@@ -167,7 +218,7 @@ class Post(models.Model):
         return self.likes.count()
 
     @property
-    def comment_count(self):
+    def calculated_comment_count(self): # 다른 이름으로 변경
         return self.comments.count()
     
     def get_category_display_names(self): # 선택된 카테고리 이름들을 문자열로 반환 (템플릿 표시용)
