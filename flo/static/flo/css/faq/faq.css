@@ -1,0 +1,309 @@
+/* static/flo/css/faq/faq.css */
+
+/* --- 기본 변수 (study_post_list.css에서 일부 가져옴 또는 유사하게 정의) --- */
+:root {
+    /* 페이지 전반 (기본값은 라이트모드) */
+    --faq-bg-page: #f8f9fa;
+    --faq-text-main: #212529;
+    --faq-line-sub: #dee2e6;
+    --faq-title-underline-color: #000000;
+    --faq-item-bg: #ffffff;
+    --faq-item-border: #e0e0e0;
+    --faq-question-bg: #ffffff;
+    --faq-question-text: #333333;
+    --faq-answer-bg: #f9f9f9;
+    --faq-answer-text: #555555;
+    --faq-answer-border-top: #e0e0e0;
+    --faq-icon-color: #777777;
+
+    /* 다크모드 변수 */
+    --dark-faq-bg-page: #1a1a1a;
+    --dark-faq-text-main: #f1f1f1;
+    --dark-faq-line-sub: #495057;
+    --dark-faq-title-underline-color: #ffffff;
+    --dark-faq-item-bg: #2c2c2c;
+    --dark-faq-item-border: #4a4a4a;
+    --dark-faq-question-bg: #2c2c2c;
+    --dark-faq-question-text: #e0e0e0;
+    --dark-faq-answer-bg: #222222;
+    --dark-faq-answer-text: #cccccc;
+    --dark-faq-answer-border-top: #4a4a4a;
+    --dark-faq-icon-color: #aaaaaa;
+
+    /* 페이지네이션 변수 (study_post_list.css 직접 수정된 값 반영) */
+    --pagination-link-bg: transparent;
+    --pagination-link-border: #e5e7eb; /* study_post_list.css의 기본값 */
+    --pagination-link-text: #6B7280;   /* study_post_list.css의 기본값 */
+    --pagination-link-hover-bg: #f3f4f6;
+    --pagination-link-hover-text: #4A5568;
+    --pagination-link-hover-border: #d1d5db;
+    --pagination-active-bg: #6d28d9;
+    --pagination-active-text: #fff;
+    --pagination-active-border: #6d28d9;
+    /* 라이트 모드 비활성화 버튼 색상 (study_post_list.css 수정 값) */
+    --pagination-disabled-text: #919397;
+    --pagination-disabled-border: #919397;
+
+    /* 다크 모드 페이지네이션 변수 (study_post_list.css 직접 수정된 값 반영) */
+    --dark-pagination-link-border: #4b5563;
+    --dark-pagination-link-text: #9ca3af;
+    --dark-pagination-link-hover-bg: #374151;
+    --dark-pagination-link-hover-text: #e5e7eb;
+    --dark-pagination-link-hover-border: #6b7280;
+    --dark-pagination-active-bg: #7e57c2;
+    --dark-pagination-active-text: #fff;
+    --dark-pagination-active-border: #7e57c2;
+    /* 다크 모드 비활성화 버튼 색상 (study_post_list.css 수정 값) */
+    --dark-pagination-disabled-text: #6c7d99;
+    --dark-pagination-disabled-border: #6c7d99;
+}
+
+/* 전체 페이지 레이아웃 */
+.faq-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background-color: var(--faq-bg-page);
+}
+/* 다크 모드일 때 .faq-page 배경. study_post_list.css와 동일한 선택자 사용 */
+body:not(.theme-light) .faq-page {
+    background-color: var(--dark-faq-bg-page);
+}
+
+
+/* FAQ 헤더 */
+.faq-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.faq-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--faq-text-main);
+    margin-top: 35px;
+    margin-bottom: 0.75rem;
+}
+body:not(.theme-light) .faq-header h2 {
+    color: var(--dark-faq-text-main);
+}
+.faq-header hr {
+    width: 80px;
+    height: 3px;
+    background-color: var(--faq-title-underline-color);
+    border: none;
+    margin: 0 auto 30px auto;
+}
+body:not(.theme-light) .faq-header hr {
+    background-color: var(--dark-faq-title-underline-color);
+}
+
+/* FAQ 카테고리 */
+.faq-category {
+    margin-bottom: 40px;
+}
+.faq-category h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--faq-text-main);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--faq-line-sub);
+}
+body:not(.theme-light) .faq-category h3 {
+    color: var(--dark-faq-text-main);
+    border-bottom-color: var(--dark-faq-line-sub);
+}
+
+/* FAQ 아이템 (질문/답변 쌍) */
+.faq-item {
+    margin-bottom: 15px;
+    border: 1px solid var(--faq-item-border);
+    border-radius: 8px;
+    background-color: var(--faq-item-bg);
+    overflow: hidden;
+}
+body:not(.theme-light) .faq-item {
+    border-color: var(--dark-faq-item-border);
+    background-color: var(--dark-faq-item-bg);
+}
+
+/* FAQ 질문 (summary 태그) */
+.faq-question {
+    padding: 18px 25px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1.1rem;
+    background-color: var(--faq-question-bg);
+    color: var(--faq-question-text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    outline: none;
+    transition: background-color 0.2s ease-in-out;
+}
+body:not(.theme-light) .faq-question {
+    background-color: var(--dark-faq-question-bg);
+    color: var(--dark-faq-question-text);
+}
+.faq-item:hover .faq-question {
+    background-color: #f7f7f7;
+}
+body:not(.theme-light) .faq-item:hover .faq-question {
+    background-color: #333333;
+}
+.faq-question::-webkit-details-marker {
+    display: none;
+}
+.faq-question::after {
+    content: '▼';
+    font-size: 0.8em;
+    transition: transform 0.2s ease-in-out;
+    color: var(--faq-icon-color);
+}
+body:not(.theme-light) .faq-question::after {
+    color: var(--dark-faq-icon-color);
+}
+.faq-item[open] > .faq-question {
+    background-color: #e9ecef; /* 라이트 모드 열렸을 때 배경 */
+}
+body:not(.theme-light) .faq-item[open] > .faq-question {
+    background-color: #3a3a3a; /* 다크 모드 열렸을 때 배경 */
+}
+.faq-item[open] .faq-question::after {
+    transform: rotate(180deg);
+}
+
+/* FAQ 답변 */
+.faq-answer {
+    /* padding: 0 25px; <<< 이 줄 제거 또는 padding: 0; 으로 변경 */
+    padding: 0; /* 위아래, 좌우 패딩 모두 0으로 시작 */
+    background-color: var(--faq-answer-bg); /* 배경색은 유지 (선택사항) */
+    /* border-top: 1px solid var(--faq-answer-border-top); <<< 이 줄을 .faq-answer-content로 옮길 수 있음 */
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out; /* max-height만 애니메이션 */
+}
+body:not(.theme-light) .faq-answer {
+    background-color: var(--dark-faq-answer-bg); /* 이 배경색은 유지해도 되고, .faq-answer-content로 옮겨도 됨 */
+}
+body:not(.theme-light) .faq-answer-content { /* 다크모드 스타일 적용 */
+    color: var(--dark-faq-answer-text);
+    border-top-color: var(--dark-faq-answer-border-top);
+}
+
+/* 새로 추가된 답변 내용 래퍼 */
+.faq-answer-content {
+    padding: 20px 25px; /* 실제 패딩은 여기에 적용 */
+    /* background-color: var(--faq-answer-bg); <<< .faq-answer에 있으므로 여기는 불필요 */
+    color: var(--faq-answer-text);
+    border-top: 1px solid var(--faq-answer-border-top); /* border-top을 이쪽으로 옮김 */
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+/* details[open] 상태일 때의 스타일은 JavaScript가 직접 max-height를 설정하므로, 
+   여기서는 padding만 복원하도록 할 수 있습니다. (또는 JS에서 함께 처리) */
+/*.faq-item[open] .faq-answer {
+    /* max-height는 JS가 설정
+    padding-top: 20px;  /* 열렸을 때 원래 패딩 복원
+    padding-bottom: 20px;  /* 열렸을 때 원래 패딩 복원 
+}*/
+/*
+body:not(.theme-light) .faq-answer {  다크모드 스타일은 유지 
+    background-color: var(--dark-faq-answer-bg);
+    color: var(--dark-faq-answer-text);
+    border-top-color: var(--dark-faq-answer-border-top);
+}*/
+
+/* 등록된 FAQ가 없을 때 메시지 */
+.faq-category > p, .faq-page > p:not(.pagination) {
+    color: #777;
+    font-style: italic;
+    text-align: center;
+    padding: 25px;
+    background-color: var(--faq-item-bg);
+    border: 1px dashed var(--faq-item-border);
+    border-radius: 8px;
+    margin-top: 20px;
+    font-size: 1rem;
+}
+body:not(.theme-light) .faq-category > p, body:not(.theme-light) .faq-page > p:not(.pagination) {
+    color: #999;
+    background-color: var(--dark-faq-item-bg);
+    border-color: var(--dark-faq-item-border);
+}
+
+/* --- 페이지네이션 (study_post_list.css 스타일 반영) --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    padding-left: 0;
+    list-style: none;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.pagination .page-item {
+    margin: 0 1px; /* 각 li 아이템 사이의 간격 */
+}
+
+.pagination .page-item .page-link {
+    display: inline-block;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.875rem;
+    border-radius: 0.3rem; /* study_post_list.css 와 동일 */
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    text-decoration: none;
+    cursor: pointer;
+    background-color: var(--pagination-link-bg);
+    border: 1px solid var(--pagination-link-border);
+    color: var(--pagination-link-text);
+}
+
+.pagination .page-item:not(.disabled) .page-link:hover {
+    background-color: var(--pagination-link-hover-bg);
+    color: var(--pagination-link-hover-text);
+    border-color: var(--pagination-link-hover-border);
+}
+
+.pagination .page-item.active .page-link {
+    z-index: 3;
+    color: var(--pagination-active-text);
+    background-color: var(--pagination-active-bg);
+    border-color: var(--pagination-active-border);
+    font-weight: bold;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: var(--pagination-link-bg); /* 비활성화 시 배경은 투명 유지 */
+    color: var(--pagination-disabled-text);       /* study_post_list.css 수정 값 */
+    border-color: var(--pagination-disabled-border); /* study_post_list.css 수정 값 */
+    cursor: default;
+    pointer-events: none;
+}
+
+/* 다크 모드 페이지네이션 */
+body:not(.theme-light) .pagination .page-item .page-link {
+    background-color: var(--pagination-link-bg); /* 다크모드 기본 배경은 투명 */
+    border-color: var(--dark-pagination-link-border);
+    color: var(--dark-pagination-link-text);
+}
+
+body:not(.theme-light) .pagination .page-item:not(.disabled) .page-link:hover {
+    background-color: var(--dark-pagination-link-hover-bg);
+    color: var(--dark-pagination-link-hover-text);
+    border-color: var(--dark-pagination-link-hover-border);
+}
+
+body:not(.theme-light) .pagination .page-item.active .page-link {
+    color: var(--dark-pagination-active-text);
+    background-color: var(--dark-pagination-active-bg);
+    border-color: var(--dark-pagination-active-border);
+}
+
+body:not(.theme-light) .pagination .page-item.disabled .page-link {
+    background-color: var(--pagination-link-bg); /* 다크모드 비활성화 시 배경은 투명 유지 */
+    color: var(--dark-pagination-disabled-text);       /* study_post_list.css 수정 값 */
+    border-color: var(--dark-pagination-disabled-border); /* study_post_list.css 수정 값 */
+}

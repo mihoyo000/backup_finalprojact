@@ -85,7 +85,7 @@
 }
 .section2-content {
     justify-content: flex-start;
-    padding-top: 70px;
+    padding-top: 50px;
     align-items: flex-start;
     width: 100%;
     max-width: 1600px; /* 콘텐츠 최대 너비, 이 값에 따라 밑줄 길이가 달라질 수 있음 */
@@ -101,6 +101,7 @@
     font-weight: bold;
     /* border-bottom: 2px solid #ffffff; /* 기존 밑줄 제거 */
     /* padding-bottom: 15px; /* 기존 패딩 제거 */
+    margin-top: 0;
     margin-left: 200px;
     margin-bottom: 10px; /* 밑줄과의 간격 및 아래 컨텐츠와의 간격 조정 */
     /* display: inline-block; /* 제거 또는 block으로 변경 */
@@ -262,7 +263,7 @@
 }
 .section3-content {
     justify-content: flex-start;
-    padding-top: 70px;
+    padding-top: 50px;
     align-items: flex-start;
     width: 100%;
     max-width: 1600px; /* 콘텐츠 최대 너비, 이 값에 따라 밑줄 길이가 달라질 수 있음 */

@@ -272,7 +272,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 카테고리 선택 UI 로직 (폼 페이지용) ---
     const MAX_CATEGORIES_FORM = 5;
     let selectedCategoriesForm = new Map(); // 폼 페이지용 Map
-    const $form = $('form.study_post_form');
+    const $form = $('form.study-post-form');
+    console.log("[FORM JS] $form selection result:", $form); // 추가
+    console.log("[FORM JS] Number of forms found with '.study-post-form':", $form.length); // 추가
+
     const categoriesHiddenInputName = "{{ form.categories.html_name|default:'categories' }}"; // PostForm의 categories 필드 이름
 
     // 초기 선택된 카테고리 로드 (수정 폼의 경우)
@@ -381,6 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 폼 페이지용 카테고리 선택/해제 처리 함수
     function handleCategorySelectionForm(category, $clickedItemElement) {
+        console.log("[FORM JS] handleCategorySelectionForm called. Category:", category, "Clicked Element:", $clickedItemElement); // 추가
         if (!category.id) { alert("카테고리 정보(ID)가 없어 처리할 수 없습니다."); return; }
         const categoryIdStr = category.id.toString();
 
@@ -389,22 +393,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if ($clickedItemElement && $clickedItemElement.length) {
                 $clickedItemElement.removeClass('active');
             }
-            console.log(`[FORM JS] Category [${category.path}] DESELECTED.`);
+            console.log(`[FORM JS] Category DESELECTED. ID: ${categoryIdStr}. Current Map:`, new Map(selectedCategoriesForm)); // Map 복사해서 로깅
         } else {
             if (selectedCategoriesForm.size < MAX_CATEGORIES_FORM) {
                 selectedCategoriesForm.set(categoryIdStr, category);
                 if ($clickedItemElement && $clickedItemElement.length) {
                     $clickedItemElement.addClass('active');
                 }
-                console.log(`[FORM JS] Category [${category.path}] SELECTED.`);
+                console.log(`[FORM JS] Category SELECTED. ID: ${categoryIdStr}, Data:`, category, "Current Map:", new Map(selectedCategoriesForm)); // Map 복사해서 로깅
             } else {
                 alert(`카테고리는 최대 ${MAX_CATEGORIES_FORM}개까지 선택할 수 있습니다.`);
                 return;
             }
         }
         renderSelectedCategoryTagsForm();
-        updateHiddenCategoryInputs();
-        // updatePanelActiveStatesForm(); // 개별 아이템 active는 이미 처리됨, 필요시 전체 업데이트
+        updateHiddenCategoryInputs(); // 중요!
     }
 
     // 선택된 카테고리 태그 UI 렌더링 (폼 페이지용)
@@ -422,14 +425,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 숨겨진 MultipleHiddenInput 업데이트 (폼 페이지용)
     function updateHiddenCategoryInputs() {
-        $(`input[type="hidden"][name="${categoriesHiddenInputName}"]`).remove();
+        const currentName = categoriesHiddenInputName; // 현재 사용 중인 name 확인
+        console.log(`[FORM JS] updateHiddenCategoryInputs CALLED. Target input name: "${currentName}"`);
+
+        // 기존 hidden input 제거 시, $form 컨텍스트 내에서만 제거하도록 명확히
+        $form.find(`input[type="hidden"][name="${currentName}"]`).remove(); 
+        console.log(`[FORM JS] Removed existing hidden inputs with name: "${currentName}"`);
+
         let currentSelectedIds = Array.from(selectedCategoriesForm.keys());
+        console.log("[FORM JS] Current selected category IDs for hidden inputs:", currentSelectedIds);
+
         currentSelectedIds.forEach(function(id) {
-            $form.append(
-                $('<input>').attr({ type: 'hidden', name: categoriesHiddenInputName, value: id })
-            );
+            const $hiddenInput = $('<input>').attr({ type: 'hidden', name: currentName, value: id });
+            // $form.append($hiddenInput); // 기존 방식
+            $hiddenInput.appendTo($form); // 변경된 방식
+            console.log(`[FORM JS] Appended hidden input using appendTo: name="${currentName}", value="${id}"`);
         });
-        // console.log("[FORM JS] Hidden category inputs updated. Current IDs:", currentSelectedIds);
+
+        // 실제로 폼에 추가되었는지 다시 한번 확인
+        let appendedInputsDebug = [];
+        $form.find(`input[type="hidden"][name="${currentName}"]`).each(function() {
+            appendedInputsDebug.push($(this).val());
+        });
+        console.log("[FORM JS] VERIFY - Hidden inputs currently in form for categories:", appendedInputsDebug);
     }
 
     // 카테고리 패널 아이템 active 상태 업데이트 (폼 페이지용)
