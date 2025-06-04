@@ -61,3 +61,61 @@ body[data-bs-theme="dark"] .bg-body-tertiary {
 }
 body[data-bs-theme="dark"] .border-success { border-color: var(--bs-success-text-emphasis) !important; }
 body[data_bs-theme="dark"] .border-danger { border-color: var(--bs-danger-text-emphasis) !important; }
+
+/* exam_spa_styles.css 또는 base.css */
+
+/* --- 다크 모드 스타일 재정의 --- */
+
+/* body 전체의 기본 텍스트 색상을 다크 모드에 맞게 설정 (base.css에 이미 있을 수 있음) */
+[data-bs-theme="dark"] body {
+    color: #f8f9fa; /* 예: 매우 밝은 회색 또는 흰색 */
+    background-color: #212529; /* 예: 어두운 배경색 */
+}
+
+/* 결과 요약 (result-summary) 섹션 내부 텍스트 */
+body[data-bs-theme="dark"] .result-summary h4,
+body[data-bs-theme="dark"] .result-summary p,
+body[data-bs-theme="dark"] .result-summary span { /* span 태그 안의 텍스트도 포함 */
+    color: #e9ecef; /* 예: 밝은 회색 계열 */
+}
+/* 특정 강조 텍스트 (예: 맞춘 개수)는 그대로 유지하거나 다크 모드용 강조색 사용 가능 */
+body[data-bs-theme="dark"] .result-summary .text-success {
+    color: var(--bs-success-text-emphasis) !important; /* Bootstrap 변수 활용 */
+}
+
+/* Flo 한마디 (flo-comment) 섹션 내부 텍스트 */
+body[data-bs-theme="dark"] .flo-comment h5,
+body[data-bs-theme="dark"] .flo-comment p {
+    color: #dee2e6; /* 예: 약간 어두운 밝은 회색 */
+}
+/* Flo 한마디 배경색도 다크 모드에 맞게 (Bootstrap alert-info-subtle의 다크 모드 버전이 자동으로 적용될 수도 있음) */
+body[data-bs-theme="dark"] .flo-comment.alert-info { /* 만약 Bootstrap 클래스를 직접 쓴다면 */
+    background-color: var(--bs-info-bg-subtle); /* Bootstrap 변수 활용 */
+    border-color: var(--bs-info-border-subtle);
+    color: var(--bs-info-text-emphasis); /* Bootstrap 변수가 글자색까지 조절해줄 수 있음 */
+}
+
+/* PDF 다운로드 버튼 등의 버튼 스타일은 Bootstrap 테마가 어느 정도 처리해 줄 수 있음 */
+/* 만약 커스텀 버튼이라면 명시적으로 색상 지정 필요 */
+body[data-bs-theme="dark"] .action-links .btn-outline-secondary {
+    color: var(--bs-secondary-text-emphasis);
+    border-color: var(--bs-secondary-border-subtle);
+}
+body[data-bs-theme="dark"] .action-links .btn-outline-secondary:hover {
+    color: var(--bs-body-bg);
+    background-color: var(--bs-secondary-text-emphasis);
+    border-color: var(--bs-secondary-text-emphasis);
+}
+
+/* 카드(문제별 결과) 내부 텍스트도 확인 (Bootstrap이 대부분 처리) */
+body[data-bs-theme="dark"] .card {
+    background-color: var(--bs-card-bg);
+    border-color: var(--bs-border-color);
+}
+
+body[data-bs-theme="dark"] .card-body,
+body[data-bs-theme="dark"] .card-body p,
+body[data-bs-theme="dark"] .card-body strong,
+body[data-bs-theme="dark"] .card-body ul li {
+    color: var(--bs-card-color); /* Bootstrap 변수 활용 */
+}

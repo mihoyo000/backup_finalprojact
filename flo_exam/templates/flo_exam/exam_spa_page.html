@@ -117,11 +117,11 @@
             downloadAnswersTemplate: "{{ download_answers_pdf_url_template }}" // views.py에서 전달
         };
         const STATIC_PATHS = { // 로봇 이미지 경로 등
-            robotIdle: "{% static 'flo_exam/images/robot_half.png' %}", // 이 페이지에서는 주로 generating부터 시작
+            robotIdle: "{% static 'flo_exam/images/robot.png' %}", // 이 페이지에서는 주로 generating부터 시작
             robotGenerating: "{{ initial_robot_image }}", // views.py에서 전달된 초기 로봇 이미지
-            robotSolving: "{% static 'flo_exam/images/robot_half_solving.png' %}",
-            robotScoring: "{% static 'flo_exam/images/robot_half_scoring.png' %}",
-            robotResults: "{% static 'flo_exam/images/robot_half_result.png' %}"
+            robotSolving: "{% static 'flo_exam/images/robot.png' %}",
+            robotScoring: "{% static 'flo_exam/images/robot.png' %}",
+            robotResults: "{% static 'flo_exam/images/robot.png' %}"
         };
     </script>
     <script src="{% static 'flo/js/base.js' %}"></script> {# 팀장님의 공용 base.js 가정 #}
