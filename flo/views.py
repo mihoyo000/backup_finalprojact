@@ -59,8 +59,7 @@ def login_view(request):
             auth_login(request, user)
             messages.success(request, f'{user.username}님, 로그인되었습니다.')
             next_url = request.GET.get('next')
-            # settings.py의 LOGIN_REDIRECT_URL ('flo:study_post_list')로 리디렉션하거나 next 파라미터가 있으면 그곳으로
-            return redirect(next_url or 'flo:study_post_list')
+            return redirect(next_url or 'flo:home')
         else:
             # 폼 에러 (아이디/비번 틀림 등)는 AuthenticationForm이 처리
             messages.error(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
