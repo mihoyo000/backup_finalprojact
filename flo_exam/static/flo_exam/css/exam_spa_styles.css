@@ -119,3 +119,12 @@ body[data-bs-theme="dark"] .card-body strong,
 body[data-bs-theme="dark"] .card-body ul li {
     color: var(--bs-card-color); /* Bootstrap 변수 활용 */
 }
+
+/*-----------------------------------------------------------------------------------*/
+
+.result-summary mb-4 p-3 bg-body-tertiary border rounded{
+    color: black;
+}
+.flo-comment mb-4 p-3 bg-info-subtle border rounded{
+    color: black;
+}

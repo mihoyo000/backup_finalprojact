@@ -119,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function() {
             dynamicContentArea.querySelector('.correct-answers-count').textContent = resultsData.correct_answers_count;
             dynamicContentArea.querySelector('.exam-score').textContent = Math.round(resultsData.score);
             dynamicContentArea.querySelector('.flo-comment-text').textContent = escapeHtml(resultsData.flo_comment);
-
             dynamicContentArea.querySelector('.download-questions-btn').href = APP_URLS.downloadQuestionsTemplate.replace('0', resultsData.exam_id);
             dynamicContentArea.querySelector('.download-answers-btn').href = APP_URLS.downloadAnswersTemplate.replace('0', resultsData.exam_id);
             
@@ -180,6 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("exam_spa_logic.js: 결과 UI 구성 실패. 템플릿, 데이터, DOM 요소 확인 필요.");
             showErrorState("결과를 표시할 수 없습니다.");
         }
+        
     }
 
     function showErrorState(message) {

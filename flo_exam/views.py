@@ -1,18 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse, HttpResponse # HttpResponse는 PDF 다운로드용 (아직 미구현)
-from django.views.decorators.http import require_POST, require_GET # 요청 메소드 제한
-from django.urls import reverse # URL 이름으로 실제 URL 생성
-from django.contrib import messages # 사용자에게 간단한 메시지 표시
-from django.db import transaction # 데이터베이스 작업의 원자성 보장
-from django.utils import timezone # 채점 완료 시간 기록 등
+from django.http import JsonResponse, HttpResponse                     # HttpResponse는 PDF 다운로드용 (아직 미구현)
+from django.views.decorators.http import require_POST, require_GET     # 요청 메소드 제한
+from django.urls import reverse                                        # URL 이름으로 실제 URL 생성
+from django.contrib import messages                                    # 사용자에게 간단한 메시지 표시
+from django.db import transaction                                      # 데이터베이스 작업의 원자성 보장
+from django.utils import timezone                                      # 채점 완료 시간 기록 등
 
 # 현재 앱의 forms.py 와 models.py, ai_services.py 임포트
 from .forms import PDFUploadForm
 from .models import ExamDocument, GeneratedExam, GeneratedQuestion, UserExamSession, UserAnswer
-from .ai_services import extract_text_from_pdf, generate_questions_via_openai # 수정된 함수 이름
+from .ai_services import extract_text_from_pdf, generate_questions_via_openai
+from .pdf_utils import render_to_pdf_reportlab
+from django.utils.encoding import uri_to_iri, iri_to_uri
+from urllib.parse import quote
 
-# (선택 사항) PDF 생성을 위한 유틸리티 (아직 미구현 상태로 가정)
-# from .pdf_utils import render_to_pdf
 
 
 # 1. 초기 PDF 업로드 페이지 뷰
@@ -218,18 +219,56 @@ def ajax_process_scoring_view(request, generated_exam_id):
     })
 
 
-# 5. PDF 다운로드 뷰 (구현은 추후)
+# 5. PDF 다운로드 뷰
 # ==============================================================================
 @require_GET
 def download_questions_pdf_view(request, generated_exam_id):
-    # generated_exam = get_object_or_404(GeneratedExam, pk=generated_exam_id)
-    # ... (render_to_pdf 유틸리티 사용하여 PDF 생성 로직) ...
-    # response = HttpResponse(pdf_content, content_type='application/pdf')
-    # response['Content-Disposition'] = 'attachment; filename="문제지.pdf"'
-    # return response
-    return HttpResponse(f"문제 PDF 다운로드 기능 (Exam ID: {generated_exam_id}) - 아직 구현되지 않았습니다.")
+    generated_exam = get_object_or_404(GeneratedExam, pk=generated_exam_id)
+    questions = generated_exam.questions.all().order_by('question_number')
+    
+    filename_prefix = generated_exam.exam_document.title # 파일명에 사용될 접두사
+    pdf_title_text = f"{filename_prefix} - 문제지" # PDF 내부 제목
+    
+    pdf_content = render_to_pdf_reportlab(
+        filename_prefix=filename_prefix, # ReportLab 버전에서는 사용되지 않지만, 일관성 위해 남겨둘 수 있음
+        title_text=pdf_title_text, 
+        questions_data=questions, 
+        include_answers=False 
+    )
+
+    if pdf_content:
+        response = HttpResponse(pdf_content, content_type='application/pdf')
+        # ... (Content-Disposition 설정은 이전과 동일) ...
+        filename = f"{filename_prefix}_문제.pdf"
+        safe_filename = quote(filename.replace(' ', '_'))
+        response['Content-Disposition'] = f'attachment; filename="{safe_filename}"; filename*=UTF-8\'\'{safe_filename}'
+        return response
+    else:
+        # ... (에러 처리) ...
+        return HttpResponse("문제지 PDF 생성에 실패했습니다 (ReportLab).", status=500)
 
 @require_GET
 def download_answers_pdf_view(request, generated_exam_id):
-    # ... (render_to_pdf 유틸리티 사용하여 답지/해설 PDF 생성 로직) ...
-    return HttpResponse(f"답지/해설 PDF 다운로드 기능 (Exam ID: {generated_exam_id}) - 아직 구현되지 않았습니다.")
+    generated_exam = get_object_or_404(GeneratedExam, pk=generated_exam_id)
+    questions = generated_exam.questions.all().order_by('question_number')
+
+    filename_prefix = generated_exam.exam_document.title
+    pdf_title_text = f"{filename_prefix} - 답지 및 해설"
+
+    pdf_content = render_to_pdf_reportlab(
+        filename_prefix=filename_prefix,
+        title_text=pdf_title_text,
+        questions_data=questions,
+        include_answers=True
+    )
+    
+    if pdf_content:
+        response = HttpResponse(pdf_content, content_type='application/pdf')
+        # ... (Content-Disposition 설정은 이전과 동일) ...
+        filename = f"{filename_prefix}_답지_해설.pdf"
+        safe_filename = quote(filename.replace(' ', '_'))
+        response['Content-Disposition'] = f'attachment; filename="{safe_filename}"; filename*=UTF-8\'\'{safe_filename}'
+        return response
+    else:
+        # ... (에러 처리) ...
+        return HttpResponse("답지/해설 PDF 생성에 실패했습니다 (ReportLab).", status=500)
