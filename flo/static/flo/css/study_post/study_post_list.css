@@ -333,9 +333,75 @@ body.theme-light .btn.search-button img { filter: invert(100%) brightness(2); }
 body:not(.theme-light) .btn-primary.btn-write-post { background-color: var(--dark-btn-primary-bg); border-color: var(--dark-btn-primary-bg); }
 .btn-primary.btn-write-post img { height: 14px; margin-right: 6px; vertical-align: middle; position: relative; top: -1px; }
 
-.board-table-custom { width: 100%; margin-bottom: 1.5rem; border-collapse: separate; border-spacing: 0; border-radius: 6px; overflow: hidden; border: 1px solid var(--line-sub-list); }
+.board-table-custom {
+    /* width: 100%; */ /* <-- 중요: 이 줄을 제거합니다 */
+    margin-bottom: 1.5rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 6px;
+    border: 1px solid var(--line-sub-list);
+    /* 데스크톱에서 모든 열이 편안하게 보일 수 있는 기본 최소 너비 설정 */
+    min-width: 700px; /* 7개 열이 기본적으로 더 많거나 적게 필요하면 조정합니다 */
+}
 body:not(.theme-light) .board-table-custom { border: 1px solid var(--dark-line-sub-list); }
-.board-table-custom th, .board-table-custom td { padding: 0.9rem 0.75rem; text-align: center; vertical-align: middle; transition: background-color 0.15s ease-in-out; }
+.board-table-custom th,
+.board-table-custom td {
+    vertical-align: middle;
+    padding: 0.75rem; /* 적절한 패딩 값 */
+    white-space: nowrap; /* 기본적으로 줄바꿈 방지하여 테이블이 늘어나도록 함 */
+}
+/* 제목과 같이 의도적으로 말줄임표를 사용하는 셀은 nowrap 해제 */
+.board-table-custom td.post-title-cell,
+.board-table-custom td:nth-child(2) .post-category-display-wrapper { /* 카테고리 셀 */
+    white-space: normal; /* 또는 initial, unset 등. 기본값으로 돌림 */
+}
+/* 제목 링크 자체는 내부적으로 ellipsis 처리하므로 nowrap 유지 또는 개별 설정 */
+.board-table-custom td.post-title-cell .post-title-link {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block; /* 혹은 inline-block, 너비를 가질 수 있도록 */
+    max-width: 200px; /* 예시: 제목 최대 너비, 화면 크기에 따라 조정 가능 */
+}
+.board-table-custom td:nth-child(2) .post-category-display-wrapper .post-category-tag,
+.board-table-custom td:nth-child(2) .post-category-display-wrapper .post-category-more-count {
+    white-space: nowrap; /* 이 내부 요소들은 줄바꿈 안되도록 */
+}
+
+
+/* 각 열의 내용 정렬 */
+.board-table-custom th.col-number,
+.board-table-custom td:nth-child(1) { /* 번호 */
+    text-align: center;
+}
+.board-table-custom th.col-category,
+.board-table-custom td:nth-child(2) { /* 카테고리 */
+    text-align: left; /* 카테고리는 왼쪽 정렬 */
+}
+.board-table-custom th.col-title,
+.board-table-custom td.post-title-cell { /* 제목 (클래스 사용) */
+    text-align: left; /* 제목은 왼쪽 정렬 (중요! 공지사항 포함) */
+    /* padding-left: 0; */ /* 만약 불필요한 왼쪽 패딩이 있다면 조정 */
+}
+.board-table-custom th.col-author,
+.board-table-custom td:nth-child(4) { /* 작성자 */
+    text-align: center;
+}
+.board-table-custom th.col-date,
+.board-table-custom td:nth-child(5) { /* 작성일 */
+    text-align: center;
+}
+
+.board-table-custom th.col-views,
+.board-table-custom td:nth-child(6) { /* 조회수 */
+    text-align: center;
+}
+.board-table-custom th.col-likes,
+.board-table-custom td:nth-child(7) { /* 추천 */
+    text-align: center;
+}
+
+
 .board-table-custom th { background-color: #f0f2f5; color: #333; font-weight: 600; border-bottom: 2px solid var(--line-sub-list); font-size: 0.9rem; }
 body:not(.theme-light) .board-table-custom th { background-color: #3f3f3f; color: #e0e0e0; border-bottom: 2px solid var(--dark-line-sub-list); }
 .board-table-custom td { border-bottom: 1px solid var(--line-sub-list); color: #2d2d2d; }
@@ -421,17 +487,18 @@ body:not(.theme-light) .comment-count-badge {
 /* --- 게시물 목록의 카테고리 드롭다운 스타일 --- */
 /* 게시물 목록의 카테고리 표시 래퍼 */
 .post-category-display-wrapper {
-    position: relative;
-    display: inline-flex; 
-    align-items: center;
-    
-    width: var(--category-fixed-width); 
-    min-width: var(--category-fixed-width); 
-    
-    flex-shrink: 0; 
-    margin-right: var(--category-title-gap); 
-    
-    overflow: hidden; 
+    display: inline-flex; /* 내부 요소(태그, "외 N개", 아이콘)를 한 줄에 정렬 */
+    align-items: center;  /* 수직 중앙 정렬 */
+    gap: 4px; /* 요소들 사이의 간격 */
+}
+.post-category-tag, 
+.post-category-more-count {
+    white-space: nowrap; /* 내용이 길어져도 줄바꿈 방지 */
+}
+
+.post-title-cell a.post-title-link {
+    display: inline; /* 기본값이나 명시 */
+    margin-right: 5px; /* 제목과 댓글 수 사이 간격 */
 }
 
 /* 카테고리 태그 내부의 텍스트(실제 카테고리명, "외 N개")가 넘칠 때 */
@@ -598,3 +665,256 @@ body:not(.theme-light) .pagination .page-link { border-color: #4b5563; color: #9
 body:not(.theme-light) .pagination .page-link:hover { background-color: #374151; color: #e5e7eb; border-color: #6b7280; }
 body:not(.theme-light) .pagination .page-item.active .page-link { background-color: #7e57c2; border-color: #7e57c2; }
 body:not(.theme-light) .pagination .page-item.disabled .page-link { color: #6c7d99; border-color: #6c7d99; }
+
+
+/* --- 반응형 스타일 --- */
+
+/* 테이블 가로 스크롤을 위한 래퍼 */
+.table-responsive-wrapper {
+    overflow-x: auto; /* 항상 auto 또는 scroll로 설정 */
+    width: 100%;
+    /* border: 1px dashed red; */ /* 디버깅용: 래퍼 영역 확인 */
+}
+
+/* 기본적으로 테이블이 내용에 따라 너비를 가지되, 특정 너비 이하로 줄어들면 가로 스크롤이 보이도록 min-width 설정 */
+.board-table-custom {
+    min-width: 700px; /* 데스크톱 기준 최소 너비 (모든 열이 보일 때). 실제 콘텐츠에 맞게 조절. */
+                     /* 이 값보다 화면(또는 래퍼)이 좁아지면 가로 스크롤이 나타납니다. */
+}
+
+
+/* 태블릿 가로 모드 및 유사 크기 (992px 이하) */
+@media (max-width: 992px) {
+    :root {
+        --category-fixed-width: 150px; /* 카테고리 열 너비 관련 변수 조정 */
+    }
+
+    .board-container {
+        padding: 25px 15px; /* 컨테이너 내부 여백 줄이기 */
+    }
+
+    .board-main-title {
+        font-size: 1.8rem; /* 메인 타이틀 크기 줄이기 */
+    }
+
+    .category-selection-area-wrapper-list {
+        padding: 15px; /* 카테고리 필터 영역 패딩 줄이기 */
+    }
+
+    /* 검색 컨트롤의 글쓰기 버튼 */
+    .btn-primary.btn-write-post {
+        padding: 0.4rem 0.8rem; /* 버튼 패딩 줄이기 */
+        font-size: 0.8rem;    /* 버튼 폰트 크기 줄이기 */
+    }
+    /* 글쓰기 버튼의 아이콘과 텍스트 간격 (필요시 조정) */
+    /* .btn-primary.btn-write-post img { margin-right: 4px; } */
+
+    .board-table-custom {
+        min-width: 700px; /* '추천' 열 제외 후 테이블 최소 너비 재조정 */
+    }
+
+    /* 카테고리 드롭다운 내의 태그 표시 너비 조정 */
+    .post-category-display-wrapper .post-category-tag,
+    .post-category-display-wrapper .post-category-more-count {
+        max-width: 80px; /* 카테고리명, "외 N개" 텍스트 최대 너비 */
+    }
+
+    /* 검색폼 요소 크기 조정 */
+    .form-select.search-type-select {
+        flex-basis: 120px; /* 검색 유형 선택 너비 */
+        font-size: 0.8rem;
+    }
+    .form-control.search-input {
+        font-size: 0.8rem;
+    }
+    .btn.search-button {
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+/* 작은 태블릿 세로 모드 및 큰 모바일 (768px 이하) */
+@media (max-width: 768px) {
+    :root {
+        --category-fixed-width: 120px;
+    }
+
+    .board-page-wrapper {
+        padding-top: 20px;
+        padding-bottom: 40px;
+    }
+    .board-container {
+        padding: 20px 10px;
+    }
+    .board-main-title {
+        font-size: 1.6rem;
+    }
+    hr.title-underline {
+        width: 60px;
+        margin-bottom: 20px;
+    }
+
+    /* 카테고리 필터 패널 (Bootstrap col-md-4가 이 구간에서 100% 너비로 세로 정렬됨) */
+    /* .row 사용으로 인해 Bootstrap이 처리하므로, 내부 패널 간 스타일만 조정 */
+    .category-panel-container .category-panel-col {
+        padding-right: 0;
+        padding-left: 0;
+    }
+    .category-panel-container .category-panel-col:not(:last-child) {
+        border-right: none; /* 세로 정렬 시 오른쪽 테두리 불필요 */
+        margin-bottom: 15px;
+        padding-bottom: 15px; /* 패널 간 구분을 위해 하단 여백 및 테두리 추가 */
+        border-bottom: 1px solid var(--category-panel-border);
+    }
+    body:not(.theme-light) .category-panel-container .category-panel-col:not(:last-child) {
+        border-bottom-color: var(--dark-category-panel-border);
+    }
+    .category-panel-container .category-panel-col:last-child {
+        border-bottom: none;
+    }
+    #categoryTreePanelList { /* .row 때문에 생기는 좌우 음수 마진 상쇄 */
+        margin-left: 0;
+        margin-right: 0;
+    }
+     #categoryTreePanelList > .category-panel-col { /* .row의 직계 자식 .col-md-4 패딩 제거 */
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* 검색 컨트롤: 검색폼과 글쓰기 버튼 세로 정렬 */
+    .board-controls-wrapper {
+        flex-direction: column;
+        align-items: stretch; /* 자식 요소들 너비를 부모에 맞춤 */
+    }
+    .search-form {
+        display: flex; /* Flexbox 컨테이너로 설정 */
+        align-items: center; /* 수직 중앙 정렬 */
+        gap: 8px; /* 요소들 사이의 간격 */
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    /* 검색폼 내부 요소들 세로 정렬 또는 너비 100% */
+    .form-select.search-type-select {
+        flex-basis: 120px; /* 적절한 기본 너비 설정 */
+        flex-shrink: 0; /* 줄어들지 않도록 */
+        /* margin-bottom: 0; /* 더 이상 필요 없음 */
+    }
+    .keyword-search-box { /* 검색어 입력창 감싸는 div */
+        flex-grow: 1; /* 남은 공간 모두 차지 */
+    }
+    .btn.search-button {
+        flex-shrink: 0; /* 버튼 크기 유지 */
+    }
+    .btn-primary.btn-write-post {
+        width: 100%; /* 글쓰기 버튼 너비 100% */
+        text-align: center;
+    }
+
+    .board-table-custom {
+        min-width: 680px; /* 추가 열 제외 후 테이블 최소 너비 재조정 */
+    }
+
+    .post-category-display-wrapper .post-category-tag,
+    .post-category-display-wrapper .post-category-more-count {
+        max-width: 60px;
+    }
+
+    /* 페이지네이션 버튼 크기, 간격 줄이기 */
+    .pagination .page-link {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* 모바일 (576px 이하) */
+@media (max-width: 576px) {
+    :root {
+        --category-fixed-width: 100px; /* 카테고리 열 너비 더 줄임, 또는 auto로 변경 고려 */
+        /* --category-title-gap: 4px; */
+    }
+
+    .board-page-wrapper {
+        padding-top: 15px;
+        padding-bottom: 30px;
+    }
+    .board-container {
+        padding: 15px 5px; /* 모바일에서는 컨테이너 좌우 여백 최소화 */
+    }
+    .board-main-title {
+        font-size: 1.4rem;
+    }
+    hr.title-underline {
+        width: 50px;
+    }
+
+    /* 카테고리 필터 UI 전체적으로 크기 축소 */
+    .category-selection-area-wrapper-list {
+        padding: 10px;
+    }
+    .category-selection-area-wrapper-list > .form-label {
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+    }
+    #selected-category-display-list .selected-category-tag {
+        font-size: 0.75rem;
+        padding: .3em .6em;
+    }
+    .category-search-box input[type="text"].form-control {
+        font-size: 0.85rem;
+    }
+    .category-panel-container .category-list-inline {
+        max-height: 150px; /* 카테고리 목록 스크롤 높이 줄이기 */
+    }
+    .category-panel-container .category-list-inline .category-item-inline {
+        padding: .5rem .6rem;
+        font-size: 0.8rem;
+    }
+
+    /* 검색폼 내부 요소 간격 등 */
+    .search-form {
+        gap: 8px;
+    }
+
+    .board-table-custom {
+        font-size: 0.8rem; /* 테이블 전체 폰트 크기 줄이기 */
+        min-width: 520px; /* 보이는 열에 맞춰 최소 너비 조정 (예: 카테고리, 제목만 남는다면 더 작게) */
+                          /* 번호까지 숨기면 min-width: 250px; 정도로 조정 가능 */
+    }
+    
+    /* 카테고리 표시 너비 및 폰트 극단적으로 줄이기 */
+    .post-category-display-wrapper .post-category-tag {
+        max-width: 50px; /* 매우 작게, 넘치면 말줄임표 */
+        font-size: 0.7em;
+        padding: 1px 3px;
+    }
+    .post-category-display-wrapper .post-category-more-count {
+        max-width: 30px;
+        font-size: 0.7em;
+    }
+    .post-category-display-wrapper .dropdown-arrow-icon {
+        width: 8px; height: 8px; /* 아이콘 크기 */
+    }
+
+    /* 페이지네이션 버튼 크기, 간격 더 줄이기 */
+    .pagination .page-link {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.75rem;
+        margin: 0 2px;
+    }
+    .pagination-wrapper {
+        margin-top: 25px;
+    }
+    /* 페이지네이션에서 숫자 페이지 숨기기 (CSS만으로 한계, JS 동반 필요할 수 있음) */
+    /* 예시: 양 끝과 활성 페이지만 남기기 (복잡도 높음) */
+    /*
+    .pagination .page-item:not(.active) {
+        display: none;
+    }
+    .pagination .page-item:first-child, 
+    .pagination .page-item:last-child,
+    .pagination .page-item.disabled:nth-last-child(2), 
+    .pagination .page-item.disabled:nth-child(2),
+    .pagination .page-item.active {
+        display: list-item;
+    }
+    */
+}

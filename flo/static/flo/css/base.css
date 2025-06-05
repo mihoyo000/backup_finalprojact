@@ -126,7 +126,7 @@ body.theme-dark {
     color: var(--text-color-default-dark);
 }
 body.theme-dark html { background-color: var(--bg-color-html-dark); }
-body.theme-dark a { color: var(--text-color-link-dark); }
+body.theme-dark a { color: var(--text-color-link-dark) !important; }
 body.theme-dark h1, body.theme-dark h2, body.theme-dark h3, body.theme-dark h4, body.theme-dark h5, body.theme-dark h6 { color: var(--text-color-heading-dark); }
 
 
@@ -389,7 +389,7 @@ body:not(.theme-dark) .site-footer { /* 라이트 모드 푸터 */
     background-color: #f0f0f0;
     color: var(--footer-text-main-light);
 }
-body:not(.theme-dark) .site-footer a { color: var(--footer-link-main-light); }
+body:not(.theme-dark) .site-footer a { color: var(--footer-text-main-light); }
 body:not(.theme-dark) .site-footer a:hover { color: #555555; }
 
 .footer-container { max-width: 1140px; margin: 0 auto; padding: 0 25px; }
@@ -473,6 +473,14 @@ body.theme-dark #scroll-to-top {
         display: flex !important; /* 햄버거 버튼 표시 */
         order: 3; /* 헤더 아이템 순서: 로고 - (컨트롤) - 햄버거 */
         margin-left: 10px; /* 오른쪽 컨트롤과의 간격 */
+    }
+
+    /* 햄버거 메뉴 내 프로필 섹션의 닉네임 색상 (링크가 아니므로 명시적 지정) */
+    nav.main-nav.show .nav-mobile-profile-section .user-display-name {
+        color: var(--header-text-light); /* 라이트 모드 시 */
+    }
+    body.theme-dark nav.main-nav.show .nav-mobile-profile-section .user-display-name {
+        color: var(--header-text-dark); /* 다크 모드 시 */
     }
 
     /* 헤더 오른쪽 컨트롤 전체 (테마, 번역, 로그인 버튼 등) */

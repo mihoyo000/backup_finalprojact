@@ -42,17 +42,20 @@
 
                 {# 두 번째 기능 블록: 인라인 스타일 제거, 식별 클래스 추가 #}
                 <div class="feature-block reverse feature-bg-2">
-                    <div class="feature-block-inner-bg"> 
-                        <div class="feature-text">
-                            <p>나와 비슷한 사람과 함께 공부하고 싶으신가요?</p>
-                            <div class="middle-text-group">
-                                <span class="section-2-strong">학습 자료 공유</span><span class="section-2-no-strong">부터 소통할 수 있는</span><span class="section-2-strong">커뮤니티</span><span class="section-2-no-strong">까지,</span>
-                            </div>
-                            <h3>스터디 활동을 위한 모든 것이 준비되어 있습니다.</h3>
-                            <a href="#" class="btn btn-flo-feature2">스터디 활동 시작 <i class="bi bi-arrow-right-short"></i></a>
+                    <!-- <div class="feature-block-inner-bg">  -->
+                    <div class="feature-text">
+                        <p>나와 비슷한 사람과 함께 공부하고 싶으신가요?</p>
+                        <div class="middle-text-group">
+                            <span class="section-2-strong">학습 자료 공유</span><span class="section-2-no-strong">부터 소통할 수 있는</span><span class="section-2-strong">커뮤니티</span><span class="section-2-no-strong">까지,</span>
                         </div>
-                        {# feature-image는 작은 화면에서 display: none 이므로, inner-bg에 영향을 주지 않음 #}
+                        <h3>스터디 활동을 위한 모든 것이 준비되어 있습니다.</h3>
+                        <a href="#" class="btn btn-flo-feature2">스터디 활동 시작 <i class="bi bi-arrow-right-short"></i></a>
                     </div>
+                    <div class="feature-image">
+                        <img src="{% static 'flo/images/slide/slide2-2.png' %}" alt="{% translate 'Customized Problems' %}">
+                    </div>
+                    {# feature-image는 작은 화면에서 display: none 이므로, inner-bg에 영향을 주지 않음 #}
+                    <!-- </div> -->
                 </div>
             </div>
         </div>
@@ -61,7 +64,7 @@
     <!-- Section 3: 커뮤니티 - 인기글 (기존과 동일) -->
     <div class="section section-3" data-anchor="community-posts">
         <div class="slide-content section3-content">
-            <h2 class="s3-main-title">요즘 뜨는 게시글 Top3</h2>
+            <h2 class="s3-main-title">요즘 뜨는 게시글</h2>
             
             <div class="top-posts-container">
                 {% if top_posts %}
@@ -102,13 +105,16 @@
                             </div>
                         </div>
                         <div class="top-post-stats">
-                            <span class="likes" title="추천">
-                                <i class="bi bi-heart-fill"></i> {{ post.num_likes|default:0 }}
+                            <span class="likes" title="좋아요">
+                                <img src="{% static 'flo/images/icons/study_post/heart-red.png' %}" alt="좋아요" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
+                                {{ post.num_likes|default:0 }}
                             </span>
                             <span class="comments" title="댓글">
-                                <i class="bi bi-chat-dots-fill"></i> {{ post.num_comments|default:0 }}
+                                <img src="{% static 'flo/images/icons/study_post/comments-light.png' %}" alt="댓글" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
+                                {{ post.num_comments|default:0 }}
                             </span>
                         </div>
+
                     </a>
                     {% endfor %}
                 {% else %}

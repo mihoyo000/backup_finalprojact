@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const themeMenuItems = document.querySelectorAll('.theme-dropdown-menu .dropdown-item.theme-item');
 
         // 프로필 이미지 요소 추가
-        const userProfileImage = document.getElementById('user-profile-image');
+        // const userProfileImage = document.getElementById('user-profile-image');
 
         const getCurrentThemeSetting = () => localStorage.getItem('theme') || 'light'; // 기본값을 'light'로 명시
 
@@ -44,40 +44,42 @@ document.addEventListener('DOMContentLoaded', function () {
             if (actualTheme === 'dark') {
                 body.classList.add('theme-dark');
             } else {
-                body.classList.add('theme-light'); // 'light' 테마일 때도 명시적으로 클래스 추가
+                body.classList.add('theme-light');
             }
 
             localStorage.setItem('theme', selectedThemeSetting);
-            updateIcons(actualTheme, selectedThemeSetting);
+            setDefaultThemeAssets(); // 아이콘 및 프로필 이미지 등 모든 테마 관련 에셋 업데이트
             updateActiveDropdownItem(selectedThemeSetting);
         };
 
-        const updateIcons = (currentActualTheme, currentThemeSetting) => {
+        // ▼▼▼ 추가 또는 기존 updateIcons 함수를 이 내용으로 대체/확장 ▼▼▼
+        function setDefaultThemeAssets() {
             const paths = window.iconImagePaths;
             if (!paths) {
                 console.error("iconImagePaths is not defined in window object.");
                 return;
             }
 
+            const currentActualTheme = getCurrentAppliedTheme(); // body에 실제 적용된 테마 (light/dark)
+            const currentThemeSetting = getCurrentThemeSetting(); // 사용자가 선택한 설정 (light/dark/auto)
+
             const lightP = paths.light;
-            const darkP = paths.dark || paths.light;
+            const darkP = paths.dark || paths.light; // dark 경로 없으면 light 사용
 
             // 1. 헤더 로고 변경
             if (headerLogoImg) {
                 headerLogoImg.src = (currentActualTheme === 'dark' && darkP.logo) ? darkP.logo : lightP.logo;
             }
 
-            // START: 푸터 로고 변경 로직 추가
+            // 2. 푸터 로고 변경
             if (footerLogoImg) {
-                // 헤더 로고와 동일한 로직으로 푸터 로고 이미지 경로 설정
                 footerLogoImg.src = (currentActualTheme === 'dark' && darkP.logo) ? darkP.logo : lightP.logo;
             }
-            // END: 푸터 로고 변경 로직 추가
 
-            // 2. 헤더 테마 토글 버튼 아이콘 변경
+            // 3. 헤더 테마 토글 버튼 아이콘 변경 (사용자 선택 'auto' 상태 반영)
             if (themeToggleImg) {
                 if (currentThemeSetting === 'light') {
-                    themeToggleImg.src = lightP.themeLight;
+                    themeToggleImg.src = (currentActualTheme === 'dark' && darkP.themeLight) ? darkP.themeLight : lightP.themeLight;
                 } else if (currentThemeSetting === 'dark') {
                     themeToggleImg.src = (currentActualTheme === 'dark' && darkP.themeDark) ? darkP.themeDark : lightP.themeDark;
                 } else { // 'auto'
@@ -85,19 +87,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            // 3. 헤더 언어 토글 버튼 아이콘 변경
+            // 4. 헤더 언어 토글 버튼 아이콘 변경
             if (langToggleImg) {
                 langToggleImg.src = (currentActualTheme === 'dark' && darkP.translate) ? darkP.translate : lightP.translate;
             }
 
-            // 4. 테마 드롭다운 내부 아이콘들 변경
+            // 5. 테마 드롭다운 내부 아이콘들 변경
             if (themeItemIcons.light) {
-                 // 페이지가 라이트 모드이고, "라이트" 테마가 선택된 경우 -> 드롭다운 "라이트" 아이템의 아이콘은 (다크모드용) "라이트" 아이콘
-                if (currentActualTheme === 'light' && currentThemeSetting === 'light' && darkP.themeLight) {
-                    themeItemIcons.light.src = darkP.themeLight;
-                } else {
-                    themeItemIcons.light.src = (currentActualTheme === 'dark' && darkP.themeLight) ? darkP.themeLight : lightP.themeLight;
-                }
+                themeItemIcons.light.src = (currentActualTheme === 'dark' && darkP.themeLight) ? darkP.themeLight : lightP.themeLight;
             }
             if (themeItemIcons.dark) {
                 themeItemIcons.dark.src = (currentActualTheme === 'dark' && darkP.themeDark) ? darkP.themeDark : lightP.themeDark;
@@ -106,28 +103,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 themeItemIcons.auto.src = (currentActualTheme === 'dark' && darkP.themeAuto) ? darkP.themeAuto : lightP.themeAuto;
             }
 
-            // 프로필 이미지 변경 로직 추가
-            if (userProfileImage && window.defaultProfileImagePaths) {
-                // `base.html`에서 `<img id="user-profile-image" data-has-custom-image="...">` 와 같이 설정되어 있어야 함
-                const hasCustomImage = userProfileImage.dataset.hasCustomImage === 'true';
+            // 6. 모든 '.default-avatar' 클래스를 가진 기본 프로필 이미지 변경
+            if (window.defaultProfileImagePaths) {
+                const lightDefaultProfile = window.defaultProfileImagePaths.light;
+                const darkDefaultProfile = window.defaultProfileImagePaths.dark;
 
-                if (!hasCustomImage) { // 사용자가 직접 업로드한 이미지가 아닐 때만 기본 이미지 변경
-                    let newProfileSrc = '';
-                    // getCurrentAppliedTheme()를 사용하여 실제 body에 적용된 테마를 기준으로 결정
-                    const appliedTheme = getCurrentAppliedTheme();
+                document.querySelectorAll('img.default-avatar').forEach(img => {
+                    // data-has-custom-image 속성으로 커스텀 이미지 여부 확인
+                    const hasCustomImage = img.dataset.hasCustomImage === 'true';
 
-                    if (appliedTheme === 'dark' && window.defaultProfileImagePaths.dark) {
-                        newProfileSrc = window.defaultProfileImagePaths.dark;
-                    } else if (window.defaultProfileImagePaths.light) { // 기본은 라이트
-                        newProfileSrc = window.defaultProfileImagePaths.light;
+                    if (!hasCustomImage) { // 커스텀 이미지가 아닐 때만 기본 이미지 교체
+                        let newProfileSrc = '';
+                        if (currentActualTheme === 'dark' && darkDefaultProfile) {
+                            newProfileSrc = darkDefaultProfile;
+                        } else if (lightDefaultProfile) { // 라이트 모드 또는 다크 모드용 기본 이미지가 없을 경우
+                            newProfileSrc = lightDefaultProfile;
+                        }
+
+                        if (newProfileSrc && img.src !== newProfileSrc) {
+                            img.src = newProfileSrc;
+                        }
                     }
-
-                    if (newProfileSrc && userProfileImage.src !== newProfileSrc) {
-                        userProfileImage.src = newProfileSrc;
-                    }
-                }
+                });
             }
-        };
+        }
+        // ▲▲▲ 추가 또는 기존 updateIcons 함수를 이 내용으로 대체/확장 끝 ▲▲▲
 
         const updateActiveDropdownItem = (themeSetting) => {
             themeMenuItems.forEach(item => {
@@ -154,6 +154,9 @@ document.addEventListener('DOMContentLoaded', function () {
             prefersDarkScheme.addListener(handleSystemThemeChange);
         }
 
+        // 1. 먼저 현재 body 클래스 기준으로 아이콘들 초기 상태 설정 (특히 'auto'일 때 시스템 테마 반영)
+        setDefaultThemeAssets();
+        // 2. 그 다음 localStorage에 저장된 사용자 선택 테마 적용 (내부적으로 setDefaultThemeAssets 다시 호출)
         applyTheme(getCurrentThemeSetting());
     }
     // --- 테마 전환 로직 끝 ---

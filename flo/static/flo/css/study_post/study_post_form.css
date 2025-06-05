@@ -2,7 +2,7 @@
 
 /* --- 기본 변수 및 레이아웃 (기존과 동일) --- */
 :root {
-    --bg-page: #111111;
+    --bg-page: #121212;
     --text-main: #2d2d2d;
     --line-sub: #2d2d2d;
     --btn-bg: #3294E4;
@@ -21,7 +21,7 @@
     --category-item-active-bg: #3294E4; /* Bootstrap primary color */
     --category-item-active-text: #fff;
 
-    --dark-bg-page: ##f8f9fa;
+    --dark-bg-page: #f8f9fa;
     --dark-text-main: #f1f1f1;
     --dark-line-sub: #f1f1f1;
     /* 다크모드 카테고리 패널 */

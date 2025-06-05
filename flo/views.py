@@ -24,22 +24,25 @@ from itertools import groupby # Python 표준 라이브러리
 def home(request):
     # 인기 게시글 Top 3 가져오기
     # 공지사항(is_notice=True)을 제외하고, 일반 게시글 중에서
-    # 1. 추천 많은 순
-    # 2. (추천수 같을 시) 조회수 많은 순 ⭐
-    # 3. (추천수, 조회수 같을 시) 최신순
+    # 0. 좋아요 수가 1 이상인 게시물만 대상 (새로운 조건)
+    # 1. 좋아요 많은 순
+    # 2. (좋아요 수 같을 시) 조회수 많은 순
+    # 3. (좋아요 수, 조회수 같을 시) 최신순
     top_posts = Post.objects.filter(
         is_notice=False  # 공지사항 제외
     ).annotate(
         num_likes=Count('likes', distinct=True),
         num_comments=Count('comments', distinct=True)
+    ).filter(
+        num_likes__gt=0  # ★★★ 추가된 조건: 좋아요 수가 0보다 큰 게시물만 필터링 ★★★
     ).select_related(
         'author__profile'
     ).prefetch_related(
         Prefetch('categories', queryset=Category.objects.order_by('name'))
     ).order_by(
-        '-num_likes',  # 1. 추천 많은 순
-        '-views',      # 2. 조회수 많은 순 ⭐ (추천수가 같을 경우 이 기준으로 정렬)
-        '-created_at'  # 3. 최신순 (추천수와 조회수 모두 같을 경우 이 기준으로 정렬)
+        '-num_likes',  # 1. 좋아요 많은 순
+        '-views',      # 2. 조회수 많은 순 (좋아요 수가 같을 경우 이 기준으로 정렬)
+        '-created_at'  # 3. 최신순 (좋아요 수와 조회수 모두 같을 경우 이 기준으로 정렬)
     )[:3]
 
     context = {
@@ -616,7 +619,7 @@ def study_post_delete(request, pk):
         return HttpResponseBadRequest("잘못된 요청입니다.")
 
 
-# 글 추천 (좋아요)
+# 글 좋아요
 @login_required
 def study_post_like(request, pk):
     post = get_object_or_404(Post, pk=pk)

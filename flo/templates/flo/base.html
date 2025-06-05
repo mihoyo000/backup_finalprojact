@@ -38,7 +38,10 @@
                     <div class="nav-mobile-profile-section">
                         <a href="#" class="nav-user-info-toggle" data-bs-toggle="collapse" data-bs-target="#navMobileUserMenu" aria-expanded="false" aria-controls="navMobileUserMenu">
                             <div class="profile-image-wrapper">
-                                <img src="{{ user.profile.get_profile_image_url }}" alt="Profile">
+                                <img src="{{ user.profile.get_profile_image_url }}"
+                                    alt="Profile"
+                                    class="{% if not user.profile.has_custom_profile_image %}default-avatar{% endif %}"
+                                    data-has-custom-image="{{ user.profile.has_custom_profile_image|yesno:'true,false' }}">
                             </div>
                             <span class="user-display-name">{{ user.profile.get_display_name }}님</span>
                             <span class="arrow-indicator">▾</span>
@@ -91,6 +94,7 @@
                                         <img src="{{ user.profile.get_profile_image_url }}"
                                             alt="{{ user.profile.get_display_name }} Profile"
                                             id="user-profile-image"
+                                            class="{% if not user.profile.has_custom_profile_image %}default-avatar{% endif %}"
                                             data-has-custom-image="{{ user.profile.has_custom_profile_image|yesno:'true,false' }}">
                                     </div>
                                     {# ▼▼▼ 수정 ▼▼▼ (CSS 선택을 위해 클래스 추가) #}

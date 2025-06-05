@@ -101,76 +101,87 @@
             </a>
         </div>
 
-        <table class="table board-table-custom">
-            <thead>
-                <tr>
-                    <th class="col-number">번호</th>
-                    <th class="col-title">제목</th>
-                    <th class="col-author">작성자</th>
-                    <th class="col-date">작성일</th>
-                    <th class="col-views">조회수</th>
-                    <th class="col-likes">추천</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for post in posts %}
-                <tr {% if post.is_notice %}class="notice-row"{% endif %}>
-                    <td>{% if post.is_notice %}<strong>공지</strong>{% else %}{{ post.id }}{% endif %}</td>
-                                        <td class="title-cell">
-                        {# === 카테고리 드롭다운 표시 (링크와 분리) === #}
-                        {% if post.categories.all %}
-                        <span class="post-category-display-wrapper">
-                            {# 토글 버튼에 data-target-dropdown 속성으로 내용물 ID 연결 #}
-                            <span class="post-category-list-dropdown-toggle" 
-                                          id="post-cat-toggle-{{ post.id }}" 
-                                          data-target-dropdown="#post-cat-content-{{ post.id }}"
-                                          tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
-                                <span class="post-category-tag">
-                                    [{{ post.categories.all.0.name }}] {# 카테고리 이름 자르기 제거 #}
-                                </span>
-                                {% if post.categories.all|length > 1 %}
-                                    <span class="post-category-more-count">외 {{ post.categories.all|length|add:"-1" }}개</span>
-                                {% endif %}
-                                <svg class="dropdown-arrow-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-                                </svg>
-                            </span>
-                            {% if post.categories.all|length > 0 %}
-                            {# 드롭다운 내용물에도 고유 ID 부여 #}
-                            <div class="post-category-dropdown-content" id="post-cat-content-{{ post.id }}">
-                                <ul>
-                                    {% for category in post.categories.all %}
-                                        <li data-id="{{ category.id }}" 
-                                            data-name="{{ category.name }}" 
-                                            data-slug="{{ category.slug }}"
-                                            data-path="{{ category.get_full_path_name }}">{{ category.get_full_path_name }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            {% endif %}
-                        </span>
-                        {% endif %}
-                        {# === 게시물 제목 링크 === #}
-                        <a href="{{ post.get_absolute_url }}" class="post-title-link" title="{{ post.title }}">
-                            {{ post.title|truncate_chars:30 }}
-                        </a>
+        <div class="table-responsive-wrapper">
+            <table class="table board-table-custom">
+                <thead>
+                    <tr>
+                        <th class="col-number">번호</th>
+                        <th class="col-category">카테고리</th>
+                        <th class="col-title">제목</th>
+                        <th class="col-author">작성자</th>
+                        <th class="col-date">작성일</th>
+                        <th class="col-views">조회수</th>
+                        <th class="col-likes">추천</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr {% if post.is_notice %}class="notice-row"{% endif %}>
+                        <td>{% if post.is_notice %}<strong>공지</strong>{% else %}{{ post.id }}{% endif %}</td>
                         
-                        {% if post.comment_count > 0 %}
-                            <span class="comment-count-badge">[{{ post.comment_count }}]</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ post.author.profile.get_display_name }}</td> {# username 대신 get_display_name 사용 권장 #}
-                    <td>{{ post.created_at|date:"Y-m-d" }}</td>
-                    <td>{{ post.views }}</td>
-                    <td>{{ post.total_likes }}</td> {# num_likes 대신 total_likes 또는 적절한 필드명 사용 #}
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center py-4">게시글이 없습니다.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        {# 카테고리 셀 #}
+                        <td>
+                            {% if not post.is_notice and post.categories.all %}
+                            <span class="post-category-display-wrapper">
+                                <span class="post-category-list-dropdown-toggle" 
+                                            id="post-cat-toggle-{{ post.id }}" 
+                                            data-target-dropdown="#post-cat-content-{{ post.id }}"
+                                            tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <span class="post-category-tag">
+                                        [{{ post.categories.all.0.name }}]
+                                    </span>
+                                    {% if post.categories.all|length > 1 %}
+                                        <span class="post-category-more-count">외 {{ post.categories.all|length|add:"-1" }}개</span>
+                                    {% endif %}
+                                    <svg class="dropdown-arrow-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                    </svg>
+                                </span>
+                                {% if post.categories.all|length > 0 %}
+                                <div class="post-category-dropdown-content" id="post-cat-content-{{ post.id }}">
+                                    <ul>
+                                        {% for category in post.categories.all %}
+                                            <li data-id="{{ category.id }}" 
+                                                data-name="{{ category.name }}" 
+                                                data-slug="{{ category.slug }}"
+                                                data-path="{{ category.get_full_path_name }}">{{ category.get_full_path_name }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        {# 제목 셀 - 클래스 추가 #}
+                        <td class="post-title-cell"> 
+                            <a href="{{ post.get_absolute_url }}" class="post-title-link" title="{{ post.title }}">
+                                {% if post.is_notice %}
+                                    {{ post.title }}
+                                {% else %}
+                                    {{ post.title|truncate_chars:30 }}
+                                {% endif %}
+                            </a>
+                            
+                            {% if not post.is_notice and post.comment_count > 0 %}
+                                <span class="comment-count-badge">[{{ post.comment_count }}]</span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ post.author.profile.get_display_name }}</td>
+                        <td>{{ post.created_at|date:"Y-m-d" }}</td>
+                        <td>{{ post.views }}</td>
+                        <td>{{ post.total_likes }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        {# 이 colspan 값은 아래 JavaScript에서 동적으로 변경됩니다. #}
+                        <td colspan="7" class="text-center py-4">게시글이 없습니다.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <div class="pagination-wrapper">
             <nav aria-label="Page navigation">
@@ -488,10 +499,35 @@ $(document).ready(function() {
     });
 
     // --- AJAX로 게시물 목록 및 페이지네이션 업데이트 ---
+    // 이 함수는 서버 응답을 받아 UI를 업데이트합니다.
+    // postsHtml이 비어있거나 null일 때 표시되는 메시지의 colspan을 동적으로 설정합니다.
     function updatePostListAndPaginationUI(postsHtml, paginationHtml) {
-        $('.table.board-table-custom tbody').html(postsHtml || '<tr><td colspan="6" class="text-center py-4">게시글이 없습니다.</td></tr>');
+        let colspanValue = 7; // 데스크톱 기본 (모든 열 표시)
+        const windowWidth = $(window).width();
+
+        if (windowWidth <= 575.98) { // 모바일 (예: 번호, 카테고리, 제목 = 3열)
+            // CSS에서 .col-author (4번째), .col-date (5번째), .col-views (6번째), .col-likes (7번째) 숨김
+            // 만약 번호도 숨긴다면 colspanValue = 2;
+            colspanValue = 3; 
+        } else if (windowWidth <= 767.98) { // 작은 태블릿 (예: 번호, 카테고리, 제목, 작성자 = 4열)
+            // CSS에서 .col-date (5번째), .col-views (6번째), .col-likes (7번째) 숨김
+            colspanValue = 4;
+        } else if (windowWidth <= 991.98) { // 태블릿 (예: '추천'만 숨김 = 6열)
+            // CSS에서 .col-likes (7번째) 숨김
+            colspanValue = 6;
+        }
+        
+        const emptyDataMessage = `<tr><td colspan="${colspanValue}" class="text-center py-4">게시글이 없습니다.</td></tr>`;
+        // postsHtml 인자 자체가 이미 "게시글 없음" 등의 메시지를 포함하고 있다면, 그 HTML을 그대로 사용합니다.
+        // 아래는 postsHtml이 순수 데이터 목록이거나, 서버에서 빈 문자열을 보냈을 경우를 대비한 것입니다.
+        if (postsHtml && postsHtml.trim() !== "") {
+            $('.table.board-table-custom tbody').html(postsHtml);
+        } else {
+            // postsHtml이 비어있거나(서버에서 "" 응답), null/undefined일 때 "게시글 없음" 표시
+            $('.table.board-table-custom tbody').html(emptyDataMessage);
+        }
+
         $('.pagination-wrapper').html(paginationHtml || '');
-        // AJAX 로드 후, 만약 게시물 목록 내 드롭다운을 다시 초기화해야 한다면 여기서 호출
     }
 
     function getCurrentFiltersAsParams(page = 1) {
@@ -517,7 +553,19 @@ $(document).ready(function() {
         const baseUrl = "{% url 'flo:study_post_list' %}";
         const fullUrl = baseUrl + (queryString ? "?" + queryString : "");
 
-        $('.table.board-table-custom tbody').html('<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>');
+        // 로딩 메시지 colspan 동적 적용
+        let colspanValue = 7;
+        const windowWidth = $(window).width();
+        if (windowWidth <= 575.98) { colspanValue = 3; }
+        else if (windowWidth <= 767.98) { colspanValue = 4; }
+        else if (windowWidth <= 991.98) { colspanValue = 6; }
+        
+        const loadingRowHtmlDynamic = `<tr><td colspan="${colspanValue}" class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>`;
+        const errorRowHtmlDynamic = `<tr><td colspan="${colspanValue}" class="text-center py-4 text-danger">게시글을 불러오는데 실패했습니다.</td></tr>`;
+        const emptyRowHtmlDynamic = `<tr><td colspan="${colspanValue}" class="text-center py-4">게시글이 없습니다.</td></tr>`;
+
+
+        $('.table.board-table-custom tbody').html(loadingRowHtmlDynamic);
 
         $.ajax({
             url: fullUrl,
@@ -525,7 +573,14 @@ $(document).ready(function() {
             dataType: 'json',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             success: function(response) {
-                updatePostListAndPaginationUI(response.posts_html, response.pagination_html);
+                // 서버에서 posts_html이 "" (빈 문자열)이고 pagination_html도 없을 때 (즉, 결과가 아예 없을 때)
+                // "게시글이 없습니다" 메시지를 표시합니다.
+                if (response.posts_html === "" && (!response.pagination_html || response.pagination_html.trim() === "")) {
+                    updatePostListAndPaginationUI(emptyRowHtmlDynamic, response.pagination_html);
+                } else {
+                    updatePostListAndPaginationUI(response.posts_html, response.pagination_html);
+                }
+                
                 const stateData = { page: page, filters: queryParams.toString() };
                 if (replaceHistory) {
                     history.replaceState(stateData, '', fullUrl);
@@ -536,10 +591,37 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 console.error("AJAX Error fetching posts:", xhr.responseText);
-                updatePostListAndPaginationUI('<tr><td colspan="6" class="text-center py-4 text-danger">게시글을 불러오는데 실패했습니다.</td></tr>', '');
+                // 에러 발생 시, 에러 메시지를 포함한 HTML을 updatePostListAndPaginationUI로 전달
+                updatePostListAndPaginationUI(errorRowHtmlDynamic, '');
             }
         });
     }
+
+    // (선택적) 창 크기 변경 시 UI 업데이트 (예: colspan 재계산이 필요한 경우)
+    // AJAX 호출 없이 단순 colspan만 변경해야 한다면, 테이블 내용이 메시지일 때만 처리
+    let resizeTimeout;
+    $(window).on('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            const $tbody = $('.table.board-table-custom tbody');
+            const $firstTd = $tbody.find('tr:first-child td:first-child');
+            // 현재 tbody에 게시물 목록이 아닌, colspan을 사용하는 단일 메시지 행만 있는지 확인
+            if ($firstTd.length && $firstTd.attr('colspan')) {
+                // 현재 화면 크기에 맞는 colspan 값 계산
+                let colspanValue = 7;
+                const windowWidth = $(window).width();
+                if (windowWidth <= 575.98) { colspanValue = 3; }
+                else if (windowWidth <= 767.98) { colspanValue = 4; }
+                else if (windowWidth <= 991.98) { colspanValue = 6; }
+                
+                if (parseInt($firstTd.attr('colspan')) !== colspanValue) {
+                    $firstTd.attr('colspan', colspanValue);
+                }
+            }
+        }, 250); // 디바운싱
+    });
+
+    initializePage(); // 기존 함수 호출 유지
 
     // 페이지네이션 링크 AJAX 처리 (이벤트 위임 사용)
     $('.pagination-wrapper').on('click', 'a.page-link', function(event) {
@@ -692,6 +774,43 @@ $(document).ready(function() {
     }
 
     initializePage();
+
+    // --- 게시물 행 클릭 시 상세 페이지 이동 (모바일/태블릿) ---
+    $('.table.board-table-custom tbody').on('click', 'tr', function(event) {
+        const $clickedRow = $(this);
+        const windowWidth = $(window).width();
+
+        // 데스크톱 화면(992px 초과)에서는 이 기능 비활성화
+        if (windowWidth > 991.98) {
+            return;
+        }
+
+        // 클릭된 요소가 카테고리 영역(두 번째 td) 또는 그 내부의 특정 요소들인지 확인
+        const $target = $(event.target);
+        const $categoryCell = $clickedRow.find('td:nth-child(2)'); // 카테고리 셀
+
+        // 클릭된 지점이 카테고리 셀 내부이거나, 카테고리 드롭다운 토글 버튼, 또는 드롭다운 내용물 자체인 경우,
+        // 그리고 페이지네이션 링크나 검색 버튼 등이 아닌 경우에만 이동하지 않도록 처리
+        if ($target.closest($categoryCell).length > 0 ||
+            $target.closest('.post-category-list-dropdown-toggle').length > 0 ||
+            $target.closest('.post-category-dropdown-content').length > 0 ||
+            $target.is('a.page-link') || // 페이지네이션 링크
+            $target.closest('button').length > 0 || // 일반 버튼 (검색 버튼 등)
+            $target.is('input') || $target.is('select') // 입력 필드
+        ) {
+            // 카테고리 관련 영역, 페이지네이션, 버튼, 입력 필드를 클릭한 경우 아무 작업 안 함
+            return;
+        }
+
+        // 공지사항이든 일반 게시물이든 제목 셀의 링크를 찾음
+        const $titleLink = $clickedRow.find('td.post-title-cell a.post-title-link');
+
+        if ($titleLink.length > 0 && $titleLink.attr('href')) {
+            window.location.href = $titleLink.attr('href');
+        }
+    });
+    // --- 게시물 행 클릭 로직 끝 ---
+
 });
 </script>
 {% endblock %}
