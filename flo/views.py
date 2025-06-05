@@ -77,12 +77,11 @@ def logout_view(request):
         username = request.user.username # 로그아웃 전에 사용자 이름 저장 (메시지용)
         auth_logout(request)
         messages.info(request, f'{username}님, 성공적으로 로그아웃되었습니다.')
-        # settings.py의 LOGOUT_REDIRECT_URL ('flo:study_post_list')로 리디렉션
-        return redirect('flo:study_post_list')
+        return redirect('flo:home')
     else:
         # GET 요청으로 로그아웃 URL 직접 접근 시, 홈페이지 등으로 리디렉션 또는 에러 메시지
         # 일반적으로는 base.html에서 form으로 POST 요청을 하므로 이 경우는 거의 없음
-        return redirect('flo:study_post_list')
+        return redirect('flo:home')
 
 # 학습 게시판 목록 (study_post_list.html)
 def study_post_list(request):

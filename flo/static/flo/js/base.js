@@ -170,14 +170,26 @@ document.addEventListener('DOMContentLoaded', function () {
             const isNavOpen = mainNav.classList.toggle('show');
             this.classList.toggle('active', isNavOpen);
 
+            // 모바일 전용 섹션 가져오기
+            const mobileProfileSection = mainNav.querySelector('.nav-mobile-profile-section');
+            const mobileThemeSection = mainNav.querySelector('.nav-mobile-theme-section');
+
             if (isNavOpen) {
                 mainNav.scrollTop = 0;
+                // 모바일 뷰이고, 메뉴가 열렸을 때만 해당 섹션들 표시 (CSS로도 가능)
+                if (window.innerWidth < DESKTOP_BREAKPOINT) {
+                    if (mobileProfileSection) mobileProfileSection.style.display = 'block'; // 또는 'flex'
+                    if (mobileThemeSection) mobileThemeSection.style.display = 'block';   // 또는 'flex'
+                }
                 // ▼▼▼ 추가: 햄버거 메뉴가 열릴 때, 다른 드롭다운 z-index 초기화 ▼▼▼
                 document.querySelectorAll('.header-right-controls .dropdown-menu.show-over-main-nav').forEach(ddMenu => {
                     ddMenu.classList.remove('show-over-main-nav');
                 });
                 // ▲▲▲ 추가 끝 ▲▲▲
             } else {
+                // 메뉴 닫힐 때 모바일 섹션 숨김 (CSS로도 가능)
+                if (mobileProfileSection) mobileProfileSection.style.display = 'none';
+                if (mobileThemeSection) mobileThemeSection.style.display = 'none';
                 mainNav.querySelectorAll('.sub-menu.open').forEach(openSubMenu => {
                     openSubMenu.classList.remove('open');
                     const parentAnchor = openSubMenu.previousElementSibling;
@@ -193,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const submenuParentAnchors = document.querySelectorAll('.main-menu > li > a[data-bs-toggle="submenu"]');
     submenuParentAnchors.forEach(anchor => {
         anchor.addEventListener('click', function(event) {
-            if (window.innerWidth >= DESKTOP_BREAKPOINT) {
+            if (window.innerWidth >= DESKTOP_BREAKPOINT) { // 데스크톱에서는 JS 토글 방지
                 return; 
             }
 
@@ -205,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const parentLi = this.parentElement; 
                 const currentlyOpen = subMenu.classList.contains('open');
 
+                // 다른 열려있는 서브메뉴 닫기 (하나만 열리도록)
                 if (!currentlyOpen) { 
                     parentLi.parentElement.querySelectorAll('.sub-menu.open').forEach(otherOpenSubMenu => {
                         if (otherOpenSubMenu !== subMenu) {
@@ -217,29 +230,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 }
 
-                subMenu.classList.toggle('open');
-                this.classList.toggle('open', subMenu.classList.contains('open'));
-
-                // ▼▼▼ 수정: 하위 메뉴 열 때 자동 스크롤 로직 주석 처리 ▼▼▼
-                /*
-                if (subMenu.classList.contains('open') && mainNav.classList.contains('show')) {
-                    // 약간의 딜레이를 주어 max-height 애니메이션 후 스크롤 계산
-                    setTimeout(() => {
-                        const mainNavRect = mainNav.getBoundingClientRect();
-                        const parentLiRect = parentLi.getBoundingClientRect(); // 부모 li의 위치
-
-                        if (parentLiRect.top < mainNavRect.top || parentLiRect.bottom > mainNavRect.bottom) {
-                            const scrollTopValue = parentLi.offsetTop - mainNav.offsetTop - 10; // 10px 정도 여유
-
-                            mainNav.scrollTo({
-                                top: scrollTopValue,
-                                behavior: 'smooth'
-                            });
-                        }
-                    }, 50); 
-                }
-                */
-                // ▲▲▲ 스크롤 조정 로직 주석 처리 끝 ▲▲▲
+                // 현재 클릭한 서브메뉴 토글
+                subMenu.classList.toggle('open'); 
+                this.classList.toggle('open', subMenu.classList.contains('open')); 
             }
         });
     });

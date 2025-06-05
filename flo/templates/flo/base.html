@@ -32,9 +32,32 @@
                 </button>
                 {# ▲▲▲ 추가 ▲▲▲ #}
 
-                {# ▼▼▼ 수정 ▼▼▼ (JS에서 제어하기 위해 ID 추가) #}
                 <nav class="main-nav" id="mainNav">
-                {# ▲▲▲ 수정 ▲▲▲ #}
+                    {% if user.is_authenticated %}
+                    {# 모바일 뷰에서만 보일 프로필 섹션 (햄버거 메뉴 상단) #}
+                    <div class="nav-mobile-profile-section">
+                        <a href="#" class="nav-user-info-toggle" data-bs-toggle="collapse" data-bs-target="#navMobileUserMenu" aria-expanded="false" aria-controls="navMobileUserMenu">
+                            <div class="profile-image-wrapper">
+                                <img src="{{ user.profile.get_profile_image_url }}" alt="Profile">
+                            </div>
+                            <span class="user-display-name">{{ user.profile.get_display_name }}님</span>
+                            <span class="arrow-indicator">▾</span>
+                        </a>
+                        <div class="collapse user-dropdown-menu-mobile" id="navMobileUserMenu">
+                            <ul class="list-unstyled">
+                                <li><a class="dropdown-item" href="#">{% translate "마이페이지" %}</a></li>
+                                <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'flo:logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">{% translate "로그아웃" %}</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
                     <ul class="main-menu">
                         <li><a href="#">{% translate "Flo와 문제 풀기" %}</a></li>
                         <li>
