@@ -5,8 +5,7 @@
     background-size: cover;
     background-position: center center;
     position: relative;
-    color: #fff; /* 기본 흰색, 각 섹션에서 필요시 오버라이드 */
-    overflow: hidden;
+    overflow: hidden; /* ::after 요소 등이 넘치는 것을 방지하기 위해 추가 */
 }
 
 .slide-overlay {
@@ -27,6 +26,10 @@
     padding: 5vw 8vw;
     box-sizing: border-box;
     text-align: center;
+    /* 작은 화면에서 slide-content 자체가 너무 많은 수직 공간을 차지하지 않도록,
+       justify-content를 flex-start로 변경하고 내부 요소들의 마진/패딩으로 공간 조절 시도 가능.
+       하지만 현재는 fullPage.js의 verticalCentered:false를 사용하고 있으므로,
+       주로 내부 요소 크기 조절에 집중. */
 }
 
 /* --- Section 1: 프로그램 시작하기 --- */
@@ -44,21 +47,19 @@
     width: 100%; /* 부모 컨테이너 너비를 기준으로 함 */
     max-width: 600px; /* 텍스트 블록의 최대 너비. 이 값에 따라 치우친 느낌이 달라짐 */
                       /* 이 값을 줄이면 더 중앙에 모이고, 늘리면 더 넓게 퍼짐 */
-    text-align: left;
-    margin-right: 200px;
+    text-align: center;
 }
 .s1-main-title .flo-highlight {
     color: #34d2e2; /* flo 색상 */
 }
 .s1-title-line2 {
     display: block; /* 줄바꿈을 만들고, 부모 너비(s1-main-title)를 차지 */
-    text-align: right; /* 오른쪽 정렬 */
+    text-align: center; /* 오른쪽 정렬 */
     font-weight: 700; /* 굵은 굵기 */
 }
 
 .s1-title-line2 .flo-highlight {
     color: #34d2e2; /* 'Flo' 텍스트 색상 */
-    /* font-weight는 부모(.s1-title-line2)로부터 상속받아 700이 됨 */
 }
 
 .btn-flo-start {
@@ -70,7 +71,7 @@
     border-radius: 30px;
     text-decoration: none;
     transition: transform 0.2s ease, background-color 0.2s ease;
-    margin-top: 10px; /* 제목과의 간격이 너무 좁을 경우 추가 */
+    margin-top: 10px;
 }
 .btn-flo-start:hover {
     transform: scale(1.05);
@@ -79,340 +80,362 @@
     text-decoration: none;
 }
 
-/* --- Section 2: 기능 소개 --- */
+/* --- Section 2: 기능 소개 (기본 - 큰 화면) --- */
 .section-2 {
-    background-color: #000000; /* 검은색 배경 */
+    background-color: #f8f9fa; /* 라이트 모드 배경 */
+    color: #212529; /* 라이트 모드 기본 텍스트 */
+}
+body.theme-dark .section-2 {
+    background-color: #000000; /* 다크 모드 배경 (변경 전: #1a1a1a)*/
+    color: #f8f9fa; /* 다크 모드 기본 텍스트 */
 }
 .section2-content {
-    justify-content: flex-start;
-    padding-top: 70px;
-    align-items: flex-start;
+    justify-content: flex-start; /* 992px 초과 시 */
+    padding-top: 50px;
+    /* ▼▼▼ 추가 ▼▼▼ (하단 패딩 일관성) */
+    padding-bottom: 50px;
+    /* ▲▲▲ 추가 ▲▲▲ */
+    align-items: center;
     width: 100%;
-    max-width: 1600px; /* 콘텐츠 최대 너비, 이 값에 따라 밑줄 길이가 달라질 수 있음 */
+    max-width: 1600px;
     margin: 0 auto;
     padding-left: 60px;
     padding-right: 60px;
     box-sizing: border-box;
-    position: relative; /* 가상요소 위치 기준점 */
+    position: relative;
 }
 .s2-main-title {
-    font-size: 36px;
-    color: #ffffff;
+    font-size: 34px;
     font-weight: bold;
-    /* border-bottom: 2px solid #ffffff; /* 기존 밑줄 제거 */
-    /* padding-bottom: 15px; /* 기존 패딩 제거 */
-    margin-left: 200px;
-    margin-bottom: 10px; /* 밑줄과의 간격 및 아래 컨텐츠와의 간격 조정 */
-    /* display: inline-block; /* 제거 또는 block으로 변경 */
-    display: block; /* 전체 너비를 차지하도록 */
-    position: relative; /* ::after 가상 요소의 기준 */
-    padding-bottom: 25px; /* 밑줄과의 간격을 padding으로 확보 */
+    margin-top: 0;
+    margin-left: 0; /* 992px 초과 시 */
+    margin-bottom: 10px;
+    display: block;
+    position: relative;
+    padding-bottom: 20px;
+    text-align: left; /* 992px 초과 시 */
+    /* ▼▼▼ 추가 ▼▼▼ (테마별 제목 색상) */
+    color: #343a40; /* 라이트 모드 제목 */
 }
-
-.s2-main-title::after { /* 밑줄을 위한 가상 요소 */
+body.theme-dark .s2-main-title {
+    color: #e9ecef; /* 다크 모드 제목 */
+}
+.s2-main-title::after {
     content: '';
     position: absolute;
-    padding-right: 100px;
-    left: -500px; /* 제목 텍스트 시작점부터 */
-    bottom: 0; /* 제목 아래에 위치 */
-    width: calc(100% + 550px); /* 제목 요소의 전체 너비 (padding-left/right에 의해 조절됨) */
-                /* 만약 section2-content의 패딩을 제외한 실제 컨텐츠 너비만큼 하려면
-                    left: -60px; (section2-content의 padding-left 값)
-                    width: calc(100% + 120px); (section2-content의 padding-left + padding-right 값)
-                    하지만, 이 경우 부모 요소에 overflow:hidden 등이 필요할 수 있음.
-                    현재는 제목 텍스트가 있는 블록의 100%로 설정 */
-    height: 2px; /* 밑줄 두께 */
-    background-color: #ffffff; /* 밑줄 색상 */
+    left: 0; /* 992px 초과 시 */
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    /* ▼▼▼ 추가 ▼▼▼ (테마별 밑줄 색상) */
+    background-color: #343a40; /* 라이트 모드 밑줄 */
 }
-.feature-container {
+body.theme-dark .s2-main-title::after {
+    background-color: #e9ecef; /* 다크 모드 밑줄 */
+}
+.feature-container { /* 992px 초과 시 */
     display: flex;
     flex-direction: column;
     gap: 50px;
     margin-left: 100px;
-    width: 100%;
-    margin-top: 20px; /* 제목 밑줄과 컨테이너 사이의 간격 추가 */
+    /* width: 100%; /* 이전 코드 */
+    width: calc(100% - 100px); /* ▼▼▼ 수정 ▼▼▼ (정확한 너비 계산) */
+    /* ▲▲▲ 수정 ▲▲▲ */
+    margin-top: 20px;
+    align-items: flex-start;
 }
-.feature-block {
+.feature-block { /* 992px 초과 시 */
     display: flex;
-    align-items: center; /* Flo 회전 텍스트로 인해 baseline 정렬이 더 나을 수 있음 */
-    /* align-items: baseline; */
+    align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    width: 90%;
+    gap: 20px; /* ▼▼▼ 수정 ▼▼▼ (간격 조정) */
+    /* width: 90%; /* 이전 코드, 다소 모호 */
+    max-width: 1200px; /* ▼▼▼ 추가 ▼▼▼ (최대 너비 제한) */
+    width: 100%; /* ▼▼▼ 추가 ▼▼▼ (컨테이너 내에서 꽉 차도록) */
+    /* ▲▲▲ 수정 ▲▲▲ */
 }
-.feature-block.reverse {
-    flex-direction: row-reverse;
-}
-.feature-text {
-    flex-basis: 55%;
+.feature-block.reverse { flex-direction: row-reverse; } /* 992px 초과 시 */
+.feature-text { /* 992px 초과 시 */
+    flex-basis: 50%; /* ▼▼▼ 수정 ▼▼▼ (비율 조정) */
+    /* ▲▲▲ 수정 ▲▲▲ */
     text-align: left;
-    color: #e0e0e0;
+    /* ▼▼▼ 추가 ▼▼▼ (테마별 텍스트 색상) */
+    color: #495057; /* 라이트 모드 본문 */
 }
-.feature-text p {
-    font-size: 17px;
-    line-height: 1.9; /* 회전된 Flo 텍스트를 고려하여 줄 간격 약간 늘림 */
-    margin-bottom: 20px;
-    color: #D0D0D0;
+body.theme-dark .feature-text {
+    color: #adb5bd; /* 다크 모드 본문 */
 }
-
-.flo-rotated-text {
+.feature-text p { font-size: 17px; line-height: 1.9; margin-bottom: 20px; /* color는 부모 .feature-text에서 상속 */ }
+.flo-rotated-text { /* 992px 초과 시 */
     display: inline-block;
-    color: #ffffff;
-    transform: rotate(90deg); /* 오른쪽으로 90도 회전 */
-    font-size: 1.12em; /* 크기 살짝 조정 */
-    /* margin: 0 3px; -> 90도 회전 시 margin 조정 필요 */
-    margin: 0 5px 0 15px; /* 위, 오른쪽, 아래, 왼쪽 순. 세로로 길어지므로 위아래 여백, 왼쪽 여백 확보 */
-    padding: 0; /* 패딩 제거 또는 조정 */
-    transform-origin: center center; /* 회전 기준점 */
-    line-height: 1; /* 회전된 텍스트 자체의 줄간격 영향 줄이기 */
-    letter-spacing: 1px; /* 글자 간격 약간 */
+    transform: rotate(90deg);
+    font-size: 1.12em;
+    margin: 0 5px 0 15px;
+    padding: 0;
+    transform-origin: center center;
+    line-height: 1;
+    letter-spacing: 1px;
+    /* ▼▼▼ 수정 ▼▼▼ (색상 지정 - Flo 브랜드 색상 유지 또는 테마별 미세조정) */
+    color: #0dcaf0; /* 라이트 모드 Flo 색상 (Bootstrap info color) */
+}
+body.theme-dark .flo-rotated-text {
+    color: #34d2e2; /* 다크 모드 Flo 색상 (기존 Flo highlight) */
 }
 .feature-text h3 {
-    font-size: 30px;
-    color: #ffffff;
+    font-size: 26px;
     font-weight: bold;
     line-height: 1.45;
     margin-bottom: 35px;
+    /* ▼▼▼ 추가 ▼▼▼ (테마별 부제목 색상) */
+    color: #343a40; /* 라이트 모드 부제목 */
 }
-.btn-flo-feature1 {
-    display: inline-block;
-    background-color: #34D2E2;
-    color: #ffffff !important;
-    border: 1px solid #34D2E2;
-    padding: 12px 28px;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 16px;
+body.theme-dark .feature-text h3 {
+    color: #f8f9fa; /* 다크 모드 부제목 */
+}
+.btn-flo-feature1, .btn-flo-feature2 {
+    display: inline-block; color: #ffffff !important; padding: 12px 28px; border-radius: 25px;
+    text-decoration: none; font-weight: 500; font-size: 16px;
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
-.btn-flo-feature1:hover {
-    background-color: #1E3A8A;
-    border-color: #1E3A8A;
-    color: #ffffff !important;
-    text-decoration: none;
-    transform: scale(1.03);
-}
-.btn-flo-feature2 {
-    display: inline-block;
-    background-color: #3294E4;
-    color: #ffffff !important;
-    border: 1px solid #3294E4;
-    padding: 12px 28px;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 16px;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-}
-.btn-flo-feature2:hover {
-    background-color: #1E3A8A;
-    border-color: #1E3A8A;
-    color: #ffffff !important;
-    text-decoration: none;
-    transform: scale(1.03);
-}
-.btn-flo-feature i {
-    margin-left: 8px;
-    transition: transform 0.2s ease;
-}
-.btn-flo-feature:hover i {
-    transform: translateX(3px);
-}
+.btn-flo-feature1 { background-color: #34D2E2; border: 1px solid #34D2E2; }
+.btn-flo-feature1:hover { background-color: #1E3A8A; border-color: #1E3A8A; transform: scale(1.03); }
+.btn-flo-feature2 { background-color: #3294E4; border: 1px solid #3294E4; }
+.btn-flo-feature2:hover { background-color: #1E3A8A; border-color: #1E3A8A; transform: scale(1.03); }
+.btn-flo-feature1 i, .btn-flo-feature2 i { margin-left: 8px; transition: transform 0.2s ease; }
+.btn-flo-feature1:hover i, .btn-flo-feature2:hover i { transform: translateX(3px); }
 
-.feature-image {
-    flex-basis: 60%;
+.feature-image { /* 992px 초과 시 */
+    flex-basis: 45%; /* ▼▼▼ 수정 ▼▼▼ (비율 조정) */
+    /* ▲▲▲ 수정 ▲▲▲ */
     text-align: center;
-}
-.feature-image img {
     display: block;
-    max-width: 100%;
-    height: auto;
-    object-fit: cover;
 }
-.feature-block:not(.reverse) .feature-image img {
-    max-height: 320px;
+.feature-image img { display: block; max-width: 100%; height: auto; object-fit: cover; }
+.feature-block:not(.reverse) .feature-image img { max-height: 300px; }
+.feature-block.reverse .feature-image img { max-height: 350px; }
+
+/* ▼▼▼ 추가 시작 ▼▼▼ (Section 2 strong/no-strong 테마별 색상) */
+/* 라이트 모드 시 Section 2 strong/no-strong 텍스트 색상 */
+.section-2 .section-2-no-strong, .section-2 .section-2-strong {
+    color: #495057; /* 부모 .feature-text 색상과 동일하게 또는 별도 지정 */
 }
-.feature-block.reverse .feature-image img {
-    max-height: 360px;
+/* 다크 모드 시 Section 2 strong/no-strong 텍스트 색상 */
+body.theme-dark .section-2 .section-2-no-strong, body.theme-dark .section-2 .section-2-strong {
+    color: #e9ecef;
 }
-/* section2-1.jpg (스터디 그룹) 이미지는 가로가 긴 형태일 수 있음 */
-.feature-block:not(.reverse) .feature-image img {
-    max-height: 300px; /* 예시 높이 제한 */
-}
-/* section2-2.png (노트북) 이미지는 정사각형에 가까울 수 있음 */
-.feature-block.reverse .feature-image img {
-    max-height: 350px; /* 예시 높이 제한 */
-}
-.section-2-no-strong {
-    font-size: 1.3rem;
-    font-weight: normal;
-    color: #ffffff;
-}
-.section-2-strong {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #ffffff;
-}
+/* ▲▲▲ 추가 끝 ▲▲▲ */
+
+.section-2-no-strong { font-size: 1.3rem; font-weight: normal; color: #ffffff; }
+.section-2-strong { font-size: 1.7rem; font-weight: bold; color: #ffffff; }
 
 
 /* --- Section 3: 커뮤니티 - 인기글 --- */
+/* Section 3은 일단 그대로 둡니다. */
 .section-3 {
-    background-color: #000000; /* 검은색 배경 */
+    background-color: #f8f9fa; /* 라이트 모드 배경 */
+    color: #212529; /* 라이트 모드 기본 텍스트 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-.section3-content {
-    justify-content: flex-start;
-    padding-top: 70px;
-    align-items: flex-start;
-    width: 100%;
-    max-width: 1600px; /* 콘텐츠 최대 너비, 이 값에 따라 밑줄 길이가 달라질 수 있음 */
-    margin: 0 auto;
-    padding-left: 60px;
-    padding-right: 60px;
-    box-sizing: border-box;
-    position: relative; /* 가상요소 위치 기준점 */
+body.theme-dark .section-3 {
+    background-color: #1a1a1a; /* 다크 모드 배경 */
+    color: #f8f9fa; /* 다크 모드 기본 텍스트 */
+}
+.section3-content { /* 기존 레이아웃 스타일 유지 */
+    padding-top: 40px; padding-bottom: 40px; align-items: center;
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding-left: 20px; padding-right: 20px; box-sizing: border-box;
+    position: relative; display: flex; flex-direction: column; justify-content: center;
 }
 .s3-main-title {
-    font-size: 36px;
-    color: #ffffff;
-    font-weight: bold;
-    /* border-bottom: 2px solid #ffffff; /* 기존 밑줄 제거 */
-    /* padding-bottom: 15px; /* 기존 패딩 제거 */
-    margin-left: 200px;
-    margin-bottom: 10px; /* 밑줄과의 간격 및 아래 컨텐츠와의 간격 조정 */
-    /* display: inline-block; /* 제거 또는 block으로 변경 */
-    display: block; /* 전체 너비를 차지하도록 */
-    position: relative; /* ::after 가상 요소의 기준 */
-    padding-bottom: 25px; /* 밑줄과의 간격을 padding으로 확보 */
+    font-size: 30px; font-weight: bold; margin-bottom: 25px;
+    display: block; position: relative; padding-bottom: 15px;
+    text-align: center; width: auto; align-self: center;
+    /* ▼▼▼ 추가 ▼▼▼ (테마별 제목 색상) */
+    color: #343a40; /* 라이트 모드 제목 */
+}
+body.theme-dark .s3-main-title {
+    color: #e9ecef; /* 다크 모드 제목 */
 }
 
-.s3-main-title::after { /* 밑줄을 위한 가상 요소 */
-    content: '';
-    position: absolute;
-    padding-right: 100px;
-    left: -500px; /* 제목 텍스트 시작점부터 */
-    bottom: 0; /* 제목 아래에 위치 */
-    width: calc(100% + 550px); /* 제목 요소의 전체 너비 (padding-left/right에 의해 조절됨) */
-                 /* 만약 section2-content의 패딩을 제외한 실제 컨텐츠 너비만큼 하려면
-                    left: -60px; (section2-content의 padding-left 값)
-                    width: calc(100% + 120px); (section2-content의 padding-left + padding-right 값)
-                    하지만, 이 경우 부모 요소에 overflow:hidden 등이 필요할 수 있음.
-                    현재는 제목 텍스트가 있는 블록의 100%로 설정 */
-    height: 2px; /* 밑줄 두께 */
-    background-color: #ffffff; /* 밑줄 색상 */
+.s3-main-title::after {
+    content: ''; position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: 0; width: 100%; max-width: 250px; height: 2px;
+    /* ▼▼▼ 추가 ▼▼▼ (테마별 밑줄 색상) */
+    background-color: #343a40; /* 라이트 모드 밑줄 */
 }
-.posts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 반응형 그리드 */
-    gap: 30px;
-    width: 100%;
-    margin-top: 60px;
-    margin-bottom: 40px;
-}
-.post-card {
-    background-color: #1e1e1e; /* 카드 배경색 */
-    border-radius: 8px;
-    overflow: hidden;
-    text-align: left;
-    color: #cccccc;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    display: flex;
-    flex-direction: column;
-}
-.post-thumbnail-wrapper {
-    width: 100%;
-    padding-top: 56.25%; /* 16:9 비율 */
-    position: relative;
-    background-color: #333; /* 이미지 로딩 전 배경 */
-}
-.post-thumbnail {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.post-info {
-    padding: 15px;
-    flex-grow: 1; /* 내용이 적어도 카드 높이 채우도록 */
-    height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-.post-title {
-    font-size: 1.6rem;
-    color: #ffffff;
-    font-weight: 500;
-    text-align: left;
-    margin-left: 15px;
-    margin-bottom: 10px;
-    line-height: 1.4;
-}
-.post-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.85rem;
-    color: #a0a0a0;
-    margin-top: auto; /* 하단에 고정 */
-}
-.post-author {
-    display: flex;
-    align-items: center;
-}
-.author-avatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    margin-right: 8px;
-    object-fit: cover;
-}
-.post-stats i {
-    margin-right: 5px;
-    vertical-align: middle;
-}
-.post-stats .bi-heart-fill { /* 좋아요 아이콘 색상 */
-    color: #ff6b6b;
-}
-.post-stats .bi-chat-dots {
-    margin-right: 10px; /* 댓글과 좋아요 아이콘 사이 간격 */
+body.theme-dark .s3-main-title::after {
+    background-color: #e9ecef; /* 다크 모드 밑줄 */
 }
 
-.btn-flo-community {
-    display: inline-block;
-    background-color: #6D28D9;
-    color: #ffffff;
-    border: 1px solid #6D28D9;
-    padding: 12px 28px;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 16px;
+.top-posts-container {
+    width: 100%;
+    max-width: 1000px; /* ▼▼▼ 추가: 인기글 컨테이너 최대 너비 제한 (레이아웃 안정화) ▼▼▼ */
+    margin-top: 30px;    /* ▼▼▼ 수정: 제목과의 간격 조정 (기존 40px) ▼▼▼ */
+    margin-bottom: 30px; /* ▼▼▼ 수정: 버튼과의 간격 조정 (기존 40px) ▼▼▼ */
+    /* flex-grow: 1; */ /* ▼▼▼ 선택적: 내용이 적을 때 남은 공간을 채우도록. 하지만 justify-content:center 와 함께 사용 시 주의 ▼▼▼ */
+}
+
+.top-post-item {
+    border-radius: 8px; padding: 20px 25px; margin-bottom: 20px;
+    display: flex; flex-wrap: nowrap; align-items: center; text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+
+    /* 라이트 모드 스타일 */
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    color: #495057; /* 라이트 모드 본문 텍스트 */
+}
+.top-post-item:hover {
+    transform: translateY(-3px);
+    background-color: #f8f9fa; /* 라이트 모드 호버 배경 */
+}
+body.theme-dark .top-post-item {
+    background-color: rgba(40, 40, 40, 0.8); /* 다크모드 배경 미세조정 */
+    border: 1px solid rgba(255, 255, 255, 0.15); /* 다크모드 테두리 미세조정 */
+    color: #ced4da; /* 다크 모드 본문 텍스트 */
+}
+body.theme-dark .top-post-item:hover {
+    background-color: rgba(55, 55, 55, 0.8); /* 다크모드 호버 배경 미세조정 */
+}
+
+.top-post-rank { /* Flo 브랜드 색상 유지 */
+    font-size: 1.8rem; font-weight: 700; color: #34d2e2;
+    margin-right: 25px; line-height: 1; align-self: flex-start; padding-top: 2px;
+}
+.top-post-main { flex-grow: 1; text-align: left; min-width: 0; }
+.top-post-notice-badge { /* 공지 뱃지 색상 유지 */
+    background-color: #e67e22; color: white; padding: 3px 8px;
+    font-size: 0.75rem; font-weight: bold; border-radius: 4px;
+    margin-right: 8px; vertical-align: middle;
+}
+
+/* ▼▼▼ 수정 시작 ▼▼▼ (top-post-category 및 내부 badge 테마별 스타일) */
+.top-post-category {
+    font-size: 0.8rem; margin-bottom: 6px;
+    color: #6c757d; /* 라이트 모드 카테고리 텍스트 */
+}
+body.theme-dark .top-post-category {
+    color: #adb5bd; /* 다크 모드 카테고리 텍스트 */
+}
+.top-post-category .badge {
+    padding: 4px 7px; border-radius: 4px; margin-right: 5px;
+    font-weight: 500; font-size: 0.75rem;
+    background-color: #e9ecef; /* 라이트 모드 뱃지 배경 */
+    color: #495057; /* 라이트 모드 뱃지 텍스트 */
+}
+body.theme-dark .top-post-category .badge {
+    background-color: #343a40; /* 다크 모드 뱃지 배경 */
+    color: #f8f9fa; /* 다크 모드 뱃지 텍스트 */
+}
+.top-post-category .more-categories-badge {
+    background-color: transparent;
+    border: 1px solid #adb5bd; /* 라이트 모드 테두리 */
+    color: #6c757d; /* 라이트 모드 텍스트 */
+}
+body.theme-dark .top-post-category .more-categories-badge {
+    border: 1px solid #6c757d; /* 다크 모드 테두리 */
+    color: #adb5bd; /* 다크 모드 텍스트 */
+}
+/* ▲▲▲ 수정 끝 ▲▲▲ */
+
+/* ▼▼▼ 수정 시작 ▼▼▼ (top-post-title 테마별 스타일) */
+.top-post-title {
+    font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; line-height: 1.4;
+    overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;
+    max-height: calc(1.2rem * 1.4 * 2);
+    color: #212529; /* 라이트 모드 제목 */
+}
+body.theme-dark .top-post-title {
+    color: #f8f9fa; /* 다크 모드 제목 */
+}
+.top-post-item:hover .top-post-title { /* 호버 시 제목 색상 */
+    color: #0a58ca; /* 라이트 모드 */
+}
+body.theme-dark .top-post-item:hover .top-post-title {
+    color: #4ecfe2; /* 다크 모드 (기존 Flo highlight) */
+}
+/* ▲▲▲ 수정 끝 ▲▲▲ */
+
+/* ▼▼▼ 수정 시작 ▼▼▼ (top-post-meta 및 내부 아이콘 테마별 스타일) */
+.top-post-meta {
+    font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 8px 15px;
+    color: #6c757d; /* 라이트 모드 메타 텍스트 */
+}
+body.theme-dark .top-post-meta {
+    color: #adb5bd; /* 다크 모드 메타 텍스트 */
+}
+.top-post-meta span { display: inline-flex; align-items: center; }
+.top-post-meta i { /* Bootstrap Icon 가정 */
+    margin-right: 5px; font-size: 0.9em;
+    color: #6c757d; /* 라이트 모드 아이콘 */
+}
+body.theme-dark .top-post-meta i {
+    color: #868e96; /* 다크 모드 아이콘 */
+}
+.top-post-item:hover .top-post-meta i { /* 호버 시 아이콘 색상 */
+    color: #495057; /* 라이트 모드 */
+}
+body.theme-dark .top-post-item:hover .top-post-meta i {
+    color: #ced4da; /* 다크 모드 */
+}
+/* ▲▲▲ 수정 끝 ▲▲▲ */
+
+/* ▼▼▼ 수정 시작 ▼▼▼ (top-post-stats 테마별 스타일) */
+.top-post-stats {
+    display: flex; align-items: center; gap: 20px; margin-left: 25px;
+    flex-shrink: 0; padding-left: 25px;
+    border-left: 1px solid #dee2e6; /* 라이트 모드 구분선 */
+}
+body.theme-dark .top-post-stats {
+    border-left: 1px solid rgba(255, 255, 255, 0.15); /* 다크 모드 구분선 미세조정 */
+}
+.top-post-stats span {
+    font-size: 0.95rem; display: inline-flex; align-items: center; font-weight: 500;
+    color: #495057; /* 라이트 모드 스탯 텍스트 */
+}
+body.theme-dark .top-post-stats span {
+    color: #ced4da; /* 다크 모드 스탯 텍스트 */
+}
+/* HTML에서 직접 img 태그로 아이콘을 사용하므로, 테마별 src 변경은 JS에서 또는 CSS filter로 처리 */
+/* 예시: CSS filter (단색 아이콘에 적합) */
+body.theme-dark .top-post-stats .likes img,
+body.theme-dark .top-post-stats .comments img {
+    filter: invert(1) brightness(0.9) contrast(1.1); /* 흰색 계열로 보이도록 조정 */
+    /* 또는 JS에서 src를 교체하는 것이 더 확실할 수 있습니다. */
+}
+/* ▲▲▲ 수정 끝 ▲▲▲ */
+
+/* ▼▼▼ 수정 시작 ▼▼▼ (no-top-posts 테마별 스타일) */
+.no-top-posts {
+    font-size: 1rem; padding: 30px 0; text-align: center;
+    color: #6c757d; /* 라이트 모드 */
+}
+body.theme-dark .no-top-posts {
+    color: #adb5bd; /* 다크 모드 */
+}
+/* ▲▲▲ 수정 끝 ▲▲▲ */
+
+.btn-flo-community { /* 브랜드 색상 버튼 유지 */
+    display: inline-block; background-color: #6D28D9; color: #ffffff;
+    border: 1px solid #6D28D9; padding: 12px 28px; border-radius: 25px;
+    text-decoration: none; font-weight: 500; font-size: 16px;
     transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-    align-self: center;
-    margin-top: 20px;
+    align-self: center; margin-top: 10px; margin-bottom: 20px;
 }
-.btn-flo-community:hover {
-    background-color: #6732E4;
-    color: #ffffff;
-    border-color: #6732E4;
-    transform: scale(1.03);
-    text-decoration: none;
-}
-.btn-flo-community i {
-    margin-left: 5px;
-}
+.btn-flo-community:hover { background-color: #5a1db0; transform: scale(1.03); }
+.btn-flo-community i { margin-left: 5px; }
 
 
 /* --- fullPage.js Right Navigation Styling --- */
 #fp-nav {
-    position: fixed !important; /* !important 추가하여 우선순위 확보 */
+    position: fixed !important;
     z-index: 100 !important;
-    margin-top: -32px !important; /* 아이템 수에 맞게 조정 */
+    margin-top: -32px !important;
     top: 50% !important;
-    right: 35px !important; /* flo 디자인에 맞게 조정 */
+    right: 35px !important;
     opacity: 1 !important;
     -webkit-transform: translate3d(0,0,0) !important;
     transform: translate3d(0,0,0) !important;
@@ -424,27 +447,25 @@
 }
 
 #fp-nav ul li {
-    display: block !important; /* flex 대신 block */
-    width: auto !important; /* 툴팁 길이에 따라 자동 너비 */
-    height: 13px !important; /* flo 값, 점 크기에 맞게 조정 */
-    margin: 18px 0 !important; /* 버튼 간 세로 간격, flo 값에서 약간 늘림 */
-    position: relative !important; /* 툴팁 위치 기준 */
+    display: block !important;
+    width: auto !important;
+    height: 13px !important;
+    margin: 18px 0 !important;
+    position: relative !important;
 }
 
-#fp-nav ul li a { /* 점을 포함한 클릭 영역 */
+#fp-nav ul li a {
     display: block !important;
     position: relative !important;
     z-index: 1 !important;
-    width: 100% !important; /* li 너비만큼 */
-    height: 100% !important; /* li 높이만큼 */
+    width: 100% !important;
+    height: 100% !important;
     cursor: pointer !important;
     text-decoration: none !important;
-    /* padding-left는 점과 툴팁 사이 간격에 영향 줄 수 있으므로 0 또는 제거 */
     padding-left: 0 !important;
 }
 
-/* 점(동그라미) 스타일 */
-#fp-nav ul li a span {
+#fp-nav ul li a span { /* 내비게이션 점 기본 스타일 */
     position: absolute !important;
     top: 2px !important;
     left: 0 !important;
@@ -453,25 +474,32 @@
     border-radius: 50% !important;
     z-index: 1 !important;
     background: transparent !important;
-    transform: none !important; /* 기본적으로 transform 움직임 없음 */
-    /* ★★★ 수정: transition에서 margin 관련 부분을 완전히 제거합니다. */
+    transform: none !important;
     transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out,
                 width 0.2s ease-in-out, height 0.2s ease-in-out !important;
-    /* ★★★ 추가: 기본 margin을 0으로 명시합니다. (비활성 점 기준) */
     margin: 0 !important;
+    border: 1.5px solid rgba(0, 0, 0, 0.4) !important; /* 라이트 모드: 어두운 테두리 */
 }
 
-/* 활성 점 스타일 */
-#fp-nav ul li a.active span {
-    width: 10px !important; /* 활성 시 약간 크게 */
+#fp-nav ul li a.active span { /* 활성 상태 점 기본 스타일 */
+    width: 10px !important;
     height: 10px !important;
-    margin: 0px !important;
-    /* ★★★ 추가: 활성 상태에서도 transform은 기본값 유지 (움직임 없는 상태) */
-    transform: none !important; /* 또는 transform: translate(0, 0) !important; */
+    margin: -0.5px 0 0 -0.5px !important;
+    transform: none !important;
+    /* ▼▼▼ 수정 ▼▼▼ (기본(라이트 모드) 활성 점 배경 및 테두리 색상) */
+    background: rgba(0, 0, 0, 0.9) !important;     /* 라이트 모드: 어두운 배경 */
+    border-color: rgba(0, 0, 0, 0.9) !important; /* 라이트 모드: 어두운 테두리 */
 }
 
-/* 툴팁 (슬라이드 이름) 스타일 */
-#fp-nav ul li .fp-tooltip {
+body.theme-dark #fp-nav ul li a span {
+    border: 1.5px solid rgba(255, 255, 255, 0.4) !important; /* 다크 모드: 밝은 테두리 (기존 값) */
+}
+body.theme-dark #fp-nav ul li a.active span {
+    background: rgba(255, 255, 255, 1) !important;     /* 다크 모드: 밝은 배경 (기존 값) */
+    border-color: rgba(255, 255, 255, 1) !important; /* 다크 모드: 밝은 테두리 (기존 값) */
+}
+
+#fp-nav ul li .fp-tooltip { /* 툴팁 기본 스타일 */
     position: absolute !important;
     top: -3px !important;
     right: 20px;
@@ -479,21 +507,23 @@
     white-space: nowrap !important;
     max-width: 220px !important;
     overflow: hidden !important;
-    display: block !important;
-    opacity: 1 !important;
+    /* display: block !important; /* 이전 요청에 따라 숨김 처리됨 */
+    opacity: 1 !important; /* 보이게 할 경우를 대비해 유지 */
     width: auto !important;
     cursor: pointer !important;
     padding: 0 !important;
     background-color: transparent !important;
     transition: color 0.2s ease-in-out !important;
     text-shadow: none;
-    transform: none !important; /* 툴팁 transform 움직임 없음 */
-    /* ★★★ 추가: 툴팁도 기본 margin을 0으로 명시 (필요하다면) */
+    transform: none !important;
     margin: 0 !important;
+    /* ▼▼▼ 수정 ▼▼▼ (기본(라이트 모드) 툴팁 색상 및 숨김 처리) */
+    color: rgba(0, 0, 0, 0.6) !important; /* 라이트 모드: 어두운 툴팁 텍스트 */
+}
+body.theme-dark #fp-nav ul li .fp-tooltip {
+    color: rgba(255, 255, 255, 0.4) !important; /* 다크 모드: 밝은 툴팁 텍스트 (기존 값) */
 }
 
-/* --- 호버 시 움직임 제어 --- */
-/* ★★★ 수정: 모든 li 호버 시 점과 툴팁의 transform을 none으로 강제 */
 #fp-nav ul li:hover a span {
     transform: none !important;
 }
@@ -503,116 +533,222 @@
     margin: 0 !important;
 }
 
-/* 비활성 점에 대한 호버 스타일을 더욱 명시적으로 제어 */
 #fp-nav ul li:not(.active):hover a span {
     transform: none !important;
-    /* ★★★ 수정: 비활성 점 호버 시 margin을 0으로 강제 (기본 margin 0 유지) */
     margin: 0px !important;
 }
 
 #fp-nav ul li.active:hover a span {
-    transform: none !important; /* 활성 점 호버 시에도 움직임 없음 */
-    /* 활성 점은 margin이 -0.5px로 설정되어 있으므로, 호버 시에도 유지 */
+    transform: none !important;
     margin: -0.5px 0 0 -0.5px !important;
 }
 
-#fp-nav ul li:hover .fp-tooltip {
-    transform: none !important;
-}
-
-/* --- 섹션별 네비게이션 색상 조정 --- */
-
-/* 기본 (어두운 배경 섹션용 - section 2, 3) */
-#fp-nav ul li a span { /* 비활성 점 */
-    border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
-}
-#fp-nav ul li a.active span { /* 활성 점 */
-    background: rgba(255, 255, 255, 1) !important;
-    border-color: rgba(255, 255, 255, 1) !important;
-}
-#fp-nav ul li .fp-tooltip { /* 비활성 툴팁 */
-    color: rgba(255, 255, 255, 0.4) !important;
-}
-#fp-nav ul li a.active + .fp-tooltip { /* 활성 툴팁 */
-    color: #ffffff !important;
+#fp-nav ul li a.active + .fp-tooltip { /* 활성 툴팁 기본 스타일 */
+    /* ▼▼▼ 수정 ▼▼▼ (기본(라이트 모드) 활성 툴팁 색상) */
+    color: #000000 !important; /* 라이트 모드: 더 진한 어두운 텍스트 */
     font-weight: 500 !important;
 }
-
-/* Section 1 (밝은 배경) 활성 시 네비게이션 스타일 */
-body.fp-viewing-program-start #fp-nav ul li a span { /* 비활성 점 */
-    border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+body.theme-dark #fp-nav ul li .fp-tooltip {
+    color: rgba(255, 255, 255, 0.4) !important; /* 다크 모드: 밝은 툴팁 텍스트 (기존 값) */
+    /* display: none !important; /* 다크모드에서도 숨김 유지 */
 }
-body.fp-viewing-program-start #fp-nav ul li a.active span { /* 활성 점 */
-    background: #ffffff !important;
-    border-color: #ffffff !important;
-}
-body.fp-viewing-program-start #fp-nav ul li .fp-tooltip { /* 비활성 툴팁 */
-    color: rgba(255, 255, 255, 0.4) !important;
-}
-body.fp-viewing-program-start #fp-nav ul li a.active + .fp-tooltip { /* 활성 툴팁 */
-    color: #ffffff !important;
-    font-weight: 500 !important;
+body.theme-dark #fp-nav ul li a.active + .fp-tooltip {
+    color: #ffffff !important; /* 다크 모드: 활성 시 더 밝은 텍스트 (기존 값) */
 }
 
-/* 활성 툴팁 */
-#fp-nav ul li a.active + .fp-tooltip,
-#fp-nav ul li.active .fp-tooltip {
-    color: #ffffff !important; /* 활성 툴팁 색상 (선명하게 흰색) */
-    font-weight: 500 !important;
-}
-
-/* 동그라미와 툴팁 사이의 선 제거 */
 #fp-nav ul li .fp-tooltip::before {
-    content: '' !important;
-    position: absolute !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    height: 1px !important;
-    width: 10px !important;
-    right: -13px !important;
+    content: none !important;
 }
 
 
 /* Responsive adjustments for sections */
 @media (max-width: 992px) {
-    .s2-main-title, .s3-main-title {
-        padding-left: 10px;
-        margin-bottom: 30px;
-    }
+    /* --- 전체 slide-content 패딩 조정 --- */
+    .slide-content { padding: 4vh 6vw; }
+
+    /* --- Section 1 (992px 이하) --- */
+    .s1-main-title { font-size: clamp(2rem, 6.5vw, 2.8rem); line-height: 1.5; text-align: center; margin-left: auto; margin-right: auto; max-width: 85%; margin-bottom: 30px; }
+    .s1-main-title .s1-title-line1 { display: block; text-align: center; margin-bottom: 0.2em; }
+    .s1-main-title .s1-title-line2 { display: block; text-align: center; }
+    .btn-flo-start { padding: 12px 32px; font-size: clamp(1rem, 2.2vw, 1.3rem); }
+
+    /* --- Section 2 (992px 이하) --- */
+    .section2-content { padding: 3vh 20px; justify-content: center; }
+    .s2-main-title { font-size: clamp(1.7rem, 5.5vw, 2rem); margin-bottom: 25px; padding-bottom: 12px; text-align: center; }
+    .s2-main-title::after { width: 70%; max-width: 250px; left: 50%; transform: translateX(-50%); }
+    .feature-container { display: flex; flex-direction: column; gap: 30px; width: 100%; max-width: 900px; margin: 20px auto 0; }
+
+    /* ▼▼▼ 수정 시작 ▼▼▼ (992px 이하 feature-block 카드 내부 텍스트 색상 및 가상요소 배경) */
     .feature-block {
-        flex-direction: column !important; /* 작은 화면에서는 세로로 쌓음 */
+        flex-direction: column !important; justify-content: center; padding: 30px 25px; border-radius: 10px;
+        position: relative; overflow: hidden; width: 100%; max-width: 550px; margin: 0 auto;
+        min-height: 42vh; background-size: cover; background-position: center; display: flex;
+        color: #ffffff; /* 카드 배경 이미지 위 텍스트는 항상 밝게 */
     }
-    .feature-block.reverse {
-        flex-direction: column !important; /* 순서 반전도 세로로 쌓음 */
+    .feature-block .feature-text,
+    .feature-block .feature-text p,
+    .feature-block .feature-text h3 {
+        color: #f8f9fa; /* 일관성을 위해 #ffffff 또는 #f8f9fa 사용 */
     }
-    .feature-text, .feature-image {
-        flex-basis: auto;
-        width: 100%;
-        max-width: 500px; /* 너무 넓어지지 않도록 */
-        text-align: center; /* 텍스트도 중앙 정렬 */
+    /* body.theme-dark .feature-block .feature-text ... 등은 필요 없음, 항상 밝은 색 유지 */
+    .feature-block .flo-rotated-text {
+        color: #34d2e2; /* Flo 하이라이트 색상은 유지 */
     }
-    .feature-text p, .feature-text h3 {
-        text-align: center;
+    .feature-block.feature-bg-1 { background-image: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('../images/slide/slide2-1.png'); }
+    .feature-block.feature-bg-2 { background-image: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('../images/slide/slide2-2.png'); }
+
+    .feature-block.feature-bg-2::after {
+        content: ''; display: block; height: 50px; width: 100%;
+        position: absolute; bottom: 0; left: 0; z-index: 1;
+        /* 테마별 섹션 배경색을 따름 */
     }
-     .feature-block.reverse .feature-image {
-        order: -1; /* 이미지 위로 */
+    .section-2 .feature-block.feature-bg-2::after { background-color: #f8f9fa; } /* 라이트 모드 */
+    body.theme-dark .section-2 .feature-block.feature-bg-2::after { background-color: #1a1a1a; } /* 다크 모드 */
+    /* ▲▲▲ 수정 끝 ▲▲▲ */
+
+
+    .feature-block .feature-image { display: none !important; }
+    .feature-text { width: 100%; position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; flex-grow: 1; }
+    .feature-block:not(.reverse) .feature-text { align-items: flex-start; text-align: left; }
+    .feature-block:not(.reverse) .feature-text p, .feature-block:not(.reverse) .feature-text h3 { text-align: left; }
+    .feature-block:not(.reverse) .btn-flo-feature1 { align-self: flex-start; }
+    .feature-block.reverse .feature-text { align-items: flex-end; text-align: right; }
+    .feature-block.reverse .btn-flo-feature2 { align-self: flex-end; margin-bottom: 25px; }
+    .feature-block.reverse .feature-text p, .feature-block.reverse .feature-text h3 { text-align: right; width: 100%; }
+    .feature-block.reverse .middle-text-group { width: 100%; text-align: right; margin-bottom: 10px; line-height: 1.6; }
+    /* ▼▼▼ 수정 ▼▼▼ (992px 이하 카드 내부 strong/no-strong 텍스트 색상도 밝게) */
+    .feature-block.reverse .middle-text-group .section-2-strong,
+    .feature-block.reverse .middle-text-group .section-2-no-strong {
+        display: inline; font-size: clamp(1.1rem, 2vw, 1.3rem);
+        color: #f8f9fa; /* 배경 이미지 위에서는 항상 밝은 색 */
     }
-    #fp-nav { right: 20px !important; } /* 네비게이션 위치 조정 */
+    /* ▲▲▲ 수정 ▲▲▲ */
+    .feature-block.reverse .feature-text > p:nth-of-type(1) { margin-bottom: 10px; }
+    .feature-text p { font-size: clamp(14px, 1.8vw, 16px); line-height: 1.7; margin-bottom: 12px; max-width: 100%; }
+    .feature-text h3 { font-size: clamp(1rem, 2.3vw, 1.3rem); margin-bottom: 18px; line-height: 1.4; font-weight: bold; max-width: 100%; }
+    /* .flo-rotated-text는 위에서 이미 색상 지정됨 */
+    .btn-flo-feature1, .btn-flo-feature2 { padding: 10px 22px; font-size: clamp(14px, 1.9vw, 16px); margin-top: 12px; }
+
+    /* --- Section 3 인기글 (992px 이하) --- */
+    /* 대부분의 Section 3 색상은 이미 전역 테마 스타일에서 처리됨, 필요시 크기/여백 조정 */
+    .section3-content { padding-top: 35px; padding-bottom: 35px; padding-left: 20px; padding-right: 20px; }
+    .s3-main-title { font-size: clamp(1.9rem, 5.8vw, 2.4rem); margin-bottom: 22px; padding-bottom: 14px; }
+    .s3-main-title::after { max-width: 220px; }
+    .top-posts-container { margin-top: 15px; margin-bottom: 15px; max-width: 800px; margin-left: auto; margin-right: auto; }
+    .top-post-item { padding: 14px 18px; margin-bottom: 18px; }
+    .top-post-rank { font-size: 1.4rem; margin-right: 18px; }
+    .top-post-notice-badge { font-size: 0.75rem; padding: 3px 7px; }
+    .top-post-category .badge { font-size: 0.75rem; padding: 3px 6px; }
+    .top-post-title { font-size: 1.05rem; max-height: calc(1.05rem * 1.4 * 2); margin-bottom: 9px; }
+    .top-post-meta { font-size: 0.82rem; gap: 5px 12px; }
+    .top-post-stats { gap: 18px; }
+    .top-post-stats span { font-size: 0.88rem; }
+    /* .top-post-stats i 는 Bootstrap Icon 사용 시 전역에서 처리됨 */
+    .btn-flo-community { padding: 11px 25px; font-size: clamp(14px, 1.9vw, 16px); margin-top: 10px; }
+
+    /* --- fullPage.js Navigation (992px 이하) --- */
+    #fp-nav { right: 25px !important; }
+    #fp-nav ul li .fp-tooltip { display: none !important; } /* 전역으로 이동 또는 유지 */
 }
 
+/* ▼▼▼ 수정 시작 ▼▼▼ (768px, 576px 미디어 쿼리 내부에서도 Section 2 카드 텍스트 색상 및 가상요소 배경색 명시) */
 @media (max-width: 768px) {
-    .slide-content {
-        padding: 8vw 5vw;
+    .slide-content { padding: 3vh 5vw; }
+    .s1-main-title { font-size: clamp(1.8rem, 6vw, 2.5rem); line-height: 1.5; text-align: center; margin-left: auto; margin-right: auto; max-width: 90%; margin-bottom: 25px; }
+    .s1-main-title .s1-title-line1 { display: block; text-align: center; margin-bottom: 0.2em; }
+    .s1-main-title .s1-title-line2 { display: block; text-align: center; }
+    .btn-flo-start { padding: 10px 28px; font-size: clamp(0.9rem, 2vw, 1.2rem); }
+    .section2-content { padding: 2vh 10px; justify-content: center; }
+    .s2-main-title { font-size: clamp(1.5rem, 5vw, 1.8rem); margin-bottom: 20px; padding-bottom: 10px; text-align: center; }
+    .s2-main-title::after { width: 70%; max-width: 200px; left: 50%; transform: translateX(-50%); }
+    .feature-container { display: flex; flex-direction: column; gap: 25px; width: 100%; margin-top: 0; }
+    .feature-block {
+        flex-direction: column !important; justify-content: center; padding: 25px 20px; border-radius: 8px;
+        position: relative; overflow: hidden; width: 100%; max-width: 500px; margin: 0 auto;
+        min-height: 40vh; background-size: cover; background-position: center; display: flex;
+        color: #ffffff; /* 카드 배경 이미지 위 텍스트는 항상 밝게 */
     }
-    .s1-main-title { font-size: clamp(2rem, 8vw, 3rem); }
-    .btn-flo-start { padding: 10px 25px; }
+    .feature-block .feature-text,
+    .feature-block .feature-text p,
+    .feature-block .feature-text h3 {
+        color: #f8f9fa;
+    }
+    .feature-block .flo-rotated-text { color: #34d2e2; }
+    .feature-block.feature-bg-1 { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('../images/slide/slide2-1.png'); }
+    .feature-block.feature-bg-2 { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('../images/slide/slide2-2.png'); }
+    .feature-block.feature-bg-2::after {
+        content: ''; display: block; height: 45px; width: 100%;
+        position: absolute; bottom: 0; left: 0; z-index: 1;
+    }
+    .section-2 .feature-block.feature-bg-2::after { background-color: #f8f9fa; } /* 라이트 모드 */
+    body.theme-dark .section-2 .feature-block.feature-bg-2::after { background-color: #1a1a1a; } /* 다크 모드 */
 
-    .s2-main-title, .s3-main-title { font-size: clamp(1.5rem, 5vw, 2.2rem); }
-    
-    .posts-grid {
-        grid-template-columns: 1fr; /* 모바일에서는 한 줄에 하나씩 */
-        gap: 20px;
+    .feature-block .feature-image { display: none !important; }
+    .feature-text { width: 100%; position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; flex-grow: 1; }
+    .feature-block:not(.reverse) .feature-text { align-items: flex-start; text-align: left; }
+    .feature-block:not(.reverse) .feature-text p, .feature-block:not(.reverse) .feature-text h3 { text-align: left; }
+    .feature-block:not(.reverse) .btn-flo-feature1 { align-self: flex-start; }
+    .feature-block.reverse .feature-text { align-items: flex-end; text-align: right; }
+    .feature-block.reverse .btn-flo-feature2 { align-self: flex-end; margin-bottom: 20px; }
+    .feature-block.reverse .feature-text p, .feature-block.reverse .feature-text h3 { text-align: right; width: 100%; }
+    .feature-block.reverse .middle-text-group { width: 100%; text-align: right; margin-bottom: 8px; line-height: 1.5; }
+    .feature-block.reverse .middle-text-group .section-2-strong,
+    .feature-block.reverse .middle-text-group .section-2-no-strong {
+        display: inline; font-size: 1.1rem;
+        color: #f8f9fa; /* 배경 이미지 위에서는 항상 밝은 색 */
     }
-    #fp-nav ul li .fp-tooltip { display: none !important; } /* 아주 작은 화면에서는 툴팁 숨김 */
-    #fp-nav ul li a { margin-right: 0 !important; }
+    .feature-block.reverse .middle-text-group .section-2-no-strong { font-size: 13px; } /* 크기는 유지, 색상은 위에서 공통 처리 */
+    .feature-block.reverse .feature-text > p:nth-of-type(1) { margin-bottom: 8px; }
+    .feature-text p { font-size: 13px; line-height: 1.6; margin-bottom: 10px; max-width: 100%; }
+    .feature-text h3 { font-size: 1.1rem; margin-bottom: 15px; line-height: 1.3; font-weight: bold; max-width: 100%; }
+    /* .flo-rotated-text 는 위에서 이미 색상 지정 */
+    /* .feature-block.reverse .feature-text > span.section-2-strong { font-size: 1.1rem; } /* 위에서 이미 공통 처리 */
+    .btn-flo-feature1, .btn-flo-feature2 { padding: 8px 20px; font-size: 13px; margin-top: 10px; }
+    .top-posts-container { margin-top: 10px; margin-bottom: 10px; }
+    .top-post-item { padding: 12px 15px; margin-bottom: 15px; }
+    .top-post-rank { font-size: 1.3rem; margin-right: 15px; }
+    .top-post-notice-badge { font-size: 0.7rem; padding: 2px 6px;}
+    .top-post-category .badge { font-size: 0.7rem; padding: 3px 5px; }
+    .top-post-title { font-size: 1rem; max-height: calc(1rem * 1.4 * 2); margin-bottom: 8px; }
+    .top-post-meta { font-size: 0.8rem; gap: 4px 10px; }
+    .top-post-stats { gap: 15px; }
+    .top-post-stats span { font-size: 0.85rem; }
+    /* .top-post-stats i 는 Bootstrap Icon 사용 시 전역에서 처리됨 */
+    .btn-flo-community { padding: 10px 22px; font-size: 14px; margin-top: 0; }
+    #fp-nav ul li .fp-tooltip { display: none !important; } /* 전역으로 이동 또는 유지 */
+    #fp-nav ul li a { margin-right: 0 !important; } /* 툴팁 숨김 시 불필요할 수 있음 */
+    .section3-content { padding-top: 30px; padding-bottom: 30px; padding-left: 15px; padding-right: 15px; }
+    .s3-main-title { font-size: 26px; margin-bottom: 20px; padding-bottom: 12px; }
+    .s3-main-title::after { max-width: 200px; }
+    .top-posts-container { margin-top: 20px; margin-bottom: 20px; }
+}
+
+@media (max-width: 576px) {
+    .s1-main-title { font-size: clamp(1.5rem, 6vw, 2rem); }
+    .s2-main-title, .s3-main-title { font-size: clamp(1.3rem, 5vw, 1.6rem); }
+    .feature-block .feature-text,
+    .feature-block .feature-text p,
+    .feature-block .feature-text h3 {
+        color: #f8f9fa; /* 배경 이미지 위에서는 항상 밝은 색 */
+    }
+    .feature-block .flo-rotated-text { color: #34d2e2; }
+    .feature-block.reverse .middle-text-group .section-2-strong,
+    .feature-block.reverse .middle-text-group .section-2-no-strong {
+        color: #f8f9fa; /* 배경 이미지 위에서는 항상 밝은 색 */
+    }
+    .feature-text p { font-size: 13px; }
+    .feature-text h3 { font-size: 1.1rem; }
+    .btn-flo-feature1, .btn-flo-feature2 { padding: 8px 18px; font-size: 13px; }
+    .section-2 .feature-block.feature-bg-2::after { background-color: #f8f9fa; } /* 라이트 모드 */
+    body.theme-dark .section-2 .feature-block.feature-bg-2::after { background-color: #1a1a1a; } /* 다크 모드 */
+    .top-post-item { padding: 5px; } /* 기존 패딩에서 변경된것 같아 원복 또는 조정 */
+    .top-post-rank { display: none; }
+    .top-post-title { font-size: 0.9rem; max-height: calc(0.9rem * 1.4 * 2); /* margin-left: 0.3em; /* 이전 코드 */ }
+    .top-post-meta { font-size: 0.75rem; /* margin-left: 0.3em; /* 이전 코드 */ }
+    .btn-flo-community { padding: 8px 18px; font-size: 13px; }
+    .section3-content { padding-top: 20px; padding-bottom: 20px; }
+    .s3-main-title { font-size: 22px; margin-bottom: 15px; padding-bottom: 10px; }
+    .s3-main-title::after { max-width: 150px; }
+    .top-posts-container { margin-top: 15px; margin-bottom: 15px; }
+    #fp-nav ul li .fp-tooltip { display: none !important; } /* 전역으로 이동 또는 유지 */
 }

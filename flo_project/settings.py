@@ -20,8 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # .env 파일의 위치를 정확히 지정해야 합니다.
 # 일반적으로 .env 파일은 manage.py 파일과 같은 프로젝트 루트 디렉토리에 위치합니다.
 # BASE_DIR은 현재 settings.py 파일이 있는 디렉토리의 부모 디렉토리(프로젝트 루트)를 가리킵니다.
-# ENV_PATH = os.path.join(BASE_DIR, '.env')
-# load_dotenv(dotenv_path=ENV_PATH) # .env 파일 로드 명시적 경로 지정
+ENV_PATH = os.path.join(BASE_DIR, '.env')
+load_dotenv(dotenv_path=ENV_PATH) # .env 파일 로드 명시적 경로 지정
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -69,6 +70,7 @@ TEMPLATES = [
         # 'DIRS': [],
         'DIRS': [
             os.path.join(BASE_DIR, 'flo_project', 'templates'),
+            # os.path.join(BASE_DIR, 'careerhub', 'accounts', 'templates'),  # careerhub 앱의 templates 폴더 경로 추가
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -76,6 +78,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',  # 추가된 부분 (이미지 안 뜨면 이 부분 보기)
             ],
         },
     },
@@ -172,13 +175,13 @@ EMAIL_HOST_USER = 'purpleluna56756@gmail.com' # 본인 Gmail 주소
 EMAIL_HOST_PASSWORD = 'alde sjpl ftrq xiqx' # Gmail 앱 비밀번호
 
 # 로그인 성공 후 리디렉션될 URL (예: 홈페이지 또는 게시판 목록)
-LOGIN_REDIRECT_URL = 'flo:study_post_list' # 또는 '/' 등 원하는 경로
+LOGIN_REDIRECT_URL = 'flo:home' # 또는 '/' 등 원하는 경로
 
 # 로그인이 필요한 페이지 접근 시 리디렉션될 URL (login 뷰의 name)
 LOGIN_URL = 'flo:login'
 
 # 로그아웃 성공 후 리디렉션될 URL
-LOGOUT_REDIRECT_URL = 'flo:study_post_list' # 또는 '/' 등 원하는 경로
+LOGOUT_REDIRECT_URL = 'flo:home' # 또는 '/' 등 원하는 경로
 
 # settings.py
 # 이메일 보내기 설정 (개발용)
@@ -216,4 +219,3 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 TINYMCE_SPELLCHECKER = False
 TINYMCE_COMPRESSOR = False # Usually not needed with minified CDN versions
-

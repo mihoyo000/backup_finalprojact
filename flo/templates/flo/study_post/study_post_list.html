@@ -1,46 +1,13 @@
-    {# flo/templates/flo/study_post/study_post_list.html #}
+{# flo/templates/flo/study_post/study_post_list.html #}
 {% extends "flo/base.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}학습 게시판{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'flo/css/study_post/study_post_list.css' %}">
-<style>
-    /* 목록 페이지용 카테고리 선택 UI 조정 (필요시) */
-    .category-selection-area-wrapper-list { /* 새로운 클래스명 사용 */
-        margin-bottom: 25px; /* 기존 검색폼과의 간격 */
-        border: 1px solid var(--category-panel-border);
-        padding: 15px; /* 폼 페이지보다 패딩 약간 줄임 */
-        border-radius: 4px;
-        background-color: #fff;
-    }
-    body:not(.theme-light) .category-selection-area-wrapper-list {
-        border-color: var(--dark-category-panel-border);
-        background-color: var(--dark-category-panel-bg);
-    }
-    .category-selection-area-wrapper-list > .form-label { font-size: 1rem; margin-bottom: 10px; }
-    #selected-category-display-list .selected-category-tag { /* 목록 페이지에서는 단일 선택이므로 태그가 하나만 표시될 것 */
-        font-size: 0.9rem;
-    }
-    /* 목록 페이지에서는 카테고리 패널 높이를 줄일 수 있음 */
-    .category-selection-area-wrapper-list .category-list-inline {
-        max-height: 180px; /* 목록 페이지용 최대 높이 (조절 가능) */
-        overflow-y: auto;
-    }
-
-    /* 필터 적용 버튼 스타일 (선택 사항) */
-    #applyCategoryFilterButton {
-        background-color: #34D2E2;
-        color: #2d2d2d;
-        font-size: 0.85rem;
-        padding: 0.4rem 0.85rem;
-    }
-
-    #applyCategoryFilterButton:hover {
-        opacity: 0.8;
-    }
-</style>
+{# 인라인 스타일 제거 - study_post_list.css로 통합 #}
 {% endblock %}
 
 {% block content %}
@@ -52,40 +19,52 @@
         </div>
 
         {# === 새로운 카테고리 선택 UI (폼 페이지에서 가져옴) === #}
-        <div class="category-selection-area-wrapper-list"> {# 클래스명 변경 #}
+        <div class="category-selection-area-wrapper-list">
             <label class="form-label">카테고리 필터 (최대 5개)</label>
             <div id="selected-category-display-list" class="mb-2">
-                {# JavaScript가 URL 파라미터를 읽어 초기 렌더링하거나,
-                서버에서 initial_selected_categories_for_ui 를 받아와서 루프 돌며 렌더링 #}
                 {% for sel_cat in initial_selected_categories_for_ui %}
-                    <span class="badge me-1 mb-1 selected-category-tag" data-slug="{{ sel_cat.slug }}">
+                    <span class="badge me-1 mb-1 selected-category-tag" data-slug="{{ sel_cat.slug }}" data-id="{{ sel_cat.id }}">
                         {{ sel_cat.get_full_path_name }}
                         <span class="remove-category-filter" data-slug="{{ sel_cat.slug }}" title="선택 해제" style="cursor:pointer; font-weight:bold; margin-left:3px;">×</span>
                     </span>
                 {% endfor %}
             </div>
-            <div class="text-end mb-2">
-                <button type="button" id="applyCategoryFilterButton" class="btn btn-info">선택된 카테고리로 검색</button>
-            </div>
+            <!-- <div class="text-end mb-2">
+                <button type="button" id="applyCategoryFilterButton" class="btn">선택된 카테고리로 검색</button>
+            </div> -->
             <div class="category-panel-container">
-                <div class="category-search-box mb-2">
+                <div class="category-search-box mb-2 position-relative">
                     <input type="text" id="categorySearchInputList" class="form-control" placeholder="카테고리 검색...">
+                    <span id="clearSearchInputList" class="clear-search-btn" style="display:none;" title="검색어 지우기">×</span>
                 </div>
-                <div id="categorySearchResultsPanel" style="display:none; margin-bottom: 10px;">
-                    <h6>검색 결과</h6>
-                    <ul class="list-group" id="categorySearchResultsList"></ul>
+                <div id="categorySearchResultsPanelList" class="category-panel-col mb-3" style="display:none;">
+                    <h6 class="search-results-title">검색 결과</h6>
+                    <ul class="list-group category-list-inline" id="categorySearchResultsList"></ul>
+                    {# "더보기" 버튼 컨테이너 추가 #}
+                    <div id="search-results-load-more-container-list" class="text-center mt-2" style="display:none;">
+                        <button type="button" id="loadMoreSearchResultsList" class="btn btn-sm btn-outline-secondary">더보기</button>
+                    </div>
                 </div>
-                <div class="row">
+                <div class="row" id="categoryTreePanelList">
                     <div class="col-md-4 category-panel-col" id="majorCategoryPanelList">
                         <h6>대분류</h6>
                         <ul class="list-group category-list-inline">
-                            {% for major_cat in major_categories %}
-                                <li class="list-group-item category-item-inline" data-id="{{ major_cat.id }}" data-name="{{ major_cat.name }}" data-level="0" data-slug="{{ major_cat.slug }}">
-                                    {{ major_cat.name }}
-                                    {% if major_cat.children.exists %}<span class="category-arrow-inline float-end">></span>{% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
+                        {% for major_cat in major_categories %} {# views.py에서 major_categories는 processed_major_categories로 전달됨 #}
+                            <li class="list-group-item category-item-inline" 
+                                data-id="{{ major_cat.id }}" 
+                                data-name="{{ major_cat.name }}" 
+                                data-level="0" 
+                                data-slug="{{ major_cat.slug }}" 
+                                data-path="{{ major_cat.name }}"
+                                data-is-leaf="{{ major_cat.is_leaf|yesno:'true,false' }}" {# ★★★ 추가 또는 확인 ★★★ #}
+                                >
+                                {{ major_cat.name }}
+                                {% if major_cat.children_exists %} {# views.py에서 전달한 children_exists 사용 #}
+                                    <span class="category-arrow-inline float-end">></span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
                     </div>
                     <div class="col-md-4 category-panel-col" id="mediumCategoryPanelList" style="display:none;">
                         <h6 id="mediumCategoryPanelTitleList">중분류</h6>
@@ -102,17 +81,17 @@
 
 
         <div class="board-controls-wrapper">
-            <form method="get" action="{% url 'flo:study_post_list' %}{% if current_category_slug %}{{ current_category_slug }}/{% endif %}" class="search-form">
-                {# 기존 카테고리 select 제거됨 #}
+            <form method="get" action="{% url 'flo:study_post_list' %}" class="search-form"> {# 경로에서 current_category_slug 제거, GET 파라미터로만 처리 #}
                 <select name="search_type" class="form-select search-type-select">
                     <option value="title_content" {% if search_type == 'title_content' or not search_type %}selected{% endif %}>검색 유형</option>
                     <option value="title" {% if search_type == 'title' %}selected{% endif %}>제목</option>
-                    {# <option value="content" {% if search_type == 'content' %}selected{% endif %}>내용</option> -- 검색 기능에서 제거됨 #}
                     <option value="author" {% if search_type == 'author' %}selected{% endif %}>작성자</option>
-                    <option value="category_name" {% if search_type == 'category_name' %}selected{% endif %}>카테고리명</option> {# 추가된 검색 옵션 #}
+                    <option value="category_name" {% if search_type == 'category_name' %}selected{% endif %}>카테고리명</option>
                 </select>
-                <input type="text" name="search_keyword" value="{{ search_keyword }}" placeholder="검색할 내용을 입력하세요." class="form-control search-input">
-                <button type="submit" class="btn search-button">
+                <div class="keyword-search-box position-relative flex-grow-1">
+                    <input type="text" name="search_keyword" id="keywordSearchInput" value="{{ search_keyword|default:'' }}" placeholder="검색할 내용을 입력하세요." class="form-control search-input">
+                    <span id="clearKeywordSearchInput" class="clear-search-btn" style="display:none;" title="검색어 지우기">×</span>
+                </div>                <button type="submit" class="btn search-button">
                     <img src="{% static 'flo/images/icons/study_post/search-black.png' %}" alt="검색">
                 </button>
             </form>
@@ -122,53 +101,99 @@
             </a>
         </div>
 
-        <table class="table board-table-custom">
-            <thead>
-                <tr>
-                    <th class="col-number">번호</th>
-                    <th class="col-title">제목</th>
-                    <th class="col-author">작성자</th>
-                    <th class="col-date">작성일</th>
-                    <th class="col-views">조회수</th>
-                    <th class="col-likes">추천</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for post in posts %}
-                <tr {% if post.is_notice %}class="notice-row"{% endif %}>
-                    <td>{% if post.is_notice %}공지{% else %}{{ post.id }}{% endif %}</td>
-                    <td class="title-cell">
-                        <a href="{{ post.get_absolute_url }}">
-                            {% if post.category %}<span class="post-category-tag">[{{ post.category.name }}]</span> {% endif %}{{ post.title }}
-                        </a>
-                        {% if post.comment_count > 0 %}
-                            <span class="comment-count-badge">[{{ post.comment_count }}]</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ post.author.username }}</td>
-                    <td>{{ post.created_at|date:"Y-m-d" }}</td>
-                    <td>{{ post.views }}</td>
-                    <td>{{ post.num_likes }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center py-4">게시글이 없습니다.</td> {# 패딩 추가 #}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive-wrapper">
+            <table class="table board-table-custom">
+                <thead>
+                    <tr>
+                        <th class="col-number">번호</th>
+                        <th class="col-category">카테고리</th>
+                        <th class="col-title">제목</th>
+                        <th class="col-author">작성자</th>
+                        <th class="col-date">작성일</th>
+                        <th class="col-views">조회수</th>
+                        <th class="col-likes">추천</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr {% if post.is_notice %}class="notice-row"{% endif %}>
+                        <td>{% if post.is_notice %}<strong>공지</strong>{% else %}{{ post.id }}{% endif %}</td>
+                        
+                        {# 카테고리 셀 #}
+                        <td>
+                            {% if not post.is_notice and post.categories.all %}
+                            <span class="post-category-display-wrapper">
+                                <span class="post-category-list-dropdown-toggle" 
+                                            id="post-cat-toggle-{{ post.id }}" 
+                                            data-target-dropdown="#post-cat-content-{{ post.id }}"
+                                            tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <span class="post-category-tag">
+                                        [{{ post.categories.all.0.name }}]
+                                    </span>
+                                    {% if post.categories.all|length > 1 %}
+                                        <span class="post-category-more-count">외 {{ post.categories.all|length|add:"-1" }}개</span>
+                                    {% endif %}
+                                    <svg class="dropdown-arrow-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                    </svg>
+                                </span>
+                                {% if post.categories.all|length > 0 %}
+                                <div class="post-category-dropdown-content" id="post-cat-content-{{ post.id }}">
+                                    <ul>
+                                        {% for category in post.categories.all %}
+                                            <li data-id="{{ category.id }}" 
+                                                data-name="{{ category.name }}" 
+                                                data-slug="{{ category.slug }}"
+                                                data-path="{{ category.get_full_path_name }}">{{ category.get_full_path_name }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        {# 제목 셀 - 클래스 추가 #}
+                        <td class="post-title-cell"> 
+                            <a href="{{ post.get_absolute_url }}" class="post-title-link" title="{{ post.title }}">
+                                {% if post.is_notice %}
+                                    {{ post.title }}
+                                {% else %}
+                                    {{ post.title|truncate_chars:30 }}
+                                {% endif %}
+                            </a>
+                            
+                            {% if not post.is_notice and post.comment_count > 0 %}
+                                <span class="comment-count-badge">[{{ post.comment_count }}]</span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ post.author.profile.get_display_name }}</td>
+                        <td>{{ post.created_at|date:"Y-m-d" }}</td>
+                        <td>{{ post.views }}</td>
+                        <td>{{ post.total_likes }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        {# 이 colspan 값은 아래 JavaScript에서 동적으로 변경됩니다. #}
+                        <td colspan="7" class="text-center py-4">게시글이 없습니다.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <div class="pagination-wrapper">
             <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center">
                     {% if posts.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page=1{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}" aria-label="First">
+                            <a class="page-link" href="?page=1{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword|urlencode }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}" aria-label="First">
                                 «
                             </a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ posts.previous_page_number }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword }}{% endif %}{% if current_category %}&category_slug={{ current_category.slug }}{% endif %}" aria-label="Previous">
+                            <a class="page-link" href="?page={{ posts.previous_page_number }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword|urlencode }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}" aria-label="Previous">
                                 ‹
                             </a>
                         </li>
@@ -180,19 +205,19 @@
                     {% for i in posts.paginator.page_range %}
                         {% if posts.number == i %}
                             <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
-                        {% elif i >= posts.number|add:'-2' and i <= posts.number|add:'2' %} {# 현재 페이지 기준 양옆 2개씩, 총 5개 표시되도록 수정 #}
-                            <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword }}{% endif %}{% if current_category %}&category_slug={{ current_category.slug }}{% endif %}">{{ i }}</a></li>
+                        {% elif i >= posts.number|add:'-2' and i <= posts.number|add:'2' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword|urlencode }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}">{{ i }}</a></li>
                         {% endif %}
                     {% endfor %}
 
                     {% if posts.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ posts.next_page_number }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword }}{% endif %}{% if current_category %}&category_slug={{ current_category.slug }}{% endif %}" aria-label="Next">
+                            <a class="page-link" href="?page={{ posts.next_page_number }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword|urlencode }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}" aria-label="Next">
                                 ›
                             </a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ posts.paginator.num_pages }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword }}{% endif %}{% if current_category %}&category_slug={{ current_category.slug }}{% endif %}" aria-label="Last">
+                            <a class="page-link" href="?page={{ posts.paginator.num_pages }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword|urlencode }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}" aria-label="Last">
                                 »
                             </a>
                         </li>
@@ -210,269 +235,582 @@
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript">
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("List Page DOM Content Loaded - Initializing Multi-Category Filter JS with Apply Button");
+$(document).ready(function() {
+    console.log("List Page DOM Content Loaded - V7 (AJAX Post List & History API)");
 
+    // --- 1. 상단 카테고리 필터 UI 로직 (기존과 유사하게 유지) ---
     const MAX_CATEGORIES_FILTER = 5;
-    let selectedCategoriesForFilter = new Map(); // key: slug, value: {id, name, slug, path}
+    let selectedCategoriesForFilter = new Map();
 
-    // --- 초기 선택된 카테고리 로드 (URL의 'category_slugs' 파라미터 또는 서버에서 전달된 데이터) ---
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialSlugsParam = urlParams.get('category_slugs');
-
-    // 서버에서 전달된 initial_selected_categories_for_ui (객체 리스트)를 사용하여 selectedCategoriesForFilter 맵 채우기
     {% for cat_obj in initial_selected_categories_for_ui %}
         selectedCategoriesForFilter.set("{{ cat_obj.slug }}", {
-            id: "{{ cat_obj.id }}",
-            name: "{{ cat_obj.name|escapejs }}",
-            slug: "{{ cat_obj.slug }}",
-            path: "{{ cat_obj.get_full_path_name|escapejs }}"
+            id: "{{ cat_obj.id }}", name: "{{ cat_obj.name|escapejs }}",
+            slug: "{{ cat_obj.slug }}", path: "{{ cat_obj.get_full_path_name|escapejs }}",
+            ancestry_slugs: [{% for anc_slug in cat_obj.ancestry_slugs %}"{{ anc_slug|escapejs }}",{% empty %}{% endfor %}], // 서버에서 이 정보를 전달해야 함
+            is_leaf: {{ cat_obj.is_leaf|yesno:"true,false" }} // 서버에서 이 정보를 전달해야 함
         });
     {% endfor %}
-    // 만약 URL 파라미터에도 값이 있다면, 서버에서 전달된 값과 합치거나 우선순위 결정
-    // (여기서는 서버 전달값을 우선으로 하고, JS 초기화 로직에서 URL 파라미터를 다시 파싱하여
-    // selectedCategoriesForFilter를 최종 결정하고 render하는 것이 더 일관적일 수 있음)
-    // 지금은 서버에서 전달된 값으로 초기화하고, renderSelectedCategoryTagsList() 호출
+
     renderSelectedCategoryTagsList();
 
-
-    // 대분류, 중분류, 소분류 아이템 클릭 공통 핸들러
-    $('#majorCategoryPanelList, #mediumCategoryPanelList, #minorCategoryPanelList').on('click', '.category-item-inline', function() {
+    // --- 카테고리 패널 로직 (클릭, 자식 로드, 검색 등) ---
+    $('#majorCategoryPanelList, #mediumCategoryPanelList, #minorCategoryPanelList, #categorySearchResultsPanelList').on('click', '.category-item-inline', function() {
         const $item = $(this);
-        const categoryId = $item.data('id').toString();
+        const categoryId = $item.data('id')?.toString();
         const categoryName = $item.data('name');
         const categorySlug = $item.data('slug');
-        const fullPath = $item.data('path') || ($item.data('level') === 0 ? categoryName : ''); // 정확한 path는 AJAX 응답에서 설정됨
-        const hasChildren = $item.find('.category-arrow-inline').length > 0;
-
-        // 패널 내 아이템 활성화/비활성화 (선택된 항목 표시용)
+        const categoryPath = $item.data('path') || categoryName;
+        let hasChildren;
+        if ($item.data('is-leaf') !== undefined) { hasChildren = !$item.data('is-leaf'); }
+        else { hasChildren = $item.find('.category-arrow-inline').length > 0 && !$item.closest('#categorySearchResultsPanelList').length; }
         const $parentPanel = $item.closest('.category-panel-col');
-        $parentPanel.find('.category-item-inline').removeClass('active-parent'); // 현재 패널에서 다른 active-parent 해제
-        // $item.addClass('active-parent'); // 클릭된 아이템을 active-parent로 (하위 로드 시에만)
+
+        if (!categoryId || !categorySlug) { return; }
+
+        if (!$item.hasClass('active-parent')) {
+             $parentPanel.find('.category-item-inline.active-parent').removeClass('active-parent');
+        }
 
         if (hasChildren) {
-            $item.addClass('active-parent'); // 하위가 있을 때만 active-parent
+            $item.addClass('active-parent');
             if ($parentPanel.is('#majorCategoryPanelList')) {
                 $('#mediumCategoryPanelList').hide().find('.category-list-inline').empty();
                 $('#minorCategoryPanelList').hide().find('.category-list-inline').empty();
-                loadChildCategoriesList(categoryId, categoryName, '#mediumCategoryPanelList', '#mediumCategoryListList', 1);
+                loadChildCategoriesList(categoryId, categoryPath, '#mediumCategoryPanelList', '#mediumCategoryListList', 1);
             } else if ($parentPanel.is('#mediumCategoryPanelList')) {
                 $('#minorCategoryPanelList').hide().find('.category-list-inline').empty();
-                const majorParentName = $('#majorCategoryPanelList .category-item-inline.active-parent').data('name');
-                const currentBasePath = majorParentName ? majorParentName + " > " + categoryName : categoryName;
-                loadChildCategoriesList(categoryId, currentBasePath, '#minorCategoryPanelList', '#minorCategoryListList', 2);
+                loadChildCategoriesList(categoryId, categoryPath, '#minorCategoryPanelList', '#minorCategoryListList', 2);
             }
-        } else { // 하위 카테고리가 없는, 즉 선택 가능한 아이템 클릭
-            toggleCategorySelectionForFilter({ id: categoryId, name: categoryName, slug: categorySlug, path: fullPath }, $item);
+        } else {
+            handleCategorySelectionAndFilter({
+                id: categoryId, name: categoryName, slug: categorySlug, path: categoryPath,
+                ancestry_slugs: $item.data('ancestry-slugs') || [],
+                is_leaf: $item.data('is-leaf') !== undefined ? $item.data('is-leaf') : true
+            }, $item);
         }
     });
 
-    function toggleCategorySelectionForFilter(category, $clickedItemElement) {
-        if (!category.slug) {
-            alert("카테고리 정보(slug)가 없어 선택할 수 없습니다.");
-            return;
-        }
-
-        if (selectedCategoriesForFilter.has(category.slug)) {
-            selectedCategoriesForFilter.delete(category.slug);
-            if ($clickedItemElement) $clickedItemElement.removeClass('active');
-        } else {
-            if (selectedCategoriesForFilter.size < MAX_CATEGORIES_FILTER) {
-                selectedCategoriesForFilter.set(category.slug, category);
-                if ($clickedItemElement) $clickedItemElement.addClass('active');
-            } else {
-                alert(`카테고리는 최대 ${MAX_CATEGORIES_FILTER}개까지 선택할 수 있습니다.`);
-                return;
-            }
-        }
-        renderSelectedCategoryTagsList(); // 선택된 태그 UI만 업데이트 (페이지 이동 없음)
-    }
-
-    function renderSelectedCategoryTagsList() {
-        const $displayArea = $('#selected-category-display-list');
-        $displayArea.empty(); // 기존 태그 비우기
-
-        // 서버에서 전달받은 initial_selected_categories_for_ui 또는 selectedCategoriesForFilter 맵을 사용
-        // 여기서는 selectedCategoriesForFilter 맵을 기준으로 렌더링
-        selectedCategoriesForFilter.forEach(function(cat) {
-            const tag = $(`
-                <span class="badge me-1 mb-1 selected-category-tag" data-slug="${cat.slug}" title="클릭하여 선택 해제" style="cursor:pointer;">
-                    ${cat.path}
-                    <span class="remove-category-visual" data-slug="${cat.slug}" style="font-weight:bold; margin-left:5px; pointer-events: none;">×</span>
-                </span>`);
-            $displayArea.append(tag);
-        });
-
-        // 카테고리 패널의 아이템들 'active' 상태 업데이트
-        $('.category-panel-container .category-item-inline').each(function() {
-            const $item = $(this);
-            const itemSlug = $item.data('slug');
-            if (selectedCategoriesForFilter.has(itemSlug)) {
-                $item.addClass('active');
-            } else {
-                $item.removeClass('active');
-            }
-        });
-    }
-
-    // 선택된 카테고리 태그 클릭(해제)
     $('#selected-category-display-list').on('click', '.selected-category-tag', function() {
         const slugToRemove = $(this).data('slug').toString();
         if (selectedCategoriesForFilter.has(slugToRemove)) {
-            selectedCategoriesForFilter.delete(slugToRemove);
-            $(`.category-panel-container .category-item-inline[data-slug="${slugToRemove}"]`).removeClass('active');
-            renderSelectedCategoryTagsList(); // UI만 업데이트
+            const categoryData = selectedCategoriesForFilter.get(slugToRemove);
+            const $itemInPanel = $(`.category-panel-container .category-item-inline[data-slug="${slugToRemove}"]`);
+            handleCategorySelectionAndFilter(categoryData, $itemInPanel);
         }
     });
 
-    // "선택된 카테고리로 검색" 버튼 클릭 이벤트
-    $('#applyCategoryFilterButton').on('click', function() {
-        applyCategoryFilters();
-    });
-
-    function applyCategoryFilters() {
-        const slugs = Array.from(selectedCategoriesForFilter.keys());
-        let filterUrl = "{% url 'flo:study_post_list' %}";
-
-        const currentSearchParams = new URLSearchParams(window.location.search);
-        const preservedParams = new URLSearchParams();
-
-        if (currentSearchParams.get('search_keyword')) {
-            preservedParams.set('search_keyword', encodeURIComponent(currentSearchParams.get('search_keyword')));
+    function handleCategorySelectionAndFilter(category, $clickedItemElement) {
+        if (!category.slug) { alert("카테고리 정보(slug)가 없어 처리할 수 없습니다."); return; }
+        let filtersActuallyChanged = false;
+        if (selectedCategoriesForFilter.has(category.slug)) {
+            selectedCategoriesForFilter.delete(category.slug);
+            if ($clickedItemElement && $clickedItemElement.length) {
+                $clickedItemElement.removeClass('active');
+                if ($clickedItemElement.hasClass('active-parent')) $clickedItemElement.removeClass('active-parent');
+            }
+            filtersActuallyChanged = true;
+        } else {
+            if (selectedCategoriesForFilter.size < MAX_CATEGORIES_FILTER) {
+                selectedCategoriesForFilter.set(category.slug, category);
+                if ($clickedItemElement && $clickedItemElement.length) $clickedItemElement.addClass('active');
+                filtersActuallyChanged = true;
+            } else {
+                alert(`카테고리는 최대 ${MAX_CATEGORIES_FILTER}개까지 선택할 수 있습니다.`); return;
+            }
         }
-        if (currentSearchParams.get('search_type')) {
-            preservedParams.set('search_type', encodeURIComponent(currentSearchParams.get('search_type')));
+        renderSelectedCategoryTagsList();
+        updatePanelActiveStatesList();
+        if (filtersActuallyChanged) {
+            applyFiltersAndFetchPosts(1);
         }
-
-        if (slugs.length > 0) {
-            preservedParams.set('category_slugs', slugs.join(','));
-        }
-
-        if (preservedParams.toString()) {
-            filterUrl += "?" + preservedParams.toString();
-        }
-
-        console.log("Applying filters. New URL:", filterUrl);
-        window.location.href = filterUrl;
     }
 
-    function loadChildCategoriesList(parentId, basePathForTitle, panelSelector, listSelector, level) {
-        const $list = $(listSelector);
-        const $panel = $(panelSelector);
-        const $panelTitle = $(panelSelector.replace('PanelList', 'PanelTitleList'));
+    function renderSelectedCategoryTagsList() {
+        const $displayArea = $('#selected-category-display-list'); $displayArea.empty();
+        selectedCategoriesForFilter.forEach(function(cat) {
+            $displayArea.append(`<span class="badge me-1 mb-1 selected-category-tag" data-slug="${cat.slug}" data-id="${cat.id}" title="선택 해제: ${cat.path}" style="cursor:pointer;">${cat.path}<span class="remove-category-visual" style="font-weight:bold; margin-left:5px; pointer-events: none;">×</span></span>`);
+        });
+    }
 
-        $list.html('<li class="list-group-item disabled p-5 text-center"><div class="spinner-border spinner-border-sm"></div></li>');
-        $panel.show();
-        $panelTitle.text((basePathForTitle || "하위") + " 카테고리");
+    function updatePanelActiveStatesList() {
+        $('#categoryTreePanelList .category-item-inline, #categorySearchResultsPanelList .category-item-inline').each(function() {
+            const $item = $(this); const itemSlug = $item.data('slug');
+            if (selectedCategoriesForFilter.has(itemSlug)) { $item.addClass('active'); }
+            else { $item.removeClass('active'); }
+        });
+    }
 
+    function loadChildCategoriesList(parentId, basePath, panelSelector, listSelector, level, callback) {
+        const $list = $(listSelector); const $panel = $(panelSelector); const $panelTitle = $panel.find('h6');
+        $list.html('<li class="list-group-item disabled p-3 text-center"><div class="spinner-border spinner-border-sm"></div></li>');
+        $panel.show(); $panelTitle.text(basePath + "의 하위 분류");
         $.ajax({
-            url: "{% url 'flo:ajax_get_child_categories' %}",
-            data: { 'parent_id': parentId },
-            dataType: 'json',
+            url: "{% url 'flo:ajax_get_child_categories' %}", data: { 'parent_id': parentId }, dataType: 'json',
             success: function(data) {
                 $list.empty();
                 if (data.children && data.children.length > 0) {
                     data.children.forEach(function(child) {
-                        // AJAX로 로드된 하위 카테고리의 전체 경로(path)를 정확히 설정
-                        let childFullPath = basePathForTitle + " > " + child.name;
-                        if (level === 0) { // 대분류의 자식이면 (즉, 중분류)
-                            childFullPath = child.name; // 잘못된 계산, child.full_path를 써야 함
-                        }
-                        // child.full_path가 AJAX 응답에 포함되어 있다면 그것을 사용
-                        const displayPath = child.full_path || childFullPath;
-
-
-                        const listItem = $(`
-                            <li class="list-group-item category-item-inline ${selectedCategoriesForFilter.has(child.slug) ? 'active' : ''}"
-                                data-id="${child.id}"
-                                data-name="${child.name}"
-                                data-level="${level}"
-                                data-path="${displayPath}" {# AJAX 응답의 full_path 사용 권장 #}
-                                data-slug="${child.slug || ''}">
-                                ${child.name}
-                                ${child.has_children ? '<span class="category-arrow-inline float-end">></span>' : ''}
-                            </li>
-                        `);
-                        $list.append(listItem);
+                        const displayPath = child.full_path || (basePath + " > " + child.name); // 서버에서 full_path, is_leaf, has_children 전달 가정
+                        $list.append(`<li class="list-group-item category-item-inline ${selectedCategoriesForFilter.has(child.slug) ? 'active' : ''}" 
+                        data-id="${child.id}" 
+                        data-name="${child.name}" 
+                        data-level="${level}" 
+                        data-path="${displayPath}" 
+                        data-slug="${child.slug || ''}" 
+                        data-is-leaf="${child.is_leaf !== undefined ? child.is_leaf : !child.has_children}">${child.name}${child.has_children ? '<span class="category-arrow-inline float-end">></span>' : ''}</li>`);
                     });
-                } else {
-                    $list.html('<li class="list-group-item disabled text-muted">하위 카테고리가 없습니다.</li>');
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error("AJAX Error loading child categories:", textStatus, errorThrown, jqXHR.responseText);
+                } else { $list.html('<li class="list-group-item disabled text-muted">하위 카테고리가 없습니다.</li>'); }
+                if (callback) callback(true);
+            }, error: function() {
                 $list.html('<li class="list-group-item text-danger">목록을 불러오는데 실패했습니다.</li>');
+                if (callback) callback(false);
             }
         });
     }
 
-    // 카테고리 검색 (AJAX 방식)
-    let searchTimeout;
-    $('#categorySearchInputList').on('keyup', function() {
-        clearTimeout(searchTimeout);
-        const searchTerm = $(this).val().toLowerCase();
-        const $resultsPanel = $('#categorySearchResultsPanel');
-        const $resultsList = $('#categorySearchResultsList');
-        const $categoryPanelsContainer = $('.category-selection-area-wrapper-list .category-panel-container .row');
+    const $categorySearchInputList = $('#categorySearchInputList'); const $clearSearchInputListBtn = $('#clearSearchInputList');
+    const $categoryTreePanelList = $('#categoryTreePanelList'); const $searchResultsPanelList = $('#categorySearchResultsPanelList');
+    const $resultsListList = $('#categorySearchResultsList'); const $loadMoreContainerList = $('#search-results-load-more-container-list');
+    const $loadMoreButtonList = $('#loadMoreSearchResultsList');
+    let currentPageList = 1; let currentSearchTermList = ''; let searchTimeoutList;
 
-        if (searchTerm.length < 1) {
-            $resultsPanel.hide();
-            $resultsList.empty();
-            $categoryPanelsContainer.show();
-            $('.category-selection-area-wrapper-list .category-panel-container .category-item-inline').show();
+    $categorySearchInputList.on('keyup input', function() {
+        clearTimeout(searchTimeoutList); const searchTerm = $(this).val().trim();
+        if (searchTerm.length > 0) { $clearSearchInputListBtn.show(); } else { $clearSearchInputListBtn.hide(); }
+        if (currentSearchTermList.toLowerCase() !== searchTerm.toLowerCase()) { currentPageList = 1; $resultsListList.empty(); $loadMoreContainerList.hide(); }
+        currentSearchTermList = searchTerm;
+        if (searchTerm.length === 0) { $searchResultsPanelList.hide(); $categoryTreePanelList.show(); updatePanelActiveStatesList(); return; }
+        searchTimeoutList = setTimeout(function() {
+            if (currentPageList === 1) { $categoryTreePanelList.hide(); $searchResultsPanelList.show(); $resultsListList.html('<li class="list-group-item disabled p-3 text-center"><div class="spinner-border spinner-border-sm"></div></li>'); }
+            fetchSearchResultsList(currentSearchTermList, currentPageList);
+        }, 300);
+    });
+    $clearSearchInputListBtn.on('click', function() { $categorySearchInputList.val('').focus().trigger('input'); });
+    $loadMoreButtonList.on('click', function() { if (currentSearchTermList) { fetchSearchResultsList(currentSearchTermList, currentPageList); } });
+
+    function fetchSearchResultsList(term, page) {
+        $loadMoreButtonList.prop('disabled', true).text('로딩 중...');
+        $.ajax({
+            url: "{% url 'flo:ajax_search_categories' %}", data: { 'q': term, 'page': page }, dataType: 'json',
+            success: function(data) {
+                if (page === 1) { $resultsListList.empty(); }
+                if (data.categories && data.categories.length > 0) {
+                    data.categories.forEach(function(cat) { // 서버에서 full_path, ancestry_slugs, is_leaf 전달 가정
+                        $resultsListList.append(`<li class="list-group-item category-item-inline search-result-item ${selectedCategoriesForFilter.has(cat.slug) ? 'active' : ''}" data-id="${cat.id}" data-name="${cat.name}" data-slug="${cat.slug}" data-path="${cat.full_path}" data-ancestry-slugs='${JSON.stringify(cat.ancestry_slugs || [])}' data-is-leaf="${cat.is_leaf !== undefined ? cat.is_leaf : true}" style="cursor:pointer;"><span class="search-result-path">${cat.full_path}</span></li>`);
+                    });
+                    if (data.has_next_page) { $loadMoreContainerList.show(); currentPageList = data.current_page + 1; }
+                    else { $loadMoreContainerList.hide(); }
+                } else {
+                    if (page === 1) { $resultsListList.html('<li class="list-group-item disabled text-muted">검색 결과가 없습니다.</li>'); }
+                    $loadMoreContainerList.hide();
+                }
+            }, error: function() { if (page === 1) { $resultsListList.html('<li class="list-group-item text-danger">검색 중 오류가 발생했습니다.</li>'); } $loadMoreContainerList.hide(); },
+            complete: function() { $loadMoreButtonList.prop('disabled', false).text('더보기'); }
+        });
+    }
+
+    const $keywordSearchInput = $('#keywordSearchInput'); const $clearKeywordSearchBtn = $('#clearKeywordSearchInput');
+    if ($keywordSearchInput.val().trim().length > 0) { $clearKeywordSearchBtn.show(); }
+    $keywordSearchInput.on('keyup input', function() { if ($(this).val().trim().length > 0) { $clearKeywordSearchBtn.show(); } else { $clearKeywordSearchBtn.hide(); } });
+    $clearKeywordSearchBtn.on('click', function() { $keywordSearchInput.val('').focus(); $clearKeywordSearchBtn.hide(); });
+
+    // --- 게시물 목록의 카테고리 드롭다운 로직 (이벤트 위임 적용) ---
+    let $currentlyOpenListDropdown = null;
+    let $originalParentOfMovedDropdown = null;
+
+    // AJAX로 내용이 바뀌는 tbody에 이벤트 위임
+    $('.table.board-table-custom tbody').on('click keypress', '.post-category-list-dropdown-toggle', function(event) {
+        if (event.type === 'keypress' && (event.which !== 13 && event.which !== 32)) { return; }
+        event.preventDefault(); event.stopPropagation();
+        const $toggle = $(this); const targetDropdownId = $toggle.data('target-dropdown');
+        const $content = $(targetDropdownId); // $content는 동적으로 생성된 목록 내부에 있어야 함.
+        const $icon = $toggle.find('.dropdown-arrow-icon');
+        const isThisDropdownCurrentlyOpen = $toggle.attr('aria-expanded') === 'true';
+
+        if ($currentlyOpenListDropdown && $currentlyOpenListDropdown.length && !$currentlyOpenListDropdown.is($content)) {
+            $currentlyOpenListDropdown.slideUp(150, function() {
+                if ($originalParentOfMovedDropdown && $(this).parent().is('body')) { $(this).appendTo($originalParentOfMovedDropdown); }
+            });
+            if ($originalParentOfMovedDropdown) {
+                $originalParentOfMovedDropdown.find('.post-category-list-dropdown-toggle')
+                    .attr('aria-expanded', 'false').find('.dropdown-arrow-icon').css('transform', 'rotate(0deg)');
+            }
+        }
+        if (isThisDropdownCurrentlyOpen) {
+            $content.slideUp(150, function() {
+                if ($originalParentOfMovedDropdown && $(this).parent().is('body')) { $(this).appendTo($originalParentOfMovedDropdown); }
+            });
+            $icon.css('transform', 'rotate(0deg)'); $toggle.attr('aria-expanded', 'false');
+            $currentlyOpenListDropdown = null; $originalParentOfMovedDropdown = null;
+        } else {
+            // $content가 AJAX로 로드된 후 tbody 내에 있는지 확인
+            if (!$content.length || !$content.closest('.board-table-custom tbody').length) {
+                console.warn("Dropdown content not found or not in current post list:", targetDropdownId);
+                return;
+            }
+            $originalParentOfMovedDropdown = $content.parent(); $content.appendTo('body');
+            $currentlyOpenListDropdown = $content;
+            const windowHeight = $(window).height(); const windowScrollTop = $(window).scrollTop();
+            const toggleOffset = $toggle.offset(); const toggleHeight = $toggle.outerHeight();
+            $content.css({'display': 'block', 'visibility': 'hidden'}); const contentHeight = $content.outerHeight();
+            $content.css({'display': 'none', 'visibility': 'visible'}); let topPosition;
+            if (toggleOffset.top + toggleHeight + contentHeight + 4 < windowScrollTop + windowHeight - 20) {
+                topPosition = toggleOffset.top + toggleHeight + 4;
+            } else { topPosition = toggleOffset.top - contentHeight - 4; if (topPosition < windowScrollTop + 5) { topPosition = windowScrollTop + 5; }}
+            $content.css({ 'position': 'absolute', 'top': topPosition + 'px', 'left': toggleOffset.left + 'px', 'margin': '0' });
+            $content.slideDown(150); $icon.css('transform', 'rotate(180deg)'); $toggle.attr('aria-expanded', 'true');
+        }
+    });
+
+    $('body').on('click', '.post-category-dropdown-content li', function(event) { // 이건 이미 body에 위임됨
+        event.preventDefault(); event.stopPropagation();
+        const clickedLiData = $(this).data();
+        if (!clickedLiData.slug) { return; }
+        handleCategorySelectionAndFilter({
+            id: clickedLiData.id, name: clickedLiData.name, slug: clickedLiData.slug, path: clickedLiData.path,
+            ancestry_slugs: [], is_leaf: true
+        }, null);
+        if ($currentlyOpenListDropdown && $currentlyOpenListDropdown.length) {
+            $currentlyOpenListDropdown.slideUp(150, function() {
+                if ($originalParentOfMovedDropdown && $(this).parent().is('body')) { $(this).appendTo($originalParentOfMovedDropdown); }
+            });
+            if ($originalParentOfMovedDropdown) {
+                $originalParentOfMovedDropdown.find('.post-category-list-dropdown-toggle')
+                    .attr('aria-expanded', 'false').find('.dropdown-arrow-icon').css('transform', 'rotate(0deg)');
+            }
+            $currentlyOpenListDropdown = null; $originalParentOfMovedDropdown = null;
+        }
+    });
+
+    $(document).on('click', function(event) { // 문서 전체 클릭
+        const $target = $(event.target);
+        if (!$target.closest('.post-category-list-dropdown-toggle').length && !$target.closest('.post-category-dropdown-content').length) {
+            if ($currentlyOpenListDropdown && $currentlyOpenListDropdown.length) {
+                $currentlyOpenListDropdown.slideUp(150, function() {
+                    if ($originalParentOfMovedDropdown && $(this).parent().is('body')) { $(this).appendTo($originalParentOfMovedDropdown); }
+                });
+                if ($originalParentOfMovedDropdown) {
+                    $originalParentOfMovedDropdown.find('.post-category-list-dropdown-toggle')
+                        .attr('aria-expanded', 'false').find('.dropdown-arrow-icon').css('transform', 'rotate(0deg)');
+                }
+                $currentlyOpenListDropdown = null; $originalParentOfMovedDropdown = null;
+            }
+        }
+    });
+
+    // --- AJAX로 게시물 목록 및 페이지네이션 업데이트 ---
+    // 이 함수는 서버 응답을 받아 UI를 업데이트합니다.
+    // postsHtml이 비어있거나 null일 때 표시되는 메시지의 colspan을 동적으로 설정합니다.
+    function updatePostListAndPaginationUI(postsHtml, paginationHtml) {
+        let colspanValue = 7; // 데스크톱 기본 (모든 열 표시)
+        const windowWidth = $(window).width();
+
+        if (windowWidth <= 575.98) { // 모바일 (예: 번호, 카테고리, 제목 = 3열)
+            // CSS에서 .col-author (4번째), .col-date (5번째), .col-views (6번째), .col-likes (7번째) 숨김
+            // 만약 번호도 숨긴다면 colspanValue = 2;
+            colspanValue = 3; 
+        } else if (windowWidth <= 767.98) { // 작은 태블릿 (예: 번호, 카테고리, 제목, 작성자 = 4열)
+            // CSS에서 .col-date (5번째), .col-views (6번째), .col-likes (7번째) 숨김
+            colspanValue = 4;
+        } else if (windowWidth <= 991.98) { // 태블릿 (예: '추천'만 숨김 = 6열)
+            // CSS에서 .col-likes (7번째) 숨김
+            colspanValue = 6;
+        }
+        
+        const emptyDataMessage = `<tr><td colspan="${colspanValue}" class="text-center py-4">게시글이 없습니다.</td></tr>`;
+        // postsHtml 인자 자체가 이미 "게시글 없음" 등의 메시지를 포함하고 있다면, 그 HTML을 그대로 사용합니다.
+        // 아래는 postsHtml이 순수 데이터 목록이거나, 서버에서 빈 문자열을 보냈을 경우를 대비한 것입니다.
+        if (postsHtml && postsHtml.trim() !== "") {
+            $('.table.board-table-custom tbody').html(postsHtml);
+        } else {
+            // postsHtml이 비어있거나(서버에서 "" 응답), null/undefined일 때 "게시글 없음" 표시
+            $('.table.board-table-custom tbody').html(emptyDataMessage);
+        }
+
+        $('.pagination-wrapper').html(paginationHtml || '');
+    }
+
+    function getCurrentFiltersAsParams(page = 1) {
+        const params = new URLSearchParams();
+        const slugs = Array.from(selectedCategoriesForFilter.keys());
+        if (slugs.length > 0) params.set('category_slugs', slugs.join(','));
+
+        const searchKeyword = $('#keywordSearchInput').val().trim();
+        if (searchKeyword) {
+            params.set('search_keyword', searchKeyword);
+            params.set('search_type', $('select[name="search_type"]').val());
+        }
+        const categoryQuery = $categorySearchInputList.val().trim();
+        if (categoryQuery) params.set('category_q', categoryQuery);
+
+        if (page > 1) params.set('page', page);
+        return params;
+    }
+
+    function applyFiltersAndFetchPosts(page = 1, replaceHistory = false) {
+        const queryParams = getCurrentFiltersAsParams(page);
+        const queryString = queryParams.toString();
+        const baseUrl = "{% url 'flo:study_post_list' %}";
+        const fullUrl = baseUrl + (queryString ? "?" + queryString : "");
+
+        // 로딩 메시지 colspan 동적 적용
+        let colspanValue = 7;
+        const windowWidth = $(window).width();
+        if (windowWidth <= 575.98) { colspanValue = 3; }
+        else if (windowWidth <= 767.98) { colspanValue = 4; }
+        else if (windowWidth <= 991.98) { colspanValue = 6; }
+        
+        const loadingRowHtmlDynamic = `<tr><td colspan="${colspanValue}" class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>`;
+        const errorRowHtmlDynamic = `<tr><td colspan="${colspanValue}" class="text-center py-4 text-danger">게시글을 불러오는데 실패했습니다.</td></tr>`;
+        const emptyRowHtmlDynamic = `<tr><td colspan="${colspanValue}" class="text-center py-4">게시글이 없습니다.</td></tr>`;
+
+
+        $('.table.board-table-custom tbody').html(loadingRowHtmlDynamic);
+
+        $.ajax({
+            url: fullUrl,
+            type: 'GET',
+            dataType: 'json',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                // 서버에서 posts_html이 "" (빈 문자열)이고 pagination_html도 없을 때 (즉, 결과가 아예 없을 때)
+                // "게시글이 없습니다" 메시지를 표시합니다.
+                if (response.posts_html === "" && (!response.pagination_html || response.pagination_html.trim() === "")) {
+                    updatePostListAndPaginationUI(emptyRowHtmlDynamic, response.pagination_html);
+                } else {
+                    updatePostListAndPaginationUI(response.posts_html, response.pagination_html);
+                }
+                
+                const stateData = { page: page, filters: queryParams.toString() };
+                if (replaceHistory) {
+                    history.replaceState(stateData, '', fullUrl);
+                } else {
+                    history.pushState(stateData, '', fullUrl);
+                }
+                console.log("AJAX success, URL updated to:", fullUrl);
+            },
+            error: function(xhr) {
+                console.error("AJAX Error fetching posts:", xhr.responseText);
+                // 에러 발생 시, 에러 메시지를 포함한 HTML을 updatePostListAndPaginationUI로 전달
+                updatePostListAndPaginationUI(errorRowHtmlDynamic, '');
+            }
+        });
+    }
+
+    // (선택적) 창 크기 변경 시 UI 업데이트 (예: colspan 재계산이 필요한 경우)
+    // AJAX 호출 없이 단순 colspan만 변경해야 한다면, 테이블 내용이 메시지일 때만 처리
+    let resizeTimeout;
+    $(window).on('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            const $tbody = $('.table.board-table-custom tbody');
+            const $firstTd = $tbody.find('tr:first-child td:first-child');
+            // 현재 tbody에 게시물 목록이 아닌, colspan을 사용하는 단일 메시지 행만 있는지 확인
+            if ($firstTd.length && $firstTd.attr('colspan')) {
+                // 현재 화면 크기에 맞는 colspan 값 계산
+                let colspanValue = 7;
+                const windowWidth = $(window).width();
+                if (windowWidth <= 575.98) { colspanValue = 3; }
+                else if (windowWidth <= 767.98) { colspanValue = 4; }
+                else if (windowWidth <= 991.98) { colspanValue = 6; }
+                
+                if (parseInt($firstTd.attr('colspan')) !== colspanValue) {
+                    $firstTd.attr('colspan', colspanValue);
+                }
+            }
+        }, 250); // 디바운싱
+    });
+
+    initializePage(); // 기존 함수 호출 유지
+
+    // 페이지네이션 링크 AJAX 처리 (이벤트 위임 사용)
+    $('.pagination-wrapper').on('click', 'a.page-link', function(event) {
+        event.preventDefault();
+        const href = $(this).attr('href');
+        if (href && href !== '#') {
+            try {
+                const url = new URL(href, window.location.origin);
+                const page = parseInt(url.searchParams.get('page') || '1');
+                applyFiltersAndFetchPosts(page);
+            } catch (e) {
+                console.error("Error parsing pagination URL:", e);
+            }
+        }
+    });
+
+    // 게시물 검색 폼 제출 AJAX 처리
+    $('form.search-form').on('submit', function(event){
+        event.preventDefault();
+        applyFiltersAndFetchPosts(1);
+    });
+
+    // 브라우저 뒤로가기/앞으로가기 처리
+    $(window).on('popstate', function(event) {
+        const state = event.originalEvent.state;
+        if (state) {
+            console.log("Popstate event, reloading for:", window.location.href, "State:", state);
+            const currentUrlParams = new URLSearchParams(window.location.search);
+            const slugsFromUrl = currentUrlParams.get('category_slugs');
+            
+            // selectedCategoriesForFilter 복원 (서버에서 initial_selected_categories_for_ui와 동일한 구조의 전체 카테고리 목록이 JS 변수로 있다면 더 정확히 복원 가능)
+            selectedCategoriesForFilter.clear();
+            if (slugsFromUrl) {
+                slugsFromUrl.split(',').forEach(slug => {
+                    // 여기서 실제 카테고리 객체(id, name, path, ancestry_slugs, is_leaf)를 찾아야 함.
+                    // 임시로 slug만 사용. 실제로는 `allCategoriesData` (가상의 전체 카테고리 정보) 같은 곳에서 찾아야 함.
+                    // 예를 들어, `initial_selected_categories_for_ui`를 만들 때 사용한 전체 카테고리 목록을
+                    // <script> 태그 내에 JSON 형태로 내려주면 여기서 참조 가능.
+                    let foundCat = null; 
+                    // 가상의 allCategoriesDataFromDjango = {{ all_categories_json|safe }};
+                    // if (typeof allCategoriesDataFromDjango !== 'undefined') {
+                    //    foundCat = allCategoriesDataFromDjango.find(c => c.slug === slug);
+                    // }
+                    // if (foundCat) {
+                    //    selectedCategoriesForFilter.set(slug, foundCat);
+                    // } else {
+                         selectedCategoriesForFilter.set(slug, {slug: slug, path: slug, id: null, ancestry_slugs:[], is_leaf:true}); // 임시 데이터
+                    // }
+                });
+            }
+            renderSelectedCategoryTagsList();
+            updatePanelActiveStatesList();
+
+            const catQ = currentUrlParams.get('category_q');
+            $categorySearchInputList.val(catQ || '');
+            if (catQ) { $clearSearchInputListBtn.show(); $categoryTreePanelList.hide(); $searchResultsPanelList.show(); /* fetchSearchResultsListIfNeeded(); */ }
+            else { $clearSearchInputListBtn.hide(); $searchResultsPanelList.hide(); $categoryTreePanelList.show(); }
+
+            const pageFromUrl = parseInt(currentUrlParams.get('page') || '1');
+            applyFiltersAndFetchPosts(pageFromUrl, true);
+        }
+    });
+
+    // 페이지 로드 시 초기화 로직
+    async function expandPanelsForInitialSelection() {
+        // 이 함수는 선택된 카테고리를 기반으로 패널을 확장합니다.
+        // 비동기 loadChildCategoriesList 호출을 포함하므로 async로 선언.
+        if (selectedCategoriesForFilter.size === 0) {
+            updatePanelActiveStatesList();
+            return;
+        }
+        let deepestCategory = null;
+        let maxDepth = -1;
+
+        selectedCategoriesForFilter.forEach(cat => {
+            if (cat.is_leaf && cat.ancestry_slugs) {
+                if (cat.ancestry_slugs.length > maxDepth) {
+                    maxDepth = cat.ancestry_slugs.length;
+                    deepestCategory = cat;
+                }
+            } else if (cat.is_leaf && (!cat.ancestry_slugs || cat.ancestry_slugs.length === 0) && maxDepth < 0) {
+                maxDepth = 0;
+                deepestCategory = cat;
+            }
+        });
+
+        if (!deepestCategory) {
+            updatePanelActiveStatesList();
+            return;
+        }
+        const pathSlugsToExpand = deepestCategory.ancestry_slugs || [];
+        let currentParentIdToLoadChildrenFor = null;
+        let currentBasePathForTitle = '';
+        let currentPanelToSearchIn = '#majorCategoryPanelList';
+        let currentLevel = 0;
+
+        for (const parentSlug of pathSlugsToExpand) {
+            const $parentItem = $(`${currentPanelToSearchIn} .category-item-inline[data-slug="${parentSlug}"]`);
+            if ($parentItem.length) {
+                if ($parentItem.find('.category-arrow-inline').length > 0) {
+                    $parentItem.addClass('active-parent');
+                }
+                currentParentIdToLoadChildrenFor = $parentItem.data('id');
+                currentBasePathForTitle = $parentItem.data('path');
+                let nextPanelSelector, nextListSelector, nextLevelToLoad;
+                if (currentLevel === 0) {
+                    nextPanelSelector = '#mediumCategoryPanelList'; nextListSelector = '#mediumCategoryListList'; nextLevelToLoad = 1;
+                } else if (currentLevel === 1) {
+                    nextPanelSelector = '#minorCategoryPanelList'; nextListSelector = '#minorCategoryListList'; nextLevelToLoad = 2;
+                } else { break; }
+
+                const loadSuccess = await new Promise(resolve => {
+                    $(nextPanelSelector).hide().find('.category-list-inline').empty();
+                    if (nextLevelToLoad === 1) { $('#minorCategoryPanelList').hide().find('.category-list-inline').empty(); }
+                    loadChildCategoriesList(currentParentIdToLoadChildrenFor, currentBasePathForTitle, nextPanelSelector, nextListSelector, nextLevelToLoad, resolve);
+                });
+                if (!loadSuccess) { break; }
+                currentPanelToSearchIn = nextPanelSelector;
+                currentLevel = nextLevelToLoad;
+            } else { break; }
+        }
+        updatePanelActiveStatesList();
+    }
+
+    function restoreCategorySearchFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialCategoryQuery = urlParams.get('category_q');
+        if (initialCategoryQuery) {
+            $categorySearchInputList.val(initialCategoryQuery);
+            if (initialCategoryQuery.length > 0) $clearSearchInputListBtn.show();
+            else $clearSearchInputListBtn.hide();
+            currentSearchTermList = initialCategoryQuery; currentPageList = 1;
+            $resultsListList.empty(); $loadMoreContainerList.hide();
+            $categoryTreePanelList.hide(); $searchResultsPanelList.show();
+            $resultsListList.html('<li class="list-group-item disabled p-3 text-center"><div class="spinner-border spinner-border-sm"></div></li>');
+            fetchSearchResultsList(currentSearchTermList, currentPageList);
+        }
+    }
+
+    async function initializePage() {
+        restoreCategorySearchFromUrl();
+        if (!$searchResultsPanelList.is(':visible')) {
+            await expandPanelsForInitialSelection(); // await 추가
+        } else {
+            updatePanelActiveStatesList();
+        }
+        const initialParams = getCurrentFiltersAsParams(parseInt(new URLSearchParams(window.location.search).get('page') || '1'));
+        const initialState = { page: parseInt(initialParams.get('page') || '1'), filters: initialParams.toString() };
+        history.replaceState(initialState, '', window.location.href);
+    }
+
+    initializePage();
+
+    // --- 게시물 행 클릭 시 상세 페이지 이동 (모바일/태블릿) ---
+    $('.table.board-table-custom tbody').on('click', 'tr', function(event) {
+        const $clickedRow = $(this);
+        const windowWidth = $(window).width();
+
+        // 데스크톱 화면(992px 초과)에서는 이 기능 비활성화
+        if (windowWidth > 991.98) {
             return;
         }
 
-        $categoryPanelsContainer.hide();
-        $resultsPanel.show();
-        $resultsList.html('<li class="list-group-item disabled text-center"><div class="spinner-border spinner-border-sm"></div></li>');
+        // 클릭된 요소가 카테고리 영역(두 번째 td) 또는 그 내부의 특정 요소들인지 확인
+        const $target = $(event.target);
+        const $categoryCell = $clickedRow.find('td:nth-child(2)'); // 카테고리 셀
 
-        searchTimeout = setTimeout(function() {
-            $.ajax({
-                url: "{% url 'flo:ajax_search_categories' %}",
-                data: { 'q': searchTerm },
-                dataType: 'json',
-                success: function(data) {
-                    $resultsList.empty();
-                    if (data.categories && data.categories.length > 0) {
-                        data.categories.forEach(function(cat) {
-                            let levelText = '';
-                            if (cat.level === 0) levelText = ' (대분류)';
-                            else if (cat.level === 1) levelText = ' (중분류)';
-                            else if (cat.level === 2) levelText = ' (소분류)';
+        // 클릭된 지점이 카테고리 셀 내부이거나, 카테고리 드롭다운 토글 버튼, 또는 드롭다운 내용물 자체인 경우,
+        // 그리고 페이지네이션 링크나 검색 버튼 등이 아닌 경우에만 이동하지 않도록 처리
+        if ($target.closest($categoryCell).length > 0 ||
+            $target.closest('.post-category-list-dropdown-toggle').length > 0 ||
+            $target.closest('.post-category-dropdown-content').length > 0 ||
+            $target.is('a.page-link') || // 페이지네이션 링크
+            $target.closest('button').length > 0 || // 일반 버튼 (검색 버튼 등)
+            $target.is('input') || $target.is('select') // 입력 필드
+        ) {
+            // 카테고리 관련 영역, 페이지네이션, 버튼, 입력 필드를 클릭한 경우 아무 작업 안 함
+            return;
+        }
 
-                            const listItem = $(`
-                                <li class="list-group-item category-item-inline search-result-item ${selectedCategoriesForFilter.has(cat.slug) ? 'active' : ''}"
-                                    data-id="${cat.id}" data-name="${cat.name}" data-slug="${cat.slug}" data-path="${cat.full_path}"
-                                    style="cursor:pointer; display: flex; justify-content: space-between; align-items: center;">
-                                    <span class="search-result-path">${cat.full_path}</span>
-                                    <span class="search-result-level text-muted fs-sm">${levelText}</span>
-                                    ${cat.has_children ? '<span class="search-result-arrow category-arrow-inline text-muted">></span>' : '<span class="search-result-arrow"></span>'}
-                                </li>
-                            `);
-                            listItem.on('click', function() {
-                                toggleCategorySelectionForFilter({ // 검색 결과 클릭 시에도 선택 토글만
-                                    id: $(this).data('id').toString(),
-                                    name: $(this).data('name'),
-                                    slug: $(this).data('slug'),
-                                    path: $(this).data('path')
-                                }, $(this)); // $clickedItemElement 전달
-                                // 검색 UI 처리
-                                $resultsPanel.hide();
-                                $resultsList.empty();
-                                $categoryPanelsContainer.show();
-                                $('#categorySearchInputList').val('');
-                            });
-                            $resultsList.append(listItem);
-                        });
-                    } else {
-                        $resultsList.html('<li class="list-group-item disabled text-muted">검색 결과가 없습니다.</li>');
-                    }
-                },
-                error: function() { $resultsList.html('<li class="list-group-item text-danger">검색 중 오류가 발생했습니다.</li>');}
-            });
-        }, 300);
+        // 공지사항이든 일반 게시물이든 제목 셀의 링크를 찾음
+        const $titleLink = $clickedRow.find('td.post-title-cell a.post-title-link');
+
+        if ($titleLink.length > 0 && $titleLink.attr('href')) {
+            window.location.href = $titleLink.attr('href');
+        }
     });
+    // --- 게시물 행 클릭 로직 끝 ---
+
 });
 </script>
 {% endblock %}

@@ -1,5 +1,6 @@
 /* static/flo/css/study_post/study_post_list.css */
 
+<<<<<<< HEAD
 /* --- 기본 변수 (study_post_form.css 와 유사하게 또는 필요한 부분만 가져오기) --- */
 :root {
     /* 기존 study_post_list.css에 있던 변수들 (생략 가능, base.css 등에서 관리될 수 있음) */
@@ -25,10 +26,20 @@
     --dark-active-parent-bg: #3e444a;
 
     /* 폼 요소에 사용될 수 있는 변수 (목록 페이지 검색창 등에 필요시 사용) */
+=======
+/* --- 기본 변수 (study_post_form.css 및 상세 페이지 CSS 변수 참조) --- */
+:root {
+    /* 페이지 전반 (기본값은 라이트모드) */
+    --bg-page-list: #f8f9fa;
+    --text-main-list: #212529;
+    --line-sub-list: #dee2e6; 
+    --title-underline-color: #000000;
+>>>>>>> origin/ldy
     --form-input-bg: #FFFFFF;
     --form-input-text: #212529;
     --form-input-border: #ced4da;
     --form-input-placeholder: #6c757d;
+<<<<<<< HEAD
 }
 
 
@@ -156,12 +167,172 @@ body:not(.theme-light) #selected-category-display-list .selected-category-tag {
     cursor: pointer;
     font-weight: bold;
     opacity: 0.7;
+=======
+    --btn-primary-bg: #6d28d9; 
+    --btn-primary-text: #fff;
+    --btn-search-bg: #6d28d9; 
+    --btn-filter-apply-bg: #34D2E2; 
+    --btn-filter-apply-text: #2d2d2d;
+    --category-wrapper-bg: #fff;
+    --category-wrapper-border: #e0e0e0; 
+    --category-panel-bg: transparent; 
+    --category-panel-border: #e9ecef; 
+    --category-item-text: #212529; 
+    --category-item-hover-bg: #e9ecef;
+    --category-item-active-bg: #3294E4; 
+    --category-item-active-text: #fff;
+    --category-active-parent-bg: #f0f2f5; 
+    --category-arrow-color: #6c757d; 
+    --category-tag-bg: var(--category-item-active-bg); 
+    --category-tag-text: var(--category-item-active-text); 
+
+    /* 다크모드 변수 */
+    --dark-bg-page-list: #1a1a1a;
+    --dark-text-main-list: #f1f1f1; 
+    --dark-line-sub-list: #495057;
+    --dark-title-underline-color: #ffffff;
+    --dark-form-input-bg: #2c2c2c;
+    --dark-form-input-text: #e0e0e0;
+    --dark-form-input-border: #444;
+    --dark-form-input-placeholder: #888;
+    --dark-btn-primary-bg: #7e57c2; 
+    --dark-btn-search-bg: #7e57c2; 
+    --dark-btn-filter-apply-bg: #2aa1af; 
+    --dark-btn-filter-apply-text: #f0f0f0;
+    --dark-category-wrapper-bg: #252528; 
+    --dark-category-wrapper-border: #383838;
+    --dark-category-panel-bg: transparent;
+    --dark-category-panel-border: #343a40;
+    --dark-category-item-text: #f8f9fa; 
+    --dark-category-item-hover-bg: #3a3a3a;
+    --dark-category-item-active-bg: #3294E4; 
+    --dark-category-item-active-text: #fff; 
+    --dark-category-active-parent-bg: #3e444a;
+    --dark-category-arrow-color: #888;
+    --dark-category-tag-bg: var(--dark-category-item-active-bg);
+    --dark-category-tag-text: var(--dark-category-item-active-text);
+
+    --btn-outline-secondary-text: #6c757d;
+    --btn-outline-secondary-border: #6c757d;
+    --btn-outline-secondary-hover-bg: #6c757d;
+    --btn-outline-secondary-hover-text: #fff;
+
+    --dark-btn-outline-secondary-text: #adb5bd;
+    --dark-btn-outline-secondary-border: #adb5bd;
+    --dark-btn-outline-secondary-hover-bg: #adb5bd;
+    --dark-btn-outline-secondary-hover-text: #212529;
+
+    /* 게시물 목록 카테고리 드롭다운용 변수 추가 */
+    --list-category-dropdown-bg: #ffffff;
+    --list-category-dropdown-border: #ced4da;
+    --list-category-dropdown-text: #212529;
+    --list-category-dropdown-item-hover-bg: #f8f9fa;
+
+    --dark-list-category-dropdown-bg: #2c2c2c;
+    --dark-list-category-dropdown-border: #495057;
+    --dark-list-category-dropdown-text: #f1f1f1;
+    --dark-list-category-dropdown-item-hover-bg: #383838;
+
+    --category-fixed-width: 180px; /* 카테고리 영역 고정 너비 변수화 */
+    --category-title-gap: 8px;   /* 카테고리와 제목 사이 간격 변수화 */
+}
+/* ... (페이지 레이아웃, 카테고리 필터 UI, 검색폼, 테이블, 페이지네이션 등의 CSS는 이전 답변과 동일하게 유지) ... */
+.board-page-wrapper {
+    padding-top: 40px;
+    padding-bottom: 60px;
+    background-color: var(--bg-page-list);
+}
+body:not(.theme-light) .board-page-wrapper {
+    background-color: var(--dark-bg-page-list);
+}
+.board-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+.board-header-title-wrapper {
+    margin-bottom: 30px;
+    text-align: center;
+}
+.board-main-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-main-list);
+    margin-bottom: 0.75rem;
+}
+body:not(.theme-light) .board-main-title {
+    color: var(--dark-text-main-list);
+}
+hr.title-underline {
+    width: 80px;
+    height: 3px;
+    background-color: var(--title-underline-color);
+    border: none;
+    margin: 0 auto 30px auto;
+}
+body:not(.theme-light) hr.title-underline {
+    background-color: var(--dark-title-underline-color);
+}
+
+.category-selection-area-wrapper-list {
+    margin-bottom: 30px;
+    border: 1px solid var(--category-wrapper-border);
+    padding: 20px;
+    border-radius: 6px;
+    background-color: var(--category-wrapper-bg);
+}
+body:not(.theme-light) .category-selection-area-wrapper-list {
+    border-color: var(--dark-category-wrapper-border);
+    background-color: var(--dark-category-wrapper-bg);
+}
+
+.category-selection-area-wrapper-list > .form-label {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: block;
+    color: var(--text-main-list); 
+}
+body:not(.theme-light) .category-selection-area-wrapper-list > .form-label {
+    color: var(--dark-text-main-list); 
+}
+
+#selected-category-display-list {
+    margin-bottom: 15px;
+    min-height: 30px;
+}
+#selected-category-display-list .selected-category-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: .35em .75em;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    border-radius: 1em;
+    background-color: var(--category-tag-bg);
+    color: var(--category-tag-text);
+    font-weight: 500;
+    line-height: 1;
+}
+body:not(.theme-light) #selected-category-display-list .selected-category-tag {
+    background-color: var(--dark-category-tag-bg);
+    color: var(--dark-category-tag-text);
+}
+#selected-category-display-list .remove-category-filter,
+#selected-category-display-list .remove-category-visual {
+    margin-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    opacity: 0.8;
+    font-size: 1.1em;
+>>>>>>> origin/ldy
 }
 #selected-category-display-list .remove-category-filter:hover,
 #selected-category-display-list .remove-category-visual:hover {
     opacity: 1;
 }
 
+<<<<<<< HEAD
 /* "선택된 카테고리로 검색" 버튼 (HTML <style> 블록에서 가져옴) */
 #applyCategoryFilterButton {
     background-color: #34D2E2; /* 기존 스타일 유지 또는 테마에 맞게 변경 */
@@ -649,4 +820,749 @@ body.theme-light .pagination .page-link:hover {
 /* body.theme-light .pagination .page-item.active .page-link 는 위에서 공통으로 처리 */
 body.theme-light .pagination .page-item.disabled .page-link {
     color: #D1D5DB;
+=======
+#applyCategoryFilterButton {
+    background-color: var(--btn-filter-apply-bg);
+    color: var(--btn-filter-apply-text);
+    font-size: 0.875rem;
+    padding: 0.45rem 0.9rem;
+    border: none;
+    border-radius: 0.25rem;
+    font-weight: 500;
+}
+#applyCategoryFilterButton:hover { opacity: 0.85; }
+body:not(.theme-light) #applyCategoryFilterButton {
+    background-color: var(--dark-btn-filter-apply-bg);
+    color: var(--dark-btn-filter-apply-text);
+}
+
+#categoryTreePanelList {
+    margin-top: 20px;
+}
+.category-search-box input[type="text"].form-control {
+    width: 100%; 
+    padding: .5rem .75rem; 
+    padding-right: 2.5rem; 
+    font-size: 0.9rem;
+    border-radius: .25rem; 
+    background-color: var(--form-input-bg);
+    color: var(--form-input-text); 
+    border: 1px solid var(--form-input-border);
+}
+.category-search-box input[type="text"].form-control::placeholder { color: var(--form-input-placeholder); }
+body:not(.theme-light) .category-search-box input[type="text"].form-control {
+    background-color: var(--dark-form-input-bg); color: var(--dark-form-input-text);
+    border-color: var(--dark-form-input-border);
+}
+body:not(.theme-light) .category-search-box input[type="text"].form-control::placeholder { color: var(--dark-form-input-placeholder); }
+.clear-search-btn {
+    position: absolute; top: 50%; right: 10px; transform: translateY(-50%);
+    cursor: pointer; font-size: 1.4rem; font-weight: bold; color: #888;
+    padding: 0 5px; line-height: 1; z-index: 3;
+}
+.clear-search-btn:hover { color: #555; }
+body:not(.theme-light) .clear-search-btn { color: #aaa; }
+body:not(.theme-light) .clear-search-btn:hover { color: #ccc; }
+
+.category-panel-container .category-panel-col { padding-right: 10px; padding-left: 10px; }
+.category-panel-container .category-panel-col:not(:last-child) { border-right: 1px solid var(--category-panel-border); }
+body:not(.theme-light) .category-panel-container .category-panel-col:not(:last-child) { border-right-color: var(--dark-category-panel-border); }
+
+.category-panel-container .category-panel-col h6 {
+    font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--category-panel-border);
+    color: var(--text-main-list); 
+}
+body:not(.theme-light) .category-panel-container .category-panel-col h6 {
+    color: var(--dark-text-main-list); 
+    border-bottom-color: var(--dark-category-panel-border);
+}
+#categorySearchResultsPanelList h6.search-results-title { border-bottom: 1px solid var(--category-panel-border); } /* 검색결과 제목 하단선 두께 통일 */
+body:not(.theme-light) #categorySearchResultsPanelList h6.search-results-title { border-bottom-color: var(--dark-category-panel-border); }
+
+.category-panel-container .category-list-inline {
+    list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto;
+    background-color: var(--category-panel-bg); 
+}
+body:not(.theme-light) .category-panel-container .category-list-inline {
+    background-color: var(--dark-category-panel-bg);
+}
+#categorySearchResultsList { max-height: 220px;  }
+
+.category-panel-container .category-list-inline .category-item-inline {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .6rem .75rem; cursor: pointer; border: none;
+    border-bottom: 1px solid var(--category-panel-border);
+    font-size: 0.875rem;
+    color: var(--category-item-text); 
+    background-color: transparent;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    border-radius: 0;
+}
+.category-panel-container .category-list-inline .category-item-inline:last-child { border-bottom: none; }
+body:not(.theme-light) .category-panel-container .category-list-inline .category-item-inline {
+     border-bottom: 1px solid var(--dark-category-panel-border);
+     color: var(--dark-category-item-text); 
+}
+body:not(.theme-light) .category-panel-container .category-list-inline .category-item-inline:last-child { border-bottom: none; }
+
+body.theme-light .category-panel-container .category-list-inline .category-item-inline:hover { background-color: var(--category-item-hover-bg); }
+body:not(.theme-light) .category-panel-container .category-list-inline .category-item-inline:hover {
+    background-color: var(--dark-category-item-hover-bg);
+}
+
+body.theme-light .category-panel-container .category-list-inline .category-item-inline.active-parent {
+    background-color: var(--category-active-parent-bg); font-weight: 500;
+}
+body:not(.theme-light) .category-panel-container .category-list-inline .category-item-inline.active-parent {
+    background-color: var(--dark-category-active-parent-bg); font-weight: 500;
+}
+
+.category-panel-container .category-list-inline .category-item-inline.active {
+    background-color: var(--category-item-active-bg) !important;
+    color: var(--category-item-active-text) !important;
+    font-weight: 600; border-bottom-color: transparent !important;
+}
+.category-panel-container .category-list-inline .category-item-inline.active .search-result-path,
+.category-panel-container .category-list-inline .category-item-inline.active .category-arrow-inline { 
+    color: var(--category-item-active-text) !important;
+}
+
+.category-panel-container .category-arrow-inline {
+    font-size: 0.8em; color: var(--category-arrow-color); font-weight: bold;
+    transition: color 0.15s ease-in-out;
+}
+body:not(.theme-light) .category-panel-container .category-arrow-inline { color: var(--dark-category-arrow-color); }
+.category-panel-container .category-item-inline.active-parent .category-arrow-inline {
+    color: var(--category-item-text); 
+}
+body:not(.theme-light) .category-panel-container .category-item-inline.active-parent .category-arrow-inline {
+    color: var(--dark-category-item-text);
+}
+
+.search-result-path {
+    flex-grow: 1; margin-right: 10px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; font-size: 0.875rem;
+}
+
+#loadMoreSearchResultsList {
+    padding: .25rem .75rem; font-size: 0.875rem; color: var(--btn-outline-secondary-text);
+    background-color: transparent; border: 1px solid var(--btn-outline-secondary-border);
+    border-radius: .25rem;
+}
+#loadMoreSearchResultsList:hover {
+    color: var(--btn-outline-secondary-hover-text); background-color: var(--btn-outline-secondary-hover-bg);
+    border-color: var(--btn-outline-secondary-hover-bg);
+}
+body:not(.theme-light) #loadMoreSearchResultsList {
+    color: var(--dark-btn-outline-secondary-text); border-color: var(--dark-btn-outline-secondary-border);
+}
+body:not(.theme-light) #loadMoreSearchResultsList:hover {
+    color: var(--dark-btn-outline-secondary-hover-text); background-color: var(--dark-btn-outline-secondary-hover-bg);
+    border-color: var(--dark-btn-outline-secondary-hover-bg);
+}
+
+.form-control.search-input { width: 100%; padding-right: 2.5rem; }
+.board-controls-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.search-form { display: flex; gap: 10px; flex-grow: 1; margin-right: 15px; }
+.form-select, .form-control.search-input { border-radius: 0.3rem; padding: 0.5rem 0.85rem; font-size: 0.875rem; background-color: var(--form-input-bg); color: var(--form-input-text); border: 1px solid var(--form-input-border); }
+body:not(.theme-light) .form-select, body:not(.theme-light) .form-control.search-input { background-color: var(--dark-form-input-bg); color: var(--dark-form-input-text); border: 1px solid var(--dark-form-input-border); }
+.form-control.search-input::placeholder { color: var(--form-input-placeholder); }
+body:not(.theme-light) .form-control.search-input::placeholder { color: var(--dark-form-input-placeholder); }
+.form-select:focus, .form-control.search-input:focus { border-color: #7e57c2; box-shadow: 0 0 0 0.2rem rgba(126, 87, 194, 0.25); }
+body.theme-light .form-select:focus, body.theme-light .form-control.search-input:focus { border-color: #6d28d9; box-shadow: 0 0 0 0.2rem rgba(109, 40, 217, 0.25); }
+.form-select.search-type-select { flex-basis: 150px; }
+.btn.search-button { background-color: var(--btn-search-bg); border: none; border-radius: 0.3rem; padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: center; }
+body:not(.theme-light) .btn.search-button { background-color: var(--dark-btn-search-bg); }
+.btn.search-button img { height: 16px; width: 16px; filter: invert(100%) brightness(1.5); }
+body.theme-light .btn.search-button img { filter: invert(100%) brightness(2); }
+.btn-primary.btn-write-post { background-color: var(--btn-primary-bg); border-color: var(--btn-primary-bg); color: var(--btn-primary-text); font-weight: 500; padding: 0.5rem 1rem; border-radius: 0.3rem; font-size: 0.875rem; white-space: nowrap; }
+body:not(.theme-light) .btn-primary.btn-write-post { background-color: var(--dark-btn-primary-bg); border-color: var(--dark-btn-primary-bg); }
+.btn-primary.btn-write-post img { height: 14px; margin-right: 6px; vertical-align: middle; position: relative; top: -1px; }
+
+.board-table-custom {
+    /* width: 100%; */ /* <-- 중요: 이 줄을 제거합니다 */
+    margin-bottom: 1.5rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 6px;
+    border: 1px solid var(--line-sub-list);
+    /* 데스크톱에서 모든 열이 편안하게 보일 수 있는 기본 최소 너비 설정 */
+    min-width: 700px; /* 7개 열이 기본적으로 더 많거나 적게 필요하면 조정합니다 */
+}
+body:not(.theme-light) .board-table-custom { border: 1px solid var(--dark-line-sub-list); }
+.board-table-custom th,
+.board-table-custom td {
+    vertical-align: middle;
+    padding: 0.75rem; /* 적절한 패딩 값 */
+    white-space: nowrap; /* 기본적으로 줄바꿈 방지하여 테이블이 늘어나도록 함 */
+}
+/* 제목과 같이 의도적으로 말줄임표를 사용하는 셀은 nowrap 해제 */
+.board-table-custom td.post-title-cell,
+.board-table-custom td:nth-child(2) .post-category-display-wrapper { /* 카테고리 셀 */
+    white-space: normal; /* 또는 initial, unset 등. 기본값으로 돌림 */
+}
+/* 제목 링크 자체는 내부적으로 ellipsis 처리하므로 nowrap 유지 또는 개별 설정 */
+.board-table-custom td.post-title-cell .post-title-link {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block; /* 혹은 inline-block, 너비를 가질 수 있도록 */
+    max-width: 200px; /* 예시: 제목 최대 너비, 화면 크기에 따라 조정 가능 */
+}
+.board-table-custom td:nth-child(2) .post-category-display-wrapper .post-category-tag,
+.board-table-custom td:nth-child(2) .post-category-display-wrapper .post-category-more-count {
+    white-space: nowrap; /* 이 내부 요소들은 줄바꿈 안되도록 */
+}
+
+
+/* 각 열의 내용 정렬 */
+.board-table-custom th.col-number,
+.board-table-custom td:nth-child(1) { /* 번호 */
+    text-align: center;
+}
+.board-table-custom th.col-category,
+.board-table-custom td:nth-child(2) { /* 카테고리 */
+    text-align: left; /* 카테고리는 왼쪽 정렬 */
+}
+.board-table-custom th.col-title,
+.board-table-custom td.post-title-cell { /* 제목 (클래스 사용) */
+    text-align: left; /* 제목은 왼쪽 정렬 (중요! 공지사항 포함) */
+    /* padding-left: 0; */ /* 만약 불필요한 왼쪽 패딩이 있다면 조정 */
+}
+.board-table-custom th.col-author,
+.board-table-custom td:nth-child(4) { /* 작성자 */
+    text-align: center;
+}
+.board-table-custom th.col-date,
+.board-table-custom td:nth-child(5) { /* 작성일 */
+    text-align: center;
+}
+
+.board-table-custom th.col-views,
+.board-table-custom td:nth-child(6) { /* 조회수 */
+    text-align: center;
+}
+.board-table-custom th.col-likes,
+.board-table-custom td:nth-child(7) { /* 추천 */
+    text-align: center;
+}
+
+
+.board-table-custom th { background-color: #f0f2f5; color: #333; font-weight: 600; border-bottom: 2px solid var(--line-sub-list); font-size: 0.9rem; }
+body:not(.theme-light) .board-table-custom th { background-color: #3f3f3f; color: #e0e0e0; border-bottom: 2px solid var(--dark-line-sub-list); }
+.board-table-custom td { border-bottom: 1px solid var(--line-sub-list); color: #2d2d2d; }
+body:not(.theme-light) .board-table-custom td { border-bottom: 1px solid var(--dark-line-sub-list); background-color: var(--dark-bg-page-list); color: #d1d1d1; }
+body:not(.theme-light) .board-table-custom td:first-child, body:not(.theme-light) .board-table-custom td:nth-child(3), body:not(.theme-light) .board-table-custom td:nth-child(4), body:not(.theme-light) .board-table-custom td:nth-child(5), body:not(.theme-light) .board-table-custom td:nth-child(6) { color: #9e9e9e; }
+.board-table-custom tbody tr:last-child td { border-bottom: none; }
+.board-table-custom tbody tr:hover td { background-color: #f9fafb; }
+body:not(.theme-light) .board-table-custom tbody tr:hover td { background-color: #252525; }
+.board-table-custom .notice-row td { background-color: #f3e5f5; color: #5d3578; font-weight: 500; }
+body:not(.theme-light) .board-table-custom .notice-row td { background-color: #31243f; color: #d1c4e9; }
+.board-table-custom .notice-row td:first-child { color: #8e44ad; }
+body:not(.theme-light) .board-table-custom .notice-row td:first-child { color: #ede7f6; }
+.board-table-custom .notice-row .title-cell a { color: #6a1b9a; }
+body:not(.theme-light) .board-table-custom .notice-row .title-cell a { color: #e6ceff; }
+
+/* 게시물 제목 셀 스타일 수정 */
+.title-cell {
+    text-align: left;
+    padding-left: 15px; /* td 셀 자체의 왼쪽 여백 */
+    display: flex;
+    align-items: center;
+    overflow: hidden; 
+}
+/* 게시물 제목 링크 */
+.post-title-link {
+    text-decoration: none;
+    font-weight: 400; 
+
+    flex-grow: 1; 
+    min-width: 0; 
+    
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+}
+
+body.theme-light .post-title-link { color: #1E3A8A; } /* 일반-라이트 */
+body:not(.theme-light) .post-title-link { color: #e8e8e8; } /* 일반-다크 */
+body.theme-light .notice-row .title-cell a.post-title-link { color: #6a1b9a; } /* 공지-라이트 */
+body:not(.theme-light) .notice-row .title-cell a.post-title-link { color: #e6ceff; } /* 공지-다크 */
+
+.post-title-link:hover {
+    text-decoration: underline;
+}
+
+body.theme-light .post-title-link:hover {
+    color: #0d1f59;
+}
+
+body:not(.theme-light) .post-title-link:hover {
+    color: #ffffff;
+}
+
+body.theme-light .notice-row .title-cell a.post-title-link:hover { color: #4a148c; }
+body:not(.theme-light) .notice-row .title-cell a.post-title-link:hover { color: #f3e5f5; }
+
+/* 댓글 수 뱃지 */
+.comment-count-badge {
+    font-size: 0.8em;
+    font-weight: 500;
+    color: #4caf50; 
+    flex-shrink: 0; 
+    white-space: nowrap; 
+    margin-left: 8px; 
+}
+body:not(.theme-light) .comment-count-badge {
+    color: #a5d6a7; 
+}
+
+/* ★★★ 공지사항 제목의 왼쪽 마진 (카테고리 영역만큼 공간 확보) ★★★ */
+.notice-row .title-cell .post-title-link {
+    /* .post-category-display-wrapper가 없을 때, 해당 영역의 width + margin-right 만큼 왼쪽 여백 */
+    margin-left: calc(var(--category-fixed-width) + var(--category-title-gap)); 
+}
+
+/* ★★★ 카테고리가 없는 일반 게시물 제목의 왼쪽 마진 (카테고리 영역만큼 공간 확보) ★★★ */
+.no-category-post .post-title-link {
+    /* .post-category-display-wrapper가 없을 때, 해당 영역의 width + margin-right 만큼 왼쪽 여백 */
+    margin-left: calc(var(--category-fixed-width) + var(--category-title-gap));
+}
+
+
+/* --- 게시물 목록의 카테고리 드롭다운 스타일 --- */
+/* 게시물 목록의 카테고리 표시 래퍼 */
+.post-category-display-wrapper {
+    display: inline-flex; /* 내부 요소(태그, "외 N개", 아이콘)를 한 줄에 정렬 */
+    align-items: center;  /* 수직 중앙 정렬 */
+    gap: 4px; /* 요소들 사이의 간격 */
+}
+.post-category-tag, 
+.post-category-more-count {
+    white-space: nowrap; /* 내용이 길어져도 줄바꿈 방지 */
+}
+
+.post-title-cell a.post-title-link {
+    display: inline; /* 기본값이나 명시 */
+    margin-right: 5px; /* 제목과 댓글 수 사이 간격 */
+}
+
+/* 카테고리 태그 내부의 텍스트(실제 카테고리명, "외 N개")가 넘칠 때 */
+/* 말줄임표를 보이게 하려면, 이 요소들이 너비를 가져야 합니다. */
+/* 현재는 .post-category-display-wrapper 에서 overflow:hidden 으로 제어합니다. */
+.post-category-display-wrapper .post-category-tag,
+.post-category-display-wrapper .post-category-more-count {
+    /* 예시: 필요하다면 이 요소들에도 text-overflow 적용 가능 */
+    display: inline-block;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* "외 N개" 텍스트 */
+.post-category-display-wrapper .post-category-more-count {
+    font-size: 0.8em;
+    color: var(--text-main-list); /* 일반 텍스트 색상 */
+    margin-right: 3px; 
+    flex-shrink: 0; 
+}
+body:not(.theme-light) .post-category-display-wrapper .post-category-more-count {
+    color: var(--dark-text-main-list);
+}
+
+/* 드롭다운 화살표 아이콘 */
+.post-category-display-wrapper .dropdown-arrow-icon {
+    flex-shrink: 0; /* 줄어들지 않도록 */
+    fill: currentColor;
+    transition: transform 0.2s ease-in-out;
+}
+
+/* 카테고리 토글 버튼 자체 (내부의 텍스트+아이콘) */
+.post-category-list-dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    width: 100%; 
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow: ellipsis; 
+    padding: 2px 4px; 
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    justify-content: space-between; 
+}
+/* body:not(.theme-light) .post-category-list-dropdown-toggle {
+    color: var(--dark-text-main-list);
+} */
+
+/* 카테고리 태그 ([카테고리명]) */
+.post-category-display-wrapper .post-category-tag {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.85em;
+    color: var(--text-main-list); /* 일반 태그 색상 */
+    border: 1px solid var(--line-sub-list);
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-right: 4px; 
+    /* display: inline-block; /* 필요시 */
+    /* max-width: 120px; /* 예시: 태그 자체의 최대 너비, 부모 너비 내에서 조절 */
+}
+body:not(.theme-light) .post-category-display-wrapper .post-category-tag {
+    color: var(--dark-text-main-list);
+    border-color: var(--dark-line-sub-list);
+}
+
+.post-category-list-dropdown-toggle:hover,
+.post-category-list-dropdown-toggle:focus { 
+    background-color: var(--category-item-hover-bg); 
+    outline: none; 
+    box-shadow: 0 0 0 2px rgba(var(--category-item-active-bg-rgb, 50, 148, 228), 0.25); 
+}
+body:not(.theme-light) .post-category-list-dropdown-toggle:hover,
+body:not(.theme-light) .post-category-list-dropdown-toggle:focus {
+    background-color: var(--dark-category-item-hover-bg);
+    box-shadow: 0 0 0 2px rgba(var(--dark-category-item-active-bg-rgb, 50, 148, 228), 0.35);
+}
+
+
+.post-category-tag { /* 목록에 표시되는 기본 카테고리 태그 */
+    font-size: 0.85em; /* 기존과 동일 또는 약간 조정 */
+    color: var(--text-main-list); /* 일반 텍스트 색상 */
+    /* background-color, padding 등은 필요시 추가 */
+    border: 1px solid var(--line-sub-list);
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-right: 4px; /* "외 N개"와의 간격 */
+}
+body:not(.theme-light) .post-category-tag {
+    color: var(--dark-text-main-list);
+    border-color: var(--dark-line-sub-list);
+}
+
+.post-category-more-count {
+    font-size: 0.8em;
+    color: var(--text-main-list);
+    margin-right: 3px; /* 화살표 아이콘과의 간격 */
+}
+body:not(.theme-light) .post-category-more-count {
+    color: var(--dark-text-main-list);
+}
+
+.dropdown-arrow-icon {
+    transition: transform 0.2s ease-in-out;
+    fill: currentColor; /* 토글러의 텍스트 색상을 따름 */
+}
+
+.post-category-dropdown-content {
+    display: none; 
+    /* position: absolute; JavaScript에서 body로 옮긴 후 absolute로 설정 */
+    /* top, left 등은 JavaScript에서 동적으로 설정 */
+    background-color: var(--list-category-dropdown-bg);
+    min-width: 200px; 
+    max-width: 300px; 
+    border: 1px solid var(--list-category-dropdown-border);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 1050; /* body 직속이므로 z-index를 더 높게 설정 가능 (다른 모달 등 고려) */
+    max-height: 200px; 
+    overflow-y: auto; 
+}
+body:not(.theme-light) .post-category-dropdown-content {
+    background-color: var(--dark-list-category-dropdown-bg);
+    border-color: var(--dark-list-category-dropdown-border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.post-category-dropdown-content ul {
+    list-style: none;
+    padding: 5px 0;
+    margin: 0;
+}
+.post-category-dropdown-content li {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    color: var(--list-category-dropdown-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+body:not(.theme-light) .post-category-dropdown-content li {
+    color: var(--dark-list-category-dropdown-text);
+}
+.post-category-dropdown-content li:hover {
+    background-color: var(--list-category-dropdown-item-hover-bg);
+}
+body:not(.theme-light) .post-category-dropdown-content li:hover {
+    background-color: var(--dark-list-category-dropdown-item-hover-bg);
+}
+
+
+/* --- 페이지네이션 (이전 답변과 동일) --- */
+.pagination-wrapper { margin-top: 35px; }
+.pagination .page-link { background-color: transparent; border: 1px solid #e5e7eb; margin: 0 3px; border-radius: 0.3rem; padding: 0.45rem 0.85rem; font-size: 0.875rem; transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out; color: #6B7280; cursor: pointer; }
+.pagination .page-link:hover { background-color: #f3f4f6; color: #4A5568; border-color: #d1d5db; }
+.pagination .page-item.active .page-link { z-index: 3; color: #fff; background-color: #6d28d9; border-color: #6d28d9; }
+.pagination .page-item.disabled .page-link { color: #919397; background-color: transparent; border-color: #919397; }
+body:not(.theme-light) .pagination .page-link { border-color: #4b5563; color: #9ca3af; }
+body:not(.theme-light) .pagination .page-link:hover { background-color: #374151; color: #e5e7eb; border-color: #6b7280; }
+body:not(.theme-light) .pagination .page-item.active .page-link { background-color: #7e57c2; border-color: #7e57c2; }
+body:not(.theme-light) .pagination .page-item.disabled .page-link { color: #6c7d99; border-color: #6c7d99; }
+
+
+/* --- 반응형 스타일 --- */
+
+/* 테이블 가로 스크롤을 위한 래퍼 */
+.table-responsive-wrapper {
+    overflow-x: auto; /* 항상 auto 또는 scroll로 설정 */
+    width: 100%;
+    /* border: 1px dashed red; */ /* 디버깅용: 래퍼 영역 확인 */
+}
+
+/* 기본적으로 테이블이 내용에 따라 너비를 가지되, 특정 너비 이하로 줄어들면 가로 스크롤이 보이도록 min-width 설정 */
+.board-table-custom {
+    min-width: 700px; /* 데스크톱 기준 최소 너비 (모든 열이 보일 때). 실제 콘텐츠에 맞게 조절. */
+                     /* 이 값보다 화면(또는 래퍼)이 좁아지면 가로 스크롤이 나타납니다. */
+}
+
+
+/* 태블릿 가로 모드 및 유사 크기 (992px 이하) */
+@media (max-width: 992px) {
+    :root {
+        --category-fixed-width: 150px; /* 카테고리 열 너비 관련 변수 조정 */
+    }
+
+    .board-container {
+        padding: 25px 15px; /* 컨테이너 내부 여백 줄이기 */
+    }
+
+    .board-main-title {
+        font-size: 1.8rem; /* 메인 타이틀 크기 줄이기 */
+    }
+
+    .category-selection-area-wrapper-list {
+        padding: 15px; /* 카테고리 필터 영역 패딩 줄이기 */
+    }
+
+    /* 검색 컨트롤의 글쓰기 버튼 */
+    .btn-primary.btn-write-post {
+        padding: 0.4rem 0.8rem; /* 버튼 패딩 줄이기 */
+        font-size: 0.8rem;    /* 버튼 폰트 크기 줄이기 */
+    }
+    /* 글쓰기 버튼의 아이콘과 텍스트 간격 (필요시 조정) */
+    /* .btn-primary.btn-write-post img { margin-right: 4px; } */
+
+    .board-table-custom {
+        min-width: 700px; /* '추천' 열 제외 후 테이블 최소 너비 재조정 */
+    }
+
+    /* 카테고리 드롭다운 내의 태그 표시 너비 조정 */
+    .post-category-display-wrapper .post-category-tag,
+    .post-category-display-wrapper .post-category-more-count {
+        max-width: 80px; /* 카테고리명, "외 N개" 텍스트 최대 너비 */
+    }
+
+    /* 검색폼 요소 크기 조정 */
+    .form-select.search-type-select {
+        flex-basis: 120px; /* 검색 유형 선택 너비 */
+        font-size: 0.8rem;
+    }
+    .form-control.search-input {
+        font-size: 0.8rem;
+    }
+    .btn.search-button {
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+/* 작은 태블릿 세로 모드 및 큰 모바일 (768px 이하) */
+@media (max-width: 768px) {
+    :root {
+        --category-fixed-width: 120px;
+    }
+
+    .board-page-wrapper {
+        padding-top: 20px;
+        padding-bottom: 40px;
+    }
+    .board-container {
+        padding: 20px 10px;
+    }
+    .board-main-title {
+        font-size: 1.6rem;
+    }
+    hr.title-underline {
+        width: 60px;
+        margin-bottom: 20px;
+    }
+
+    /* 카테고리 필터 패널 (Bootstrap col-md-4가 이 구간에서 100% 너비로 세로 정렬됨) */
+    /* .row 사용으로 인해 Bootstrap이 처리하므로, 내부 패널 간 스타일만 조정 */
+    .category-panel-container .category-panel-col {
+        padding-right: 0;
+        padding-left: 0;
+    }
+    .category-panel-container .category-panel-col:not(:last-child) {
+        border-right: none; /* 세로 정렬 시 오른쪽 테두리 불필요 */
+        margin-bottom: 15px;
+        padding-bottom: 15px; /* 패널 간 구분을 위해 하단 여백 및 테두리 추가 */
+        border-bottom: 1px solid var(--category-panel-border);
+    }
+    body:not(.theme-light) .category-panel-container .category-panel-col:not(:last-child) {
+        border-bottom-color: var(--dark-category-panel-border);
+    }
+    .category-panel-container .category-panel-col:last-child {
+        border-bottom: none;
+    }
+    #categoryTreePanelList { /* .row 때문에 생기는 좌우 음수 마진 상쇄 */
+        margin-left: 0;
+        margin-right: 0;
+    }
+     #categoryTreePanelList > .category-panel-col { /* .row의 직계 자식 .col-md-4 패딩 제거 */
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* 검색 컨트롤: 검색폼과 글쓰기 버튼 세로 정렬 */
+    .board-controls-wrapper {
+        flex-direction: column;
+        align-items: stretch; /* 자식 요소들 너비를 부모에 맞춤 */
+    }
+    .search-form {
+        display: flex; /* Flexbox 컨테이너로 설정 */
+        align-items: center; /* 수직 중앙 정렬 */
+        gap: 8px; /* 요소들 사이의 간격 */
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    /* 검색폼 내부 요소들 세로 정렬 또는 너비 100% */
+    .form-select.search-type-select {
+        flex-basis: 120px; /* 적절한 기본 너비 설정 */
+        flex-shrink: 0; /* 줄어들지 않도록 */
+        /* margin-bottom: 0; /* 더 이상 필요 없음 */
+    }
+    .keyword-search-box { /* 검색어 입력창 감싸는 div */
+        flex-grow: 1; /* 남은 공간 모두 차지 */
+    }
+    .btn.search-button {
+        flex-shrink: 0; /* 버튼 크기 유지 */
+    }
+    .btn-primary.btn-write-post {
+        width: 100%; /* 글쓰기 버튼 너비 100% */
+        text-align: center;
+    }
+
+    .board-table-custom {
+        min-width: 680px; /* 추가 열 제외 후 테이블 최소 너비 재조정 */
+    }
+
+    .post-category-display-wrapper .post-category-tag,
+    .post-category-display-wrapper .post-category-more-count {
+        max-width: 60px;
+    }
+
+    /* 페이지네이션 버튼 크기, 간격 줄이기 */
+    .pagination .page-link {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* 모바일 (576px 이하) */
+@media (max-width: 576px) {
+    :root {
+        --category-fixed-width: 100px; /* 카테고리 열 너비 더 줄임, 또는 auto로 변경 고려 */
+        /* --category-title-gap: 4px; */
+    }
+
+    .board-page-wrapper {
+        padding-top: 15px;
+        padding-bottom: 30px;
+    }
+    .board-container {
+        padding: 15px 5px; /* 모바일에서는 컨테이너 좌우 여백 최소화 */
+    }
+    .board-main-title {
+        font-size: 1.4rem;
+    }
+    hr.title-underline {
+        width: 50px;
+    }
+
+    /* 카테고리 필터 UI 전체적으로 크기 축소 */
+    .category-selection-area-wrapper-list {
+        padding: 10px;
+    }
+    .category-selection-area-wrapper-list > .form-label {
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+    }
+    #selected-category-display-list .selected-category-tag {
+        font-size: 0.75rem;
+        padding: .3em .6em;
+    }
+    .category-search-box input[type="text"].form-control {
+        font-size: 0.85rem;
+    }
+    .category-panel-container .category-list-inline {
+        max-height: 150px; /* 카테고리 목록 스크롤 높이 줄이기 */
+    }
+    .category-panel-container .category-list-inline .category-item-inline {
+        padding: .5rem .6rem;
+        font-size: 0.8rem;
+    }
+
+    /* 검색폼 내부 요소 간격 등 */
+    .search-form {
+        gap: 8px;
+    }
+
+    .board-table-custom {
+        font-size: 0.8rem; /* 테이블 전체 폰트 크기 줄이기 */
+        min-width: 520px; /* 보이는 열에 맞춰 최소 너비 조정 (예: 카테고리, 제목만 남는다면 더 작게) */
+                          /* 번호까지 숨기면 min-width: 250px; 정도로 조정 가능 */
+    }
+    
+    /* 카테고리 표시 너비 및 폰트 극단적으로 줄이기 */
+    .post-category-display-wrapper .post-category-tag {
+        max-width: 50px; /* 매우 작게, 넘치면 말줄임표 */
+        font-size: 0.7em;
+        padding: 1px 3px;
+    }
+    .post-category-display-wrapper .post-category-more-count {
+        max-width: 30px;
+        font-size: 0.7em;
+    }
+    .post-category-display-wrapper .dropdown-arrow-icon {
+        width: 8px; height: 8px; /* 아이콘 크기 */
+    }
+
+    /* 페이지네이션 버튼 크기, 간격 더 줄이기 */
+    .pagination .page-link {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.75rem;
+        margin: 0 2px;
+    }
+    .pagination-wrapper {
+        margin-top: 25px;
+    }
+    /* 페이지네이션에서 숫자 페이지 숨기기 (CSS만으로 한계, JS 동반 필요할 수 있음) */
+    /* 예시: 양 끝과 활성 페이지만 남기기 (복잡도 높음) */
+    /*
+    .pagination .page-item:not(.active) {
+        display: none;
+    }
+    .pagination .page-item:first-child, 
+    .pagination .page-item:last-child,
+    .pagination .page-item.disabled:nth-last-child(2), 
+    .pagination .page-item.disabled:nth-child(2),
+    .pagination .page-item.active {
+        display: list-item;
+    }
+    */
+>>>>>>> origin/ldy
 }

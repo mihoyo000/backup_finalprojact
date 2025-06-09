@@ -1,0 +1,68 @@
+{# flo/templates/flo/study_post/_study_post_list_items.html #}
+{% load custom_filters %} {# 필요한 커스텀 필터가 있다면 로드 #}
+
+{% for post in posts %} {# 'posts'는 study_post_list 뷰에서 전달된 페이지네이션된 객체 #}
+<tr {% if post.is_notice %}class="notice-row"{% endif %}>
+    <td>{% if post.is_notice %}<strong>공지</strong>{% else %}{{ post.id }}{% endif %}</td>
+
+    {# 카테고리 셀: 공지사항일 경우 빈 td, 일반 게시물일 경우 카테고리 표시 #}
+    <td>
+        {% if not post.is_notice and post.categories.all %}
+        <span class="post-category-display-wrapper">
+            <span class="post-category-list-dropdown-toggle"
+                        id="post-cat-toggle-{{ post.id }}"
+                        data-target-dropdown="#post-cat-content-{{ post.id }}"
+                        tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
+                <span class="post-category-tag">
+                    [{{ post.categories.all.0.name }}]
+                </span>
+                {% if post.categories.all|length > 1 %}
+                    <span class="post-category-more-count">외 {{ post.categories.all|length|add:"-1" }}개</span>
+                {% endif %}
+                <svg class="dropdown-arrow-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </span>
+            {% if post.categories.all|length > 0 %}
+            <div class="post-category-dropdown-content" id="post-cat-content-{{ post.id }}">
+                <ul>
+                    {% for category in post.categories.all %}
+                        <li data-id="{{ category.id }}"
+                            data-name="{{ category.name }}"
+                            data-slug="{{ category.slug }}"
+                            data-path="{{ category.get_full_path_name }}">{{ category.get_full_path_name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </span>
+        {% endif %}
+    </td>
+
+    {# 제목 셀: 클래스명 'post-title-cell' 사용 #}
+    <td class="post-title-cell">
+        <a href="{{ post.get_absolute_url }}" class="post-title-link" title="{{ post.title }}">
+            {% if post.is_notice %}
+                {{ post.title }}
+            {% else %}
+                {{ post.title|truncate_chars:30 }}
+            {% endif %}
+        </a>
+        {% if not post.is_notice and post.annotated_comment_count > 0 %} {# views.py에서 annotate한 필드 사용 #}
+            <span class="comment-count-badge">[{{ post.annotated_comment_count }}]</span>
+        {% endif %}
+    </td>
+
+    <td>{{ post.author.profile.get_display_name }}</td>
+    <td>{{ post.created_at|date:"Y-m-d" }}</td>
+    <td>{{ post.views }}</td>
+    <td>{{ post.annotated_total_likes }}</td> {# views.py에서 annotate한 필드 사용 #}
+</tr>
+{% empty %}
+<tr>
+    {# 이 colspan 값은 JavaScript에서 동적으로 변경될 수 있도록 준비 #}
+    {# 또는 study_post_list.css의 @media 규칙에 따라 th 개수를 세어 고정값 부여 가능 #}
+    {# 여기서는 최대 7개로 가정. JS에서 화면 크기에 따라 colspan 조정하는 로직이 있다면 그 값을 따름. #}
+    <td colspan="7" class="text-center py-4">게시글이 없습니다.</td>
+</tr>
+{% endfor %}
