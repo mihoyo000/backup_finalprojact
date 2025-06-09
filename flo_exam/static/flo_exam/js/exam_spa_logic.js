@@ -71,7 +71,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="card-header"><strong>문제 ${q.question_number}.</strong></div>
                         <div class="card-body">
                             <p class="card-text">${q.question_text ? q.question_text.replace(/\n/g, '<br>') : '문제 내용 없음'}</p>`;
-                
+
+                 if (q.image_url) { // 문제 데이터에 image_url이 있다면
+                    console.log(`문제 ${q.question_number}: 이미지 URL 발견 - ${q.image_url}`);
+                    questionHtml += `
+                        <div class="problem-image-container my-3 text-center"> {/* 위아래 간격 my-3 추가 */}
+                            <img src="${escapeHtml(q.image_url)}" 
+                                alt="문제 ${q.question_number} 관련 이미지" 
+                                class="img-fluid rounded shadow-sm" 
+                                style="max-height: 256px; max-width: 100%; object-fit: contain;"> 
+                                {/* max-width: 100% 와 object-fit: contain 추가 */}
+                        </div>`;
+                }
+
                 const isMultipleChoice = q.question_type === "multiple_choice";
                 const hasOptions = q.options && Array.isArray(q.options) && q.options.length > 0;
                 
