@@ -142,37 +142,34 @@ def generate_questions_via_openai(text_from_pdf, num_questions_to_generate, requ
     ai_question_type_description = "4지선다 객관식" if requested_question_type == "객관식" else "단답형"
 
     prompt_instructions = f"""
-    당신은 제공된 PDF 텍스트 내용을 바탕으로 학습용 연습 문제를 생성하는 AI 어시스턴트입니다.
-    PDF 텍스트에는 "--- Page X Content Start/End ---" 형식으로 페이지 정보가 포함되어 있습니다.
+    당신은 제공된 PDF 텍스트 내용을 바탕으로 **학습용 연습 문제를 한국어(Korean)로 생성**하는 전문 AI 어시스턴트입니다.
+    PDF 텍스트에는 각 페이지 내용 시작과 끝에 "--- Page X Content Start ---" 와 "--- Page X Content End ---" 형식이 포함되어 페이지를 구분합니다.
     생성할 문제의 조건은 다음과 같습니다:
     - 주제: {subject_topic}
     - 문제 유형: {ai_question_type_description}
     - 문항 수: 정확히 {num_questions_to_generate}개
+    - **출력 언어: 모든 질문, 선택지, 정답, 해설은 기본적으로 한국어로 작성되어야 합니다.**
+      단, PDF 원문에 포함된 **영어 고유명사, 기술 용어, 또는 직접 인용이 필요한 외국어 구문은 번역하지 않고 원문 그대로 사용**해주세요. (예: 'CSS', 'JavaScript', 'Algorithm', '캡슐화(Encapsulation)')
 
     응답은 "quiz" 키를 가진 JSON 객체여야 하며, 값은 문제 객체들의 리스트입니다.
-    각 문제 객체는 다음 키를 포함해야 합니다:
+    각 문제 객체는 다음 키를 포함해야 합니다 (모든 텍스트 값은 한국어를 기본으로 하되, 필요한 경우 원문 외국어 포함):
     - "question_number": (Integer) 문제 번호 (1부터 시작).
-    - "question_text": (String) 문제 내용.
+    - "question_text": (String) 문제 내용 (한국어, 필요시 원문 외국어 포함). 수학 수식은 MathML을 사용하여 표현해주세요. 텍스트 스타일링이 필요하면 ReportLab Paragraph가 지원하는 다음 태그만 사용하세요: <b></b>, <i></i>, <sup></sup>, <sub></sub>, <font color="..."></font>, <a href="..."></a>. & < > 문자를 내용으로 표시하려면 & < > 로 작성해주세요. 줄바꿈은 \\n 사용.
     - "question_type": (String) "multiple_choice" 또는 "short_answer".
-    - "options": (Array of Strings) 객관식일 경우 4개의 순수 텍스트 선택지. 단답형은 null. HTML 태그/주석 금지.
-    - "correct_answer": (String) 정답 텍스트.
-    - "explanation": (String) 해설.
+    - "options": (Array of Strings) 객관식일 경우 4개의 한국어 순수 텍스트 선택지 (필요시 원문 외국어 포함). 단답형은 null. HTML 태그/주석 금지. 각 선택지 텍스트도 수학 수식 포함 시 MathML 사용. 각 선택지 텍스트도 위와 동일한 규칙 적용.
+    - "correct_answer": (String) 정답 텍스트 (한국어, 필요시 원문 외국어 포함). 위와 동일한 규칙 적용.
+    - "explanation": (String) 해설 (한국어, 필요시 원문 외국어 포함). 위와 동일한 규칙 적용.
     - "pdf_image_reference_hint": (Object, Optional) 
-        만약 이 문제가 **제공된 PDF 텍스트 내의 특정 이미지와 직접적으로 관련**되어야 한다면, 다음 정보를 포함하는 JSON 객체를 여기에 제공해주세요:
-        {{
-            "page_number": (Integer) 해당 이미지가 위치한 PDF 페이지 번호 (텍스트의 페이지 마커 기준).
-            "image_description": (String) 해당 이미지를 식별할 수 있는 간결하고 핵심적인 영어 설명 (예: "diagram of photosynthesis", "portrait of King Sejong", "map of Goryeo Dynasty").
-        }}
-        이 힌트는 서버에서 PDF에서 추출된 실제 이미지와 문제를 연결하는 데 사용됩니다.
-        관련 이미지가 없다면 이 필드 값으로 **반드시 null**을 제공해주세요.
-        이 필드는 전체 문제 중 이미지를 활용하는 것이 교육적으로 매우 효과적이라고 판단되는 **약 1~2개의 문제에 대해서만** 제공해주세요. (모든 문제에 제공 X)
+        만약 이 문제가 제공된 PDF 텍스트 내의 특정 이미지와 직접적으로 관련되어야 한다면, 다음 정보를 포함하는 JSON 객체를 여기에 제공해주세요:
+        {{"page_number": (Integer) 해당 이미지가 위치한 PDF 페이지 번호, "image_description": (String) 해당 이미지를 식별할 수 있는 간결하고 핵심적인 **영어(English)** 설명.}}
+        이 필드는 전체 문제 중 이미지를 활용하는 것이 교육적으로 매우 효과적이라고 판단되는 약 1~2개의 문제에 대해서만 제공해주세요. 관련 이미지가 없다면 이 필드 값으로 반드시 null을 제공해주세요.
 
-    제공된 PDF 텍스트 내용 (페이지 정보 포함):
+    제공된 PDF 텍스트 내용 (페이지 정보 포함 가능):
     ---
     {text_from_pdf[:4000]} 
     ---
-    위 내용을 참고하여 문제를 출제해주세요. "pdf_image_reference_hint"는 문제와 매우 밀접한 관련이 있는 PDF 내 이미지가 있을 경우에만 사용해주세요.
-    오직 지정된 JSON 형식으로만 응답하고, 다른 설명은 절대 추가하지 마세요.
+    위 내용을 참고하여 문제를 출제해주세요. **모든 생성되는 텍스트(문제, 선택지, 정답, 해설)는 한국어를 기본으로 하되, PDF 원문의 고유명사나 기술 용어 등은 번역하지 않고 그대로 사용해야 합니다.**
+    오직 지정된 JSON 형식으로만 응답하고, 다른 설명은 절대 추가하지 마세요. 모든 텍스트 필드(question_text, options, correct_answer, explanation)에서 스타일 표현이 필요할 경우, ReportLab Paragraph가 지원하는 태그(<b>, <i>, <sup>, <sub>, <font>, <a href>)만을 사용하고, 그 외의 HTML 태그나 주석은 절대 사용하지 마세요. & < > 문자는 반드시 & < > 형태로 인코딩해주세요.
     """
 
     try:
@@ -180,7 +177,7 @@ def generate_questions_via_openai(text_from_pdf, num_questions_to_generate, requ
         api_response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are an AI assistant that generates educational quizzes. Respond strictly in the specified JSON format with a top-level 'quiz' key. If a question refers to an image in the provided PDF text (which includes page markers), provide a 'pdf_image_reference_hint' object with 'page_number' and 'image_description' (in English) for a few highly relevant questions only. Otherwise, the hint should be null."},
+                {"role": "system", "content": "You are an AI assistant that generates educational quizzes primarily in Korean, based on provided text and instructions. Preserve original foreign terms or proper nouns from the text if necessary. Respond strictly in the specified JSON format..."},
                 {"role": "user", "content": prompt_instructions}
             ],
             temperature=0.7,

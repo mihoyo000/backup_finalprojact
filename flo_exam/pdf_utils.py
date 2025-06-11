@@ -4,7 +4,6 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.conf import settings # 프로젝트 설정을 가져오기 위해
 import os # 파일 경로 작업을 위해
-import html
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -53,13 +52,20 @@ except Exception as e:
 # -------------------------
 
 def escape_text_for_reportlab(text_content):
-    """ReportLab Paragraph에 사용될 텍스트를 이스케이프하고 줄바꿈 처리합니다."""
+    """
+    ReportLab Paragraph에 사용될 텍스트를 준비합니다.
+    줄바꿈은 <br/>로 변경하고, & 문자는 &로 변경합니다.
+    다른 <, > 문자는 ReportLab의 태그 파서가 처리하도록 그대로 둡니다.
+    AI는 ReportLab이 지원하는 태그(<b>, <i>, <sup>, <sub>, <font>, <a href>)만 사용해야 합니다.
+    """
     if text_content is None:
         return ""
-    # 1. HTML 기본 이스케이프 (&, <, >)
-    escaped_text = html.escape(str(text_content))
-    # 2. ReportLab Paragraph를 위한 줄바꿈 처리
-    return escaped_text.replace('\n', '<br/>')
+    text_to_process = str(text_content)
+    # 1. '&'는 HTML 엔티티 '&'로 변경 (다른 엔티티와의 충돌 방지)
+    text_to_process = text_to_process.replace("&", "&")
+    # 2. '<'와 '>'는 ReportLab의 태그 파싱을 위해 그대로 둡니다.
+    # 3. 줄바꿈 문자를 <br/> 태그로 변경
+    return text_to_process.replace('\n', '<br/>')
 
 
 def build_pdf_story(title_text, questions_data, include_answers=False, frame_width=None, frame_height=None):

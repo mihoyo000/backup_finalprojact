@@ -60,3 +60,8 @@ class PDFUploadForm(forms.ModelForm):
 
         if self.instance and self.instance.pk and self.instance.subject_area:
             self.initial['subject_area'] = self.instance.subject_area
+
+
+#--------------------------삭제예정 login form-----------------------------------------------------------------------------------------
+class TempLoginForm(forms.Form):
+    user_id = forms.IntegerField(label="임시 로그인할 사용자 ID", required=True, min_value=1)
