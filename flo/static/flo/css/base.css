@@ -442,6 +442,12 @@ body.theme-dark #scroll-to-top {
 #scroll-to-top .arrow-up { display: block; font-size: 12px; margin-bottom: 1px; }
 
 
+
+/* --- exam_spa_styles.css에서 안되는거 가져와봄 --- */
+body.theme-dark .loading-text {
+    color: white;
+}
+
 /* --- 반응형 스타일 --- */
 
 /* 태블릿 및 모바일 (991px 이하) */

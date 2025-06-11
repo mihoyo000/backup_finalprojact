@@ -8,18 +8,58 @@
                 </a>
             </div>
 
-            <nav class="main-nav">
+            {# ▼▼▼ 추가 ▼▼▼ (모바일용 햄버거 메뉴 토글 버튼) #}
+            <button class="navbar-toggler" type="button" aria-label="Toggle navigation">
+                <span class="toggler-icon-bar"></span>
+                <span class="toggler-icon-bar"></span>
+                <span class="toggler-icon-bar"></span>
+            </button>
+            {# ▲▲▲ 추가 ▲▲▲ #}
+
+            <nav class="main-nav" id="mainNav">
+                {% if user.is_authenticated %}
+                {# 모바일 뷰에서만 보일 프로필 섹션 (햄버거 메뉴 상단) #}
+                <div class="nav-mobile-profile-section">
+                    <a href="#" class="nav-user-info-toggle" data-bs-toggle="collapse" data-bs-target="#navMobileUserMenu" aria-expanded="false" aria-controls="navMobileUserMenu">
+                        <div class="profile-image-wrapper">
+                            <img src="{{ user.profile.get_profile_image_url }}"
+                                alt="Profile"
+                                class="{% if not user.profile.has_custom_profile_image %}default-avatar{% endif %}"
+                                data-has-custom-image="{{ user.profile.has_custom_profile_image|yesno:'true,false' }}">
+                        </div>
+                        <span class="user-display-name">{{ user.profile.get_display_name }}님</span>
+                        <span class="arrow-indicator">▾</span>
+                    </a>
+                    <div class="collapse user-dropdown-menu-mobile" id="navMobileUserMenu">
+                        <ul class="list-unstyled">
+                            <li><a class="dropdown-item" href="#">{% translate "마이페이지" %}</a></li>
+                            <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'flo:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">{% translate "로그아웃" %}</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
                 <ul class="main-menu">
                     <li><a href="{% url 'flo_exam:upload_page' %}">{% translate "Flo와 문제 풀기" %}</a></li>
                     <li>
-                        <a href="#">{% translate "스터디" %}</a>
+                        {# ▼▼▼ 수정 ▼▼▼ (모바일 서브메뉴 토글 위해 href, data-bs-toggle, 화살표 추가) #}
+                        <a href="#" data-bs-toggle="submenu">{% translate "스터디" %} <span class="submenu-arrow">▾</span></a>
+                        {# ▲▲▲ 수정 ▲▲▲ #}
                         <ul class="sub-menu">
                             <li><a href="#">{% translate "스터디 게시판" %}</a></li>
                             <li><a href="#">{% translate "채팅" %}</a></li>
                         </ul>
                     </li>
                     <li>
-                        <a href="{% url 'flo:study_post_list' %}">{% translate "커뮤니티" %}</a>
+                        {# ▼▼▼ 수정 ▼▼▼ (모바일 서브메뉴 토글 위해 href, data-bs-toggle, 화살표 추가) #}
+                        <a href="{% url 'flo:study_post_list' %}" data-bs-toggle="submenu">{% translate "커뮤니티" %} <span class="submenu-arrow">▾</span></a>
+                            {# ▲▲▲ 수정 ▲▲▲ #}
                         <ul class="sub-menu">
                             <li><a href="{% url 'flo:study_post_list' %}">{% translate "학습 게시판" %}</a></li>
                             <li><a href="{% url 'flo:faq_list' %}">{% translate "FAQ" %}</a></li>
@@ -32,14 +72,26 @@
                 <div class="auth-links ms-auto"> {# ms-auto는 Bootstrap 5에서 오른쪽 정렬 #}
                     {% if user.is_authenticated %}
                         <div class="dropdown">
-                            <a href="#" class="nav-link" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span>{{ user.username }}님</span>
+                            {# START: 수정된 사용자 정보 표시 부분 #}
+                            <a href="#" class="user-dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="profile-image-wrapper">
+                                    <img src="{{ user.profile.get_profile_image_url }}"
+                                        alt="{{ user.profile.get_display_name }} Profile"
+                                        id="user-profile-image"
+                                        class="{% if not user.profile.has_custom_profile_image %}default-avatar{% endif %}"
+                                        data-has-custom-image="{{ user.profile.has_custom_profile_image|yesno:'true,false' }}">
+                                </div>
+                                {# ▼▼▼ 수정 ▼▼▼ (CSS 선택을 위해 클래스 추가) #}
+                                <span class="user-display-name">{{ user.profile.get_display_name }}님</span>
+                                {# ▲▲▲ 수정 ▲▲▲ #}
                             </a>
+                            {# END: 수정된 사용자 정보 표시 부분 #}
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li> {# 실제 계정 관리 페이지 URL로 변경 필요 #}
+                                {# 나중에 마이페이지, 계정 관리 링크 추가 #}
+                                <li><a class="dropdown-item" href="#">{% translate "마이페이지" %}</a></li>
+                                <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    {# 로그아웃은 POST 요청으로! #}
                                     <form id="logoutForm" method="post" action="{% url 'flo:logout' %}">
                                         {% csrf_token %}
                                         <button type="submit" class="dropdown-item">{% translate "로그아웃" %}</button>

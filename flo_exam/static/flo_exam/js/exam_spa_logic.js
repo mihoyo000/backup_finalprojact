@@ -75,12 +75,11 @@ document.addEventListener('DOMContentLoaded', function() {
                  if (q.image_url) { // 문제 데이터에 image_url이 있다면
                     console.log(`문제 ${q.question_number}: 이미지 URL 발견 - ${q.image_url}`);
                     questionHtml += `
-                        <div class="problem-image-container my-3 text-center"> {/* 위아래 간격 my-3 추가 */}
+                        <div class="problem-image-container my-3 text-center">
                             <img src="${escapeHtml(q.image_url)}" 
                                 alt="문제 ${q.question_number} 관련 이미지" 
                                 class="img-fluid rounded shadow-sm" 
                                 style="max-height: 256px; max-width: 100%; object-fit: contain;"> 
-                                {/* max-width: 100% 와 object-fit: contain 추가 */}
                         </div>`;
                 }
 
@@ -328,4 +327,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("exam_spa_logic.js: 초기화에 필요한 전역 변수(EXAM_DOCUMENT_ID, APP_URLS.processPdf 등)가 정의되지 않았습니다.");
         showErrorState("페이지를 초기화하는 데 필요한 정보가 부족합니다. 이전 페이지로 돌아가서 다시 시도해주세요.");
     }
+
+    
 });

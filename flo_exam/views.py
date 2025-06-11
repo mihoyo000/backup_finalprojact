@@ -10,7 +10,7 @@ from django.templatetags.static import static                          # {% stat
 # 현재 앱의 forms.py 와 models.py, ai_services.py 임포트
 from .forms import PDFUploadForm
 from .models import ExamDocument, GeneratedExam, GeneratedQuestion, UserExamSession, UserAnswer
-from .ai_services import extract_text_and_images_from_pdf, generate_questions_via_openai, generate_image_with_dalle
+from .ai_services import extract_text_and_images_from_pdf, generate_questions_via_openai
 from .pdf_utils import render_to_pdf_reportlab
 from django.utils.encoding import uri_to_iri, iri_to_uri
 from urllib.parse import quote
@@ -95,51 +95,37 @@ def ajax_process_pdf_view(request, exam_document_id):
     """
     exam_doc = get_object_or_404(ExamDocument, pk=exam_document_id)
     print(f"views.py (ajax_process_pdf_view): ExamDocument ID {exam_doc.id} ('{exam_doc.title}') 처리 시작")
-
-    # 이전에 생성된 동일한 ExamDocument에 대한 시험 데이터가 있다면 삭제 (항상 새로운 문제 세트 생성)
-    GeneratedExam.objects.filter(exam_document=exam_doc).delete() 
-    print(f"views.py: 이전 GeneratedExam 데이터 삭제 (ID: {exam_doc.id})")
+    GeneratedExam.objects.filter(exam_document=exam_doc).delete()
 
     try:
         pdf_path = exam_doc.pdf_file.path
-        print(f"views.py: PDF 파일 경로 - {pdf_path}")
-        
-        # 1. PDF에서 텍스트와 이미지 정보(페이지 번호, URL 등)를 함께 추출
-        pdf_text, extracted_images_info = extract_text_and_images_from_pdf(pdf_path, exam_doc.id)
+        pdf_text, extracted_pdf_images_info = extract_text_and_images_from_pdf(pdf_path, exam_doc.id) # 이미지 정보 받음
 
         if not pdf_text:
-            print(f"views.py: PDF에서 텍스트 추출 실패 (ID: {exam_doc.id})")
-            return JsonResponse({'status': 'error', 'message': 'PDF에서 텍스트를 추출할 수 없습니다. 파일 내용을 확인해주세요.'}, status=400)
-        print(f"views.py: PDF 텍스트 추출 완료. 추출된 이미지 수: {len(extracted_images_info)} (ID: {exam_doc.id})")
+            return JsonResponse({'status': 'error', 'message': 'PDF에서 텍스트를 추출할 수 없습니다.'}, status=400)
+        print(f"views.py: PDF 텍스트 추출 완료. 추출된 PDF 이미지 수: {len(extracted_pdf_images_info)}")
 
-        # 2. ChatCompletion API를 사용하여 텍스트 기반 문제 생성 (AI가 이미지 참조 힌트도 주도록 요청)
         questions_data_list_from_ai = generate_questions_via_openai(
-            text_from_pdf=pdf_text, # 페이지 번호 정보가 포함될 수 있는 텍스트
-            num_questions_to_generate=exam_doc.num_questions_requested, 
-            requested_question_type=exam_doc.question_type_requested, 
-            subject_topic=exam_doc.subject_area
+            pdf_text, exam_doc.num_questions_requested, 
+            exam_doc.question_type_requested, exam_doc.subject_area
         )
 
         if not questions_data_list_from_ai or not isinstance(questions_data_list_from_ai, list) or not questions_data_list_from_ai:
-            print(f"views.py: AI 문제 생성 실패 또는 응답 형식 오류 (ID: {exam_doc.id})")
-            return JsonResponse({'status': 'error', 'message': 'AI가 문제를 생성하지 못했거나 응답 형식이 올바르지 않습니다.'}, status=500)
-        print(f"views.py: AI 텍스트 문제 {len(questions_data_list_from_ai)}개 생성 완료 (ID: {exam_doc.id})")
+            return JsonResponse({'status': 'error', 'message': 'AI 문제 생성 실패 또는 형식 오류.'}, status=500)
+        print(f"views.py: AI 텍스트 문제 {len(questions_data_list_from_ai)}개 생성 완료.")
 
-        # 데이터베이스에 생성된 시험 및 문제 저장
         generated_exam_instance = GeneratedExam.objects.create(exam_document=exam_doc)
+        js_questions_data = []
         
-        js_questions_data = [] # JavaScript로 최종 전달할 문제 데이터 리스트
-        
-        # 추출된 PDF 이미지들을 한 번씩만 사용하기 위한 로직 (선택 사항)
-        # available_pdf_images = list(extracted_images_info) # 복사본 사용
-        # random.shuffle(available_pdf_images) # 순서를 섞어서 다양한 이미지가 선택되도록
+        # 이미지 배정 카운터 (최대 1~2개 문제에만 이미지 배정하기 위함)
+        assigned_image_count = 0
+        max_images_to_assign = random.randint(1, 2) # 한 시험당 최대 이미지 포함 문제 수
 
-        for index, q_data_item_from_ai in enumerate(questions_data_list_from_ai):
-            # GeneratedQuestion 모델 객체 생성 및 저장
+        for q_data_item_from_ai in questions_data_list_from_ai:
             question_instance = GeneratedQuestion.objects.create(
                 exam=generated_exam_instance,
-                question_number=q_data_item_from_ai.get('question_number', index + 1),
-                question_text=q_data_item_from_ai.get('question_text', '문제 내용 없음'),
+                question_number=q_data_item_from_ai.get('question_number', len(js_questions_data) + 1),
+                question_text=q_data_item_from_ai.get('question_text', '내용 없음'),
                 question_type=q_data_item_from_ai.get('question_type', 'unknown_type'),
                 option1=q_data_item_from_ai.get('options')[0] if q_data_item_from_ai.get('options') and isinstance(q_data_item_from_ai.get('options'), list) and len(q_data_item_from_ai.get('options')) > 0 else None,
                 option2=q_data_item_from_ai.get('options')[1] if q_data_item_from_ai.get('options') and isinstance(q_data_item_from_ai.get('options'), list) and len(q_data_item_from_ai.get('options')) > 1 else None,
@@ -148,52 +134,58 @@ def ajax_process_pdf_view(request, exam_document_id):
                 correct_answer=str(q_data_item_from_ai.get('correct_answer', '')),
                 explanation=q_data_item_from_ai.get('explanation', '')
             )
+            question_dict_for_js = question_instance.to_dict()
             
-            question_dict_for_js = question_instance.to_dict() # 모델의 to_dict() 사용
+            pdf_image_hint_obj = q_data_item_from_ai.get("pdf_image_reference_hint")
+            assigned_image_url = None
+
+            if assigned_image_count < max_images_to_assign and isinstance(pdf_image_hint_obj, dict) and extracted_pdf_images_info:
+                hint_page = pdf_image_hint_obj.get("page_number")
+                hint_desc_for_match = pdf_image_hint_obj.get("image_description", "").lower() # API 응답 키가 image_description이라고 가정
+
+                print(f"views.py: 문제 {question_instance.question_number} - AI PDF 이미지 힌트: page={hint_page}, desc='{hint_desc_for_match}'")
+
+                # 매칭 로직 시작
+                best_match_image = None
+                
+                # 1. 페이지 번호가 일치하는 이미지들 필터링
+                candidate_images_on_page = []
+                if hint_page:
+                    candidate_images_on_page = [img for img in extracted_pdf_images_info if img.get('page_number') == hint_page]
+                
+                if candidate_images_on_page: # 해당 페이지에 이미지가 있다면
+                    # 1-1. 설명도 일치하는 이미지 찾기 (간단한 포함 여부)
+                    if hint_desc_for_match:
+                        for img_info in candidate_images_on_page:
+                            if hint_desc_for_match in img_info.get('description',"").lower():
+                                best_match_image = img_info
+                                break 
+                    if not best_match_image: # 설명 매칭 안되면 해당 페이지 첫 이미지
+                        best_match_image = candidate_images_on_page[0]
+                elif hint_desc_for_match: # 페이지 힌트 없거나 해당 페이지에 이미지 없을때, 전체에서 설명으로만 매칭
+                    for img_info in extracted_pdf_images_info:
+                         if hint_desc_for_match in img_info.get('description',"").lower():
+                            best_match_image = img_info
+                            break
+                
+                if best_match_image:
+                    assigned_image_url = best_match_image.get('url')
+                    print(f"  PDF 이미지 매칭 성공: {assigned_image_url}")
+                    # extracted_pdf_images_info.remove(best_match_image) # 이 이미지는 더 이상 사용 안 함 (중복 방지)
+                                                                    # 이 로직은 available_pdf_images를 따로 만들어서 관리해야 더 정확함
+                    assigned_image_count += 1
+                else:
+                    print(f"  힌트에 맞는 PDF 이미지를 찾지 못함.")
             
-            # 3. AI가 제공한 이미지 참조 힌트를 바탕으로 PDF에서 추출된 이미지 매칭
-            ai_image_hint = q_data_item_from_ai.get("image_reference_hint")
-            assigned_image_url_from_pdf = None
-
-            if ai_image_hint and extracted_images_info: # AI 힌트와 추출된 이미지가 모두 있을 경우
-                print(f"views.py: 문제 {question_instance.question_number} - AI 이미지 힌트: '{ai_image_hint}'")
-                
-                hint_page_number = None
-                try: # 힌트에서 페이지 번호 추출 (정규식 사용)
-                    page_match = re.search(r"page\s*(\d+)", ai_image_hint, re.IGNORECASE)
-                    if page_match:
-                        hint_page_number = int(page_match.group(1))
-                        print(f"views.py: 힌트에서 추출된 페이지 번호: {hint_page_number}")
-                except ValueError:
-                    print(f"views.py: 힌트에서 페이지 번호 추출 실패 (숫자 변환 오류) - 힌트: {ai_image_hint}")
-
-                # 힌트에 페이지 번호가 있다면 해당 페이지의 이미지 중 하나를 사용
-                if hint_page_number:
-                    # 해당 페이지의 이미지들 필터링
-                    images_on_hinted_page = [img_info for img_info in extracted_images_info if img_info.get('page_number') == hint_page_number]
-                    if images_on_hinted_page:
-                        # 여기서는 해당 페이지의 첫 번째 이미지를 사용 (또는 랜덤, 또는 힌트의 다른 설명과 매칭)
-                        selected_image_info = images_on_hinted_page[0] 
-                        assigned_image_url_from_pdf = selected_image_info.get('url')
-                        print(f"views.py: 페이지 번호 {hint_page_number} 기반으로 PDF 이미지 선택: {assigned_image_url_from_pdf}")
-                        # 만약 선택된 이미지를 다음 문제에서 재사용하지 않으려면 리스트에서 제거
-                        # if selected_image_info in available_pdf_images:
-                        #    available_pdf_images.remove(selected_image_info)
-                
-                # (선택적 고급 로직) 페이지 번호 힌트가 없거나 해당 페이지에 이미지가 없다면,
-                # 힌트의 다른 텍스트(이미지 설명)와 추출된 이미지의 설명(현재는 placeholder)을 비교하여 매칭 시도
-                # 이 부분은 NLP 기술이나 복잡한 문자열 매칭 로직이 필요하여 여기서는 생략합니다.
-
-            if assigned_image_url_from_pdf:
-                question_dict_for_js['image_url'] = assigned_image_url_from_pdf
+            if assigned_image_url:
+                question_dict_for_js['image_url'] = assigned_image_url
             
             js_questions_data.append(question_dict_for_js)
         
-        print(f"views.py: js_questions_data 리스트 구성 완료. 포함된 문제 수: {len(js_questions_data)}")
-        
-        print("--- views.py: JS로 반환할 최종 questions 데이터 (일부) ---")
+        print(f"views.py: js_questions_data 리스트 구성 완료. 이미지 포함 문제 수: {assigned_image_count}")
+        print("--- views.py: JS로 반환할 최종 questions 데이터 (첫 2개) ---")
         import pprint
-        pprint.pprint(js_questions_data[:2]) # 처음 2개 문제 데이터만 출력 (너무 길어지는 것 방지)
+        pprint.pprint(js_questions_data[:2])
         print("-------------------------------------------------")
 
         return JsonResponse({

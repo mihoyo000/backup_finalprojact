@@ -74,10 +74,11 @@ def generate_image_with_dalle(prompt_for_image, n=1, size="256x256"): # DALL-E 2
 def extract_text_and_images_from_pdf(pdf_file_path, exam_document_id):
     """
     PDF 파일에서 텍스트와 이미지들을 추출합니다.
-    이미지는 서버의 MEDIA_ROOT에 저장하고, 이미지 정보(URL, 페이지 번호) 리스트를 반환합니다.
+    텍스트에는 페이지 번호 정보를 포함시키고,
+    이미지는 서버의 MEDIA_ROOT에 저장하고, 이미지 정보(URL, 페이지 번호, 임시 설명) 리스트를 반환합니다.
     """
     full_text = ""
-    extracted_images_info = [] # 이제 단순 URL이 아닌 딕셔너리 리스트
+    extracted_images_info = [] 
     
     image_save_dir = os.path.join(settings.MEDIA_ROOT, 'pdf_images', str(exam_document_id))
     os.makedirs(image_save_dir, exist_ok=True)
@@ -85,10 +86,11 @@ def extract_text_and_images_from_pdf(pdf_file_path, exam_document_id):
     try:
         doc = fitz.open(pdf_file_path)
         for page_num in range(len(doc)):
-            page_idx = page_num + 1 # 페이지 번호는 1부터 시작
+            page_idx = page_num + 1 
             page = doc.load_page(page_num)
-            full_text += f"\n--- Page {page_idx} ---\n" # 페이지 구분 및 번호 정보 추가
+            full_text += f"\n--- Page {page_idx} Content Start ---\n"
             full_text += page.get_text("text")
+            full_text += f"\n--- Page {page_idx} Content End ---\n"
             
             image_list = page.get_images(full=True)
             for img_index, img_info in enumerate(image_list):
@@ -105,18 +107,24 @@ def extract_text_and_images_from_pdf(pdf_file_path, exam_document_id):
                         img_file.write(image_bytes)
                     
                     image_web_url = os.path.join(settings.MEDIA_URL, 'pdf_images', str(exam_document_id), image_filename).replace("\\", "/")
+                    # 이미지에 대한 간단한 설명 (AI가 힌트 생성 시 참고할 수 있도록)
+                    # 실제로는 이미지 주변 텍스트나 OCR 등을 통해 더 나은 설명을 생성할 수 있음
+                    img_desc_placeholder = f"Image {img_index+1} on page {page_idx} of the PDF."
                     extracted_images_info.append({
-                        'page_number': page_idx, # 이미지가 있는 페이지 번호
+                        'page_number': page_idx,
                         'url': image_web_url,
-                        'description_placeholder': f"Image on page {page_idx}, index {img_index+1}" # 간단한 설명 (나중에 개선 가능)
+                        'description': img_desc_placeholder 
                     })
-                    print(f"ai_services.py: 이미지 추출 및 저장 성공 - {image_web_url} (Page: {page_idx})")
+                    # print(f"ai_services.py: 이미지 추출 - {image_web_url} (Page: {page_idx})") # 로그는 필요시 활성화
                 except Exception as e_save:
                     print(f"ai_services.py: 이미지 파일 저장 실패 ({image_filename}): {e_save}")
         doc.close()
+        if not full_text.strip() and not extracted_images_info: # 텍스트도 이미지도 없으면
+            print(f"ai_services.py: PDF '{pdf_file_path}'에서 텍스트와 이미지를 모두 추출하지 못했습니다.")
+            return None, []
         return full_text, extracted_images_info
     except Exception as e:
-        print(f"ai_services.py: PDF 처리 중 오류 발생 ({pdf_file_path}): {e}")
+        print(f"ai_services.py: PDF 처리 중 오류 ({pdf_file_path}): {e}")
         return None, []
 
 # 3. OpenAI API를 이용한 문제 생성 함수
@@ -126,20 +134,16 @@ def generate_questions_via_openai(text_from_pdf, num_questions_to_generate, requ
     OpenAI API (gpt-4o-mini)를 사용하여 문제를 생성합니다.
     성공 시 문제 딕셔너리의 리스트를, 실패 시 목업 문제 리스트를 반환합니다.
     """
-    global client # 모듈 레벨의 api_client 변수를 사용함을 명시 (또는 인자로 전달)
-
-    if not client: # API 클라이언트가 유효하지 않으면 목업 데이터 사용
-        print("ai_services.py: OpenAI API 클라이언트가 유효하지 않아 목업 문제를 생성합니다.")
+    global client
+    if not client:
+        print("ai_services.py: OpenAI 클라이언트 없음. 목업 문제 생성.")
         return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
 
-    # AI에게 전달할 문제 유형 텍스트 준비
     ai_question_type_description = "4지선다 객관식" if requested_question_type == "객관식" else "단답형"
 
-    # AI에게 전달할 프롬프트 (지시문) 작성
-    # 이 프롬프트는 문제의 품질과 형식에 매우 큰 영향을 미칩니다.
     prompt_instructions = f"""
     당신은 제공된 PDF 텍스트 내용을 바탕으로 학습용 연습 문제를 생성하는 AI 어시스턴트입니다.
-    PDF 텍스트에는 페이지 구분을 위해 "--- Page X ---" 형식이 포함될 수 있습니다.
+    PDF 텍스트에는 "--- Page X Content Start/End ---" 형식으로 페이지 정보가 포함되어 있습니다.
     생성할 문제의 조건은 다음과 같습니다:
     - 주제: {subject_topic}
     - 문제 유형: {ai_question_type_description}
@@ -150,94 +154,77 @@ def generate_questions_via_openai(text_from_pdf, num_questions_to_generate, requ
     - "question_number": (Integer) 문제 번호 (1부터 시작).
     - "question_text": (String) 문제 내용.
     - "question_type": (String) "multiple_choice" 또는 "short_answer".
-    - "options": (Array of Strings) 객관식일 경우 4개의 순수 텍스트 선택지. 단답형은 null.
+    - "options": (Array of Strings) 객관식일 경우 4개의 순수 텍스트 선택지. 단답형은 null. HTML 태그/주석 금지.
     - "correct_answer": (String) 정답 텍스트.
     - "explanation": (String) 해설.
-    - "image_reference_hint": (String, Optional) 
-        만약 이 문제가 **제공된 PDF 텍스트 내의 특정 이미지와 직접적으로 관련**되어야 한다면, 그 이미지에 대한 **간단한 설명이나 해당 이미지가 위치한 페이지 번호(예: "Page 3의 다이어그램", "Page 5의 인물 사진")**를 여기에 제공해주세요. 
+    - "pdf_image_reference_hint": (Object, Optional) 
+        만약 이 문제가 **제공된 PDF 텍스트 내의 특정 이미지와 직접적으로 관련**되어야 한다면, 다음 정보를 포함하는 JSON 객체를 여기에 제공해주세요:
+        {{
+            "page_number": (Integer) 해당 이미지가 위치한 PDF 페이지 번호 (텍스트의 페이지 마커 기준).
+            "image_description": (String) 해당 이미지를 식별할 수 있는 간결하고 핵심적인 영어 설명 (예: "diagram of photosynthesis", "portrait of King Sejong", "map of Goryeo Dynasty").
+        }}
         이 힌트는 서버에서 PDF에서 추출된 실제 이미지와 문제를 연결하는 데 사용됩니다.
-        관련 이미지가 없다면 null 또는 빈 문자열로 해주세요.
-        이 필드는 전체 문제 중 **이미지를 활용하는 것이 교육적으로 매우 효과적이라고 판단되는 소수의 문제에 대해서만** 제공해주세요.
+        관련 이미지가 없다면 이 필드 값으로 **반드시 null**을 제공해주세요.
+        이 필드는 전체 문제 중 이미지를 활용하는 것이 교육적으로 매우 효과적이라고 판단되는 **약 1~2개의 문제에 대해서만** 제공해주세요. (모든 문제에 제공 X)
 
-    제공된 PDF 텍스트 내용 (페이지 정보 포함 가능):
+    제공된 PDF 텍스트 내용 (페이지 정보 포함):
     ---
     {text_from_pdf[:4000]} 
     ---
-    위 내용을 참고하여 문제를 출제해주세요.
+    위 내용을 참고하여 문제를 출제해주세요. "pdf_image_reference_hint"는 문제와 매우 밀접한 관련이 있는 PDF 내 이미지가 있을 경우에만 사용해주세요.
     오직 지정된 JSON 형식으로만 응답하고, 다른 설명은 절대 추가하지 마세요.
-    "options"의 텍스트는 순수 텍스트여야 합니다.
     """
 
     try:
-        print(f"ai_services.py: OpenAI API ('gpt-4o-mini') 요청 시작 - 문항수: {num_questions_to_generate}, 유형: {requested_question_type}, 주제: {subject_topic}")
-        
-        # OpenAI API 호출 (새로운 v1.x 방식)
+        print(f"ai_services.py: OpenAI API ('gpt-4o-mini') 요청 시작...")
         api_response = client.chat.completions.create(
-            model="gpt-4o-mini", # 사용할 AI 모델
+            model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are an AI assistant that generates educational quizzes. Respond strictly in the specified JSON format, with a top-level 'quiz' key containing a list of question objects. Each option text must be plain text without any HTML, comments, or special markup."},
+                {"role": "system", "content": "You are an AI assistant that generates educational quizzes. Respond strictly in the specified JSON format with a top-level 'quiz' key. If a question refers to an image in the provided PDF text (which includes page markers), provide a 'pdf_image_reference_hint' object with 'page_number' and 'image_description' (in English) for a few highly relevant questions only. Otherwise, the hint should be null."},
                 {"role": "user", "content": prompt_instructions}
             ],
-            temperature=0.7, # 결과의 다양성 조절 (0.0 ~ 2.0)
-            response_format={"type": "json_object"} # AI가 JSON 형식으로 응답하도록 강제 (지원하는 모델에서만)
+            temperature=0.7,
+            response_format={"type": "json_object"}
         )
         raw_content = api_response.choices[0].message.content
         print("ai_services.py: OpenAI API 응답 수신 완료.")
-        # print(f"ai_services.py: API 원본 응답 (앞부분): {raw_content[:300]}...") # 디버깅 시 확인
-
-        # 가끔 응답이 Markdown 코드 블록(```json ... ```)으로 감싸져 올 수 있으므로 제거
+        # ... (JSON 클리닝 및 파싱, 문제 리스트 추출, 유효성 검사는 이전 답변과 동일) ...
         cleaned_content = raw_content.strip()
-        if cleaned_content.startswith("```json"):
-            cleaned_content = cleaned_content[7:]
-        if cleaned_content.endswith("```"):
-            cleaned_content = cleaned_content[:-3]
+
+        if cleaned_content.startswith("```json"): cleaned_content = cleaned_content[7:]
+        if cleaned_content.endswith("```"): cleaned_content = cleaned_content[:-3]
+        cleaned_content = cleaned_content.strip()
+        if cleaned_content.startswith("```"): cleaned_content = cleaned_content[3:] # ``` 만 있는 경우
+        if cleaned_content.endswith("```"): cleaned_content = cleaned_content[:-3]
         cleaned_content = cleaned_content.strip()
 
-        parsed_api_response = json.loads(cleaned_content) # JSON 문자열을 Python 딕셔너리로 변환
+        parsed_api_response = json.loads(cleaned_content)
+        
+        questions_data = []
 
-        # API 응답 구조 확인 및 문제 리스트 추출
         if isinstance(parsed_api_response, dict) and "quiz" in parsed_api_response and isinstance(parsed_api_response["quiz"], list):
-            generated_problems_list = parsed_api_response["quiz"]
-            print(f"ai_services.py: 'quiz' 키에서 {len(generated_problems_list)}개의 문제 데이터 추출 성공.")
-        elif isinstance(parsed_api_response, list): # 혹시 바로 리스트로 응답한 경우
-             generated_problems_list = parsed_api_response
-             print(f"ai_services.py: API가 직접 리스트 형식으로 {len(generated_problems_list)}개 문제 데이터 반환.")
+            questions_data = parsed_api_response["quiz"]
+            print(f"ai_services.py: 'quiz' 키에서 {len(questions_data)}개 문제 데이터 추출 성공.")
+        elif isinstance(parsed_api_response, list):
+             questions_data = parsed_api_response
+             print(f"ai_services.py: API가 직접 리스트 형식으로 {len(questions_data)}개 문제 데이터 반환.")
         else:
-            print("ai_services.py: OpenAI 응답이 예상한 'quiz' 키를 포함한 객체 또는 리스트 형식이 아님. 목업 데이터 사용.")
-            print(f"ai_services.py: 잘못된 형식의 응답 (일부): {str(parsed_api_response)[:500]}...")
+            print("ai_services.py: OpenAI 응답이 예상한 형식이 아님. (parsed_api_response 타입:", type(parsed_api_response), ")")
+            # 이 경우 questions_data는 빈 리스트로 유지됩니다.
+
+        if not questions_data or not all(isinstance(q, dict) for q in questions_data): # questions_data가 비었거나, 내부 항목이 딕셔너리가 아니면
+            print("ai_services.py: 유효한 문제 리스트를 얻지 못함. 목업 데이터 사용.")
             return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
 
-        # 문제 리스트 내부 유효성 검사 (각 항목이 딕셔너리인지)
-        if not all(isinstance(problem, dict) for problem in generated_problems_list):
-            print("ai_services.py: 'quiz' 리스트 내의 일부 항목이 딕셔너리 형식이 아님. 목업 데이터 사용.")
-            return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
-        
-        # 요청한 문항 수와 실제 생성된 문항 수 확인
-        if not generated_problems_list:
-            print("ai_services.py: AI가 문제를 생성하지 못했습니다 (빈 리스트 반환). 목업 데이터 사용.")
-            return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
-        
-        # (선택적) 문항 수가 다를 경우 처리 (여기서는 일단 생성된 만큼만 반환하거나, 엄격하게는 목업으로)
-        # if len(generated_problems_list) != num_questions_to_generate:
-        #     print(f"ai_services.py: 경고 - 요청 문항 수({num_questions_to_generate})와 생성된 문항 수({len(generated_problems_list)}) 불일치.")
-            # generated_problems_list = generated_problems_list[:num_questions_to_generate] # 생성된 만큼만 잘라서 사용
+        print(f"ai_services.py: {len(questions_data)}개 문제 데이터 최종 파싱 성공.")
+        return questions_data
 
-        print(f"ai_services.py: {len(generated_problems_list)}개의 문제 데이터 최종 파싱 및 반환 준비 완료.")
-        return generated_problems_list
-
-    except json.JSONDecodeError as e:
-        print(f"ai_services.py: OpenAI 응답 JSON 파싱 중 오류 발생: {e}")
-        if 'raw_content' in locals(): # raw_content 변수가 정의되어 있다면 출력
-             print(f"ai_services.py: 파싱 시도한 원본 내용 (일부): {raw_content[:500]}...")
-        return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
-    except openai.APIError as e: # OpenAI 라이브러리 자체의 API 오류 처리
-        print(f"ai_services.py: OpenAI API 호출 중 오류 발생: 상태 코드 {e.status_code if hasattr(e, 'status_code') else 'N/A'} - {e.message if hasattr(e, 'message') else str(e)}")
-        return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
-    except Exception as e: # 그 외 모든 예외 처리
+    except Exception as e: # 모든 예외를 더 구체적으로 잡거나, 마지막에 포괄적으로 처리
         import traceback
-        print(f"ai_services.py: 문제 생성 중 예측하지 못한 예외 발생: {type(e).__name__} - {e}")
-        print(traceback.format_exc()) # 상세한 오류 경로 출력
+        print(f"ai_services.py: generate_questions_via_openai 함수 내 예외 발생: {type(e).__name__} - {e}")
+        print(traceback.format_exc())
         return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
+
 
 # 4. 목업(테스트용) 문제 생성 함수
 # --------------------------------------------------------------------------
