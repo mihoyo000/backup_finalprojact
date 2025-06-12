@@ -75,7 +75,6 @@ class PostForm(forms.ModelForm):
         # 만약 JS를 우회하여 제출된 경우, required=True에 의해 Django의 기본 'This field is required.' 메시지가 나올 것입니다.
         # 사용자 정의 메시지를 원한다면 forms.py의 error_messages를 사용하고, JS alert는 보조 수단으로 사용해야 합니다.
         # 지금은 JS alert를 우선하므로, 여기서 추가적인 'required' 관련 에러 발생은 불필요합니다.
-
         return selected_categories
 
 class CommentForm(forms.ModelForm):

@@ -62,7 +62,7 @@
                     </div>
                     {% endif %}
                     <ul class="main-menu">
-                        <li><a href="#">{% translate "Flo와 문제 풀기" %}</a></li>
+                        <li><a href="{% url 'flo_exam:upload_page' %}">{% translate "Flo와 문제 풀기" %}</a></li>
                         <li>
                             {# ▼▼▼ 수정 ▼▼▼ (모바일 서브메뉴 토글 위해 href, data-bs-toggle, 화살표 추가) #}
                             <a href="#" data-bs-toggle="submenu">{% translate "스터디" %} <span class="submenu-arrow">▾</span></a>

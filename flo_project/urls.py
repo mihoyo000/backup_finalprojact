@@ -24,7 +24,7 @@ from django.shortcuts import render
 from django.conf.urls.i18n import i18n_patterns
 
 def home(request):
-    return render(request, 'mysite/index.html')
+    return render(request, 'flo/index.html')
     # return HttpResponse("환영합니다. Django Web 입니다.")
     
 urlpatterns = [
@@ -38,11 +38,16 @@ urlpatterns += [  # + 꼭 붙이기
     # path('multilang/', include('multilang.urls')),
     # path('tinymce/', include('tinymce.urls')), # django-tinymce 관리자 페이지용 URL
     path('flo/', include('flo.urls')),
+    path('flo_exam/', include('flo_exam.urls', namespace='flo_exam')), # 플로 프로그램 페이지 URL
 ]
 
 # 이미지는 web 경로를 쓰는데, 이를 허용하겠다.(요청 URL에 이미지를 요청하면 그 이미지를 보여주겠다.)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # 개발 환경에서 MEDIA_URL을 통해 MEDIA_ROOT의 파일들을 서빙하도록 설정
+# urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # urlpatterns += i18n_patterns(
 #     path('multilang/', include('multilang.urls')),
 # )
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+#urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -2,7 +2,11 @@
 
 /* --- 기본 변수 및 레이아웃 (기존과 동일) --- */
 :root {
+<<<<<<< HEAD
+    --bg-page: #111111;
+=======
     --bg-page: #121212;
+>>>>>>> origin/ldy
     --text-main: #2d2d2d;
     --line-sub: #2d2d2d;
     --btn-bg: #3294E4;
@@ -21,7 +25,11 @@
     --category-item-active-bg: #3294E4; /* Bootstrap primary color */
     --category-item-active-text: #fff;
 
+<<<<<<< HEAD
+    --dark-bg-page: ##f8f9fa;
+=======
     --dark-bg-page: #f8f9fa;
+>>>>>>> origin/ldy
     --dark-text-main: #f1f1f1;
     --dark-line-sub: #f1f1f1;
     /* 다크모드 카테고리 패널 */
@@ -32,6 +40,8 @@
     --dark-category-item-active-bg: #3294E4; 
     --dark-category-item-active-text: #fff;
     --dark-active-parent-bg: #3e444a; /* study_post_list.css 참조 */
+<<<<<<< HEAD
+=======
 
     /* ▼▼▼ 추가: study_post_list.css 에서 사용하는 카테고리 관련 변수들 ▼▼▼ */
     /* (만약 study_post_list.css와 study_post_form.css가 항상 함께 로드되지 않는다면,
@@ -58,6 +68,7 @@
     --dark-btn-outline-secondary-hover-text: #212529;
     --dark-form-input-border: #444;
     /* ▲▲▲ 추가 완료 ▲▲▲ */
+>>>>>>> origin/ldy
 }
 
 .form-page-container {
@@ -124,6 +135,49 @@ body:not(.theme-light) .title-underline {
     margin-bottom: 0;
 }
 
+<<<<<<< HEAD
+.category-selection-area-wrapper {
+    border: 1px solid var(--category-panel-border); /* 라이트 모드 테두리 */
+    padding: 20px;
+    border-radius: 4px;
+    background-color: #fff; /* 라이트 모드 배경 (var(--category-panel-bg) 대신 #fff 명시) */
+    margin-bottom: 20px;
+}
+body:not(.theme-light) .category-selection-area-wrapper {
+    border-color: var(--dark-category-panel-border);
+    background-color: var(--dark-category-panel-bg);
+}
+
+.category-selection-area-wrapper > .form-label { /* "카테고리 선택 (최대 5개)" 레이블 */
+    font-size: 1.1rem; 
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: block;
+    color: #333; /* 라이트모드 */
+}
+body:not(.theme-light) .category-selection-area-wrapper > .form-label {
+    color: var(--dark-text-main); /* 다크모드 */
+}
+
+/* 선택된 카테고리 태그 표시 영역 */
+#selected-categories-display {
+    margin-bottom: 15px;
+    min-height: 28px; 
+}
+#selected-categories-display .selected-category-tag {
+    display: inline-block;
+    font-size: 0.85rem;
+    padding: .3em .7em;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border-radius: .25rem;
+    background-color: var(--category-item-active-bg); /* 라이트/다크 공통 (파란색 계열) */
+    color: var(--category-item-active-text); 
+    font-weight: 500;
+}
+/* 다크모드에서 선택된 태그 색상을 다르게 하려면 아래 주석 해제 후 수정 */
+body:not(.theme-light) #selected-categories-display .selected-category-tag {
+=======
 .category-selection-area-wrapper-form { /* 클래스명 변경됨 (HTML 수정 필요) */
     /* border, padding, background-color 등을 study_post_list.css와 유사하게 조정 */
     border: 1px solid var(--category-wrapper-border); /* 변경/추가된 변수 사용 */
@@ -179,12 +233,27 @@ body:not(.theme-light) .category-selection-area-wrapper-form .form-text.text-mut
 }
 /* 다크모드에서 선택된 태그 색상을 다르게 하려면 아래 주석 해제 후 수정 */
 /* body:not(.theme-light) #selected-categories-display .selected-category-tag {
+>>>>>>> origin/ldy
     display: inline-block;
     font-size: 0.85rem;
     padding: .3em .7em;
     margin-right: 5px;
     margin-bottom: 5px;
     border-radius: .25rem;
+<<<<<<< HEAD
+    background-color: var(--category-item-active-bg); /* 라이트/다크 공통 (파란색 계열) */
+    color: var(--category-item-active-text); 
+    font-weight: 500;
+}
+
+#selected-categories-display .remove-category {
+    margin-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    opacity: 0.7;
+}
+#selected-categories-display .remove-category:hover {
+=======
     background-color: var(--category-item-active-bg); 
     color: var(--category-item-active-text); 
     font-weight: 500;
@@ -198,10 +267,93 @@ body:not(.theme-light) .category-selection-area-wrapper-form .form-text.text-mut
     font-size: 1.1em; /* list.css 에 맞춤 (추가) */
 }
 #selected-category-display-form .remove-category-form:hover { /* 선택자 변경 */
+>>>>>>> origin/ldy
     opacity: 1;
 }
 
 /* 카테고리 검색창 */
+<<<<<<< HEAD
+.category-search-box input[type="text"].form-control {
+    width: 100%;
+    padding: .5rem .75rem;
+    font-size: 0.9rem;
+    border-radius: .25rem;
+    background-color: var(--form-input-bg); /* 라이트 모드 */
+    color: var(--form-input-text); /* 라이트 모드 */
+    border: 1px solid var(--form-input-border); /* 라이트 모드 */
+    margin-bottom: 15px;
+}
+.category-search-box input[type="text"].form-control::placeholder {
+    color: var(--form-input-placeholder); /* 라이트모드 */
+}
+body:not(.theme-light) .category-search-box input[type="text"].form-control {
+    background-color: #3e3e3e; /* study_post_list.css 참조 */
+    color: #f0f0f0;
+    border-color: #555;
+}
+body:not(.theme-light) .category-search-box input[type="text"].form-control::placeholder {
+    color: #888;
+}
+
+/* 각 카테고리 패널 (대/중/소) 컬럼 */
+.category-panel-col {
+    padding-right: 8px; 
+    padding-left: 8px;
+}
+.category-panel-col:not(:last-child) { 
+    border-right: 1px solid var(--category-panel-border); /* 라이트 모드 구분선 */
+}
+body:not(.theme-light) .category-panel-col:not(:last-child) {
+    border-right-color: var(--dark-category-panel-border);
+}
+
+/* 패널 제목 (h6) */
+.category-panel-col h6 {
+    font-size: 0.95rem; 
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--category-panel-border); /* 라이트 모드 */
+    color: #333; /* 라이트모드 */
+}
+body:not(.theme-light) .category-panel-col h6 {
+    color: var(--dark-category-item-text); /* study_post_list.css 참조 (var(--dark-text-main)도 가능) */
+    border-bottom-color: var(--dark-category-panel-border);
+}
+
+/* 카테고리 목록 (ul.list-group) */
+.category-list-inline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 220px; 
+    overflow-y: auto;
+}
+
+/* 카테고리 목록 아이템 (li.list-group-item) */
+.category-item-inline {
+    display: flex; 
+    justify-content: space-between;
+    align-items: center;
+    padding: .5rem .75rem; 
+    cursor: pointer;
+    border-bottom: 1px solid transparent; 
+    font-size: 0.9rem;
+    color: var(--category-item-text); /* 라이트 모드 */
+    background-color: transparent; /* 기본 배경 투명 또는 패널 배경 상속 */
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+}
+.category-item-inline:last-child {
+    border-bottom: 1px solid var(--category-panel-border);
+}
+.category-item-inline:hover {
+    background-color: var(--category-item-hover-bg); /* 라이트 모드 */
+    /* color: var(--category-item-text); 기본 텍스트 색 유지 또는 변경 */
+}
+body.theme-light .category-item-inline:hover { /* study_post_list.css 의 라이트모드 호버와 맞춤 */
+    background-color: var(--category-item-hover-bg, #e9ecef);
+    color: var(--category-item-text, #212529);
+=======
 .category-search-box {
     position: relative; /* 자식 요소의 absolute positioning 기준점 */
 }
@@ -306,10 +458,23 @@ body:not(.theme-light) .category-panel-container .category-list-inline .category
     background-color: var(--dark-category-item-hover-bg, #3a3a3a); /* list.css 변수 사용 */
     /* ▼▼▼ 추가 (기존 코드에는 없었음, list.css의 dark hover text color와 맞춤) ▼▼▼ */
     color: var(--dark-category-item-text, #f8f9fa); /* 필요시 --dark-category-item-hover-text 변수 사용 */
+>>>>>>> origin/ldy
 }
 
 
 /* 하위 카테고리를 표시 중인 부모 아이템 스타일 */
+<<<<<<< HEAD
+.category-item-inline.active-parent {
+    background-color: #e0e0e0; /* 라이트 모드: 약간 더 진한 회색 (var(--category-item-hover-bg)보다 구분되게) */
+    font-weight: 500; 
+    color: var(--category-item-text); /* 라이트 모드 텍스트 색상 유지 */
+}
+body.theme-light .category-item-inline.active-parent { /* study_post_list.css 참조 */
+    background-color: #e0e0e0; /* 예시, #dcdcdc 와 유사하게 조정 가능 */
+}
+body.theme-light .category-item-inline.active-parent:hover { /* study_post_list.css 참조 */
+    background-color: #dcdcdc; /* active-parent 상태에서 호버 시 약간 다른 배경 (예시) */
+=======
 body.theme-light .category-panel-container .category-list-inline .category-item-inline.active-parent {
     font-weight: 500;
     /* ▼▼▼ 수정 (기존 코드에는 color 지정이 명시적으로 없었음, list.css와 맞춤) ▼▼▼ */
@@ -326,10 +491,32 @@ body.theme-light .category-panel-container .category-list-inline .category-item-
 }
 body:not(.theme-light) .category-panel-container .category-list-inline .category-item-inline.active-parent:hover {
     background-color: #4a4a4a; /* 다크모드용 active-parent 호버 배경 (예시) */
+>>>>>>> origin/ldy
 }
 
 
 /* 최종 선택된 아이템 스타일 */
+<<<<<<< HEAD
+.category-item-inline.active { 
+    background-color: var(--category-item-active-bg) !important; 
+    color: var(--category-item-active-text) !important; 
+    font-weight: 500;
+}
+
+/* 다크 모드 카테고리 목록 아이템 */
+body:not(.theme-light) .category-item-inline {
+    color: var(--dark-category-item-text);
+    /* background-color: var(--dark-category-panel-bg); /* 부모 패널 배경을 따르도록 투명하게 */
+}
+body:not(.theme-light) .category-item-inline:hover {
+    background-color: var(--dark-category-item-hover-bg);
+    color: var(--dark-category-item-hover-text, #ffffff); /* study_post_list.css 참조 */
+}
+body:not(.theme-light) .category-item-inline.active-parent {
+    background-color: var(--dark-active-parent-bg); /* study_post_list.css 참조 */
+    color: var(--dark-category-item-text); 
+}
+=======
 .category-panel-container .category-list-inline .category-item-inline.active { /* 선택자에서 .category-item-inline 추가 */
     background-color: var(--category-item-active-bg, #3294E4) !important; 
     color: var(--category-item-active-text, #fff) !important; 
@@ -344,6 +531,7 @@ body:not(.theme-light) .category-panel-container .category-list-inline .category
 }
 
 /* 다크 모드 카테고리 목록 아이템 */
+>>>>>>> origin/ldy
 body:not(.theme-light) .category-item-inline.active {
     background-color: var(--dark-category-item-active-bg) !important; /* btn-bg 사용 */
     color: var(--dark-category-item-active-text) !important;
@@ -352,6 +540,34 @@ body:not(.theme-light) .category-item-inline.active {
 
 
 /* 카테고리 계층 화살표 (>) */
+<<<<<<< HEAD
+.category-arrow-inline {
+    font-size: 0.8em;
+    color: #6c757d; /* 라이트 모드 */
+    font-weight: bold;
+}
+.category-item-inline.active .category-arrow-inline,
+.category-item-inline.active-parent .category-arrow-inline { /* active 또는 active-parent 일 때 화살표 색상 */
+    color: var(--category-item-text); /* 기본 텍스트 색으로 변경 (배경이 밝은 회색이므로) */
+}
+.category-item-inline.active.active-parent .category-arrow-inline, /* .active.active-parent 동시 적용 시 */
+.category-item-inline.active .category-arrow-inline { /* .active 일 때 (최종 선택) */
+    color: var(--category-item-active-text); /* 활성 아이템 텍스트 색 (흰색) */
+}
+
+body:not(.theme-light) .category-arrow-inline {
+    color: #888; /* 다크모드 기본 화살표 */
+}
+body:not(.theme-light) .category-item-inline.active .category-arrow-inline,
+body:not(.theme-light) .category-item-inline.active-parent .category-arrow-inline {
+    color: var(--dark-category-item-text); /* 다크모드 active/active-parent 시 화살표 */
+}
+body:not(.theme-light) .category-item-inline.active.active-parent .category-arrow-inline,
+body:not(.theme-light) .category-item-inline.active .category-arrow-inline {
+     color: var(--dark-category-item-active-text); /* 다크모드 최종 선택 시 화살표 (흰색) */
+}
+
+=======
 .category-panel-container .category-arrow-inline {
     font-size: 0.8em; color: var(--category-arrow-color, #6c757d); /* list.css 변수 사용 */
     font-weight: bold;
@@ -399,6 +615,7 @@ body:not(.theme-light) #categorySearchResultsPanelForm h6.search-results-title {
     overflow: hidden; text-overflow: ellipsis; font-size: 0.875rem;
 }
 /* ▲▲▲ 추가 완료 ▲▲▲ */
+>>>>>>> origin/ldy
 
 /* --- 기존 폼 필드 스타일 (제목, 내용, 첨부파일 등 - 기존과 동일하게 유지) --- */
 .form-group input[type="text"],
@@ -471,6 +688,8 @@ body.theme-light .file-group .form-label {
     box-sizing: border-box;
 }
 
+<<<<<<< HEAD
+=======
 .attachment-form-item input[type="file"] {
     opacity: 0;
     position: absolute;
@@ -591,6 +810,7 @@ body:not(.theme-light) .attachment-form-item .form-label-attachment-new {
     color: var(--dark-text-main);
 }
 
+>>>>>>> origin/ldy
 label[for="id_attached_file"] {
     color: var(--text-main);
 }
@@ -623,6 +843,8 @@ body:not(.theme-light) .file-group input[type="file"] {
     font-size: 0.9rem;
 }
 
+<<<<<<< HEAD
+=======
 /*  #search-results-load-more-container {
     필요한 경우 추가 스타일 
 }*/
@@ -636,6 +858,7 @@ body:not(.theme-light) .form-text {
     color: var(--dark-text-main);
 }
 
+>>>>>>> origin/ldy
 /* --- 등록 버튼 스타일 --- */
 .btn-submit-form {
     background-color: var(--btn-bg);

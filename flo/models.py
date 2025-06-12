@@ -227,7 +227,6 @@ class Post(models.Model):
     @property
     def attachments_count(self): # 첨부파일 개수를 반환하는 프로퍼티
         return self.post_attachments.count()
-
     class Meta:
         verbose_name = "학습 게시글"
         verbose_name_plural = "학습 게시글 목록"

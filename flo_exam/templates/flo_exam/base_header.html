@@ -1,0 +1,166 @@
+{% load static i18n %}
+<header id="header">
+    <div class="container header-layout-container">
+        <div class="header-content-wrapper">
+            <div class="logo-container">
+                <a href="{% url 'flo:home' %}">
+                    <img id="header-logo" src="{% static 'flo/images/light/header/light-logo.png' %}" alt="Flo Logo">
+                </a>
+            </div>
+
+            {# ▼▼▼ 추가 ▼▼▼ (모바일용 햄버거 메뉴 토글 버튼) #}
+            <button class="navbar-toggler" type="button" aria-label="Toggle navigation">
+                <span class="toggler-icon-bar"></span>
+                <span class="toggler-icon-bar"></span>
+                <span class="toggler-icon-bar"></span>
+            </button>
+            {# ▲▲▲ 추가 ▲▲▲ #}
+
+            <nav class="main-nav" id="mainNav">
+                {% if user.is_authenticated %}
+                {# 모바일 뷰에서만 보일 프로필 섹션 (햄버거 메뉴 상단) #}
+                <div class="nav-mobile-profile-section">
+                    <a href="#" class="nav-user-info-toggle" data-bs-toggle="collapse" data-bs-target="#navMobileUserMenu" aria-expanded="false" aria-controls="navMobileUserMenu">
+                        <div class="profile-image-wrapper">
+                            <img src="{{ user.profile.get_profile_image_url }}"
+                                alt="Profile"
+                                class="{% if not user.profile.has_custom_profile_image %}default-avatar{% endif %}"
+                                data-has-custom-image="{{ user.profile.has_custom_profile_image|yesno:'true,false' }}">
+                        </div>
+                        <span class="user-display-name">{{ user.profile.get_display_name }}님</span>
+                        <span class="arrow-indicator">▾</span>
+                    </a>
+                    <div class="collapse user-dropdown-menu-mobile" id="navMobileUserMenu">
+                        <ul class="list-unstyled">
+                            <li><a class="dropdown-item" href="#">{% translate "마이페이지" %}</a></li>
+                            <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'flo:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">{% translate "로그아웃" %}</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+                <ul class="main-menu">
+                    <li><a href="{% url 'flo_exam:upload_page' %}">{% translate "Flo와 문제 풀기" %}</a></li>
+                    <li>
+                        {# ▼▼▼ 수정 ▼▼▼ (모바일 서브메뉴 토글 위해 href, data-bs-toggle, 화살표 추가) #}
+                        <a href="#" data-bs-toggle="submenu">{% translate "스터디" %} <span class="submenu-arrow">▾</span></a>
+                        {# ▲▲▲ 수정 ▲▲▲ #}
+                        <ul class="sub-menu">
+                            <li><a href="#">{% translate "스터디 게시판" %}</a></li>
+                            <li><a href="#">{% translate "채팅" %}</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        {# ▼▼▼ 수정 ▼▼▼ (모바일 서브메뉴 토글 위해 href, data-bs-toggle, 화살표 추가) #}
+                        <a href="{% url 'flo:study_post_list' %}" data-bs-toggle="submenu">{% translate "커뮤니티" %} <span class="submenu-arrow">▾</span></a>
+                            {# ▲▲▲ 수정 ▲▲▲ #}
+                        <ul class="sub-menu">
+                            <li><a href="{% url 'flo:study_post_list' %}">{% translate "학습 게시판" %}</a></li>
+                            <li><a href="{% url 'flo:faq_list' %}">{% translate "FAQ" %}</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="header-right-controls">
+                <div class="auth-links ms-auto"> {# ms-auto는 Bootstrap 5에서 오른쪽 정렬 #}
+                    {% if user.is_authenticated %}
+                        <div class="dropdown">
+                            {# START: 수정된 사용자 정보 표시 부분 #}
+                            <a href="#" class="user-dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="profile-image-wrapper">
+                                    <img src="{{ user.profile.get_profile_image_url }}"
+                                        alt="{{ user.profile.get_display_name }} Profile"
+                                        id="user-profile-image"
+                                        class="{% if not user.profile.has_custom_profile_image %}default-avatar{% endif %}"
+                                        data-has-custom-image="{{ user.profile.has_custom_profile_image|yesno:'true,false' }}">
+                                </div>
+                                {# ▼▼▼ 수정 ▼▼▼ (CSS 선택을 위해 클래스 추가) #}
+                                <span class="user-display-name">{{ user.profile.get_display_name }}님</span>
+                                {# ▲▲▲ 수정 ▲▲▲ #}
+                            </a>
+                            {# END: 수정된 사용자 정보 표시 부분 #}
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {# 나중에 마이페이지, 계정 관리 링크 추가 #}
+                                <li><a class="dropdown-item" href="#">{% translate "마이페이지" %}</a></li>
+                                <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form id="logoutForm" method="post" action="{% url 'flo_exam:temp_logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">{% translate "로그아웃" %}</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        {# 로그인 버튼의 id="btn-login"은 JS와 연동될 수 있으므로 유지하거나, 단순 링크로 변경 #}
+                        <a href="{% url 'flo_exam:temp_login' %}" id="btn-login" class="btn btn-outline-light">{% translate "로그인" %}</a>
+                    {% endif %}
+                </div>
+
+                <div class="theme-dropdown dropdown">
+                    <button type="button" id="theme-toggle-btn" class="btn theme-btn" title="{% translate "Change theme" %}" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img id="theme-toggle-icon" src="{% static 'flo/images/light/header/light-auto.png' %}" alt="Theme Icon">
+                    </button>
+                    <div class="dropdown-menu theme-dropdown-menu dropdown-menu-end" id="theme-menu">
+                        <button type="button" class="dropdown-item theme-item" data-theme-mode="light">
+                            {# START: 수정된 부분 - 테마 드롭다운 '라이트' 아이템 아이콘에 ID 추가 #}
+                            <img class="theme-item-icon" id="theme-item-icon-light" src="{% static 'flo/images/light/header/light-light.png' %}" alt="Light Mode Icon">
+                            {# END: 수정된 부분 #}
+                            <span class="theme-text">{% translate "Light" %}</span>
+                        </button>
+                        <button type="button" class="dropdown-item theme-item" data-theme-mode="dark">
+                            {# START: 수정된 부분 - 테마 드롭다운 '다크' 아이템 아이콘에 ID 추가 #}
+                            <img class="theme-item-icon" id="theme-item-icon-dark" src="{% static 'flo/images/light/header/light-dark.png' %}" alt="Dark Mode Icon">
+                            {# END: 수정된 부분 #}
+                            <span class="theme-text">{% translate "Dark" %}</span>
+                        </button>
+                        <button type="button" class="dropdown-item theme-item" data-theme-mode="auto">
+                            {# START: 수정된 부분 - 테마 드롭다운 '자동' 아이템 아이콘에 ID 추가 #}
+                            <img class="theme-item-icon" id="theme-item-icon-auto" src="{% static 'flo/images/light/header/light-auto.png' %}" alt="Auto Mode Icon">
+                            {# END: 수정된 부분 #}
+                            <span class="theme-text">{% translate "Auto" %}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="language-dropdown dropdown">
+                    <button class="btn lang-btn" type="button" id="languageMenuButton" data-bs-toggle="dropdown" aria-expanded="false" title="{% translate "Select language" %}">
+                        <img id="lang-toggle-icon" src="{% static 'flo/images/light/header/light-translate.png' %}" alt="Language Icon">
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageMenuButton">
+                        {% get_available_languages as AVAILABLE_LANGUAGES %}
+                        {% get_language_info_list for AVAILABLE_LANGUAGES as languages_info %}
+                        {% for lang_info in languages_info %}
+                            <li>
+                                <form action="{% url 'set_language' %}" method="post" class="language-form">
+                                    {% csrf_token %}
+                                    <input name="next" type="hidden" value="{{ request.get_full_path|urlencode }}">
+                                    <input name="language" type="hidden" value="{{ lang_info.code }}">
+                                    <button type="submit" class="dropdown-item {% if lang_info.code == LANGUAGE_CODE %}active{% endif %}">
+                                        {{ lang_info.name_local }} ({{ lang_info.code }})
+                                    </button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="main-content-area">
+    <main id="fullpage">
+        {% block content %}
+        {% endblock %}
+    </main>
+</div>
+{% block extra_js %}{% endblock %}

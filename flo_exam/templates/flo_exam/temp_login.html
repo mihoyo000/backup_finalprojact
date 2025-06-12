@@ -1,0 +1,41 @@
+<!--삭제예정 템플릿-->
+{% extends 'flo_exam/base_header.html' %} {# 또는 공용 base 템플릿 #}
+{% load static %}
+
+{% block title %}임시 로그인{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center mb-4">임시 사용자 로그인</h2>
+
+            {% if temp_user_info %}
+                <div class="alert alert-success" role="alert">
+                    {{ temp_user_info }}
+                </div>
+                <form method="post" action="{% url 'flo_exam:temp_logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning w-100">임시 로그아웃</button>
+                </form>
+            {% else %}
+                <p class="text-muted text-center">테스트할 사용자 ID를 입력하세요. (DB에 실제 존재하는 User ID)</p>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary w-100 mt-3">임시 로그인</button>
+                </form>
+            {% endif %}
+
+            <hr class="my-4">
+            <p class="text-center">
+                <a href="{% url 'flo_exam:upload_page' %}" class="btn btn-info">PDF 업로드 페이지로 가기</a>
+            </p>
+            {# 실제 로그인 페이지가 생기면 그 링크로 대체 #}
+            {# <p class="text-center mt-2">
+                <a href="{% url 'accounts:login' %}">정식 로그인 페이지로 (아직 없음)</a>
+            </p> #}
+        </div>
+    </div>
+</div>
+{% endblock %}

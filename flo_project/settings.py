@@ -28,7 +28,7 @@ load_dotenv(dotenv_path=ENV_PATH) # .env 파일 로드 명시적 경로 지정
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-88+8)+%86)(@u#@xmx-gh8v+b!=j3@4ivsiqwqr&8yt*3m9g@t'
+SECRET_KEY = 'django-insecure-6^t_%3mawcn$k-mglzc#509$uo=wzpjb*cctv0sbmk-9*o)&(='
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # 'multilang.apps.MultilangConfig',  # 추가된 부분
     'tinymce',  # 추가된 부분
     'flo.apps.FloConfig',  # 추가된 부분
+    'flo_exam.apps.FloExamConfig' # 추가된 부분 / flo프로그램 페이지
 ]
 
 MIDDLEWARE = [
@@ -155,8 +156,8 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = '/media/'  # 추가된 부분
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 추가된 부분
+MEDIA_URL = '/media/'  # 웹에서 미디어 파일에 접근할 때 사용될 URL 접두사
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media') # 실제 파일이 서버 파일 시스템에 저장될 루트 디렉토리
 
 # Vectorstore Root 정의
 VECTORSTORE_ROOT = os.path.join(BASE_DIR, 'vectorstores') # 프로젝트 루트 아래 'vectorstores' 폴더
@@ -191,11 +192,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
             # 위 링크에서 http://127.0.0.1:8000/accounts/activate/MTE/comdnf-50575b9549f83384b77e42c119d7709d/를 들어가면 마치 이메일 인증을 받은 것 같은 효과를 줌.
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 # API 키가 로드되었는지 확인하는 print 문 (개발 중에만 사용하고 배포 시 제거)
 if not OPENAI_API_KEY:
-    print("경고: .env 파일에서 OPENAI_API_KEY를 로드하지 못했습니다. settings.py와 .env 파일 설정을 확인하세요.")
+   print("경고: .env 파일에서 OPENAI_API_KEY를 로드하지 못했습니다. settings.py와 .env 파일 설정을 확인하세요.")
     
 TINYMCE_JS_URL = "https://cdn.tiny.cloud/1/xqn37s38iyj7twa9wlozw51dfmv2mqxbxsr6le9amrbajhlc/tinymce/6/tinymce.min.js"
 # Replace YOUR_API_KEY with your actual free API key from tiny.cloud
