@@ -1,0 +1,266 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Flo{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/3.1.2/fullpage.min.css" />
+    <link rel="stylesheet" href="{% static 'flo/css/base.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <header id="header">
+        <div class="container header-layout-container">
+            <div class="header-content-wrapper">
+                <div class="logo-container">
+                    <a href="{% url 'flo:home' %}">
+                        <img id="header-logo" src="{% static 'flo/images/light/header/light-logo.png' %}" alt="Flo Logo">
+                    </a>
+                </div>
+
+                {# ▼▼▼ 추가 ▼▼▼ (모바일용 햄버거 메뉴 토글 버튼) #}
+                <button class="navbar-toggler" type="button" aria-label="Toggle navigation">
+                    <span class="toggler-icon-bar"></span>
+                    <span class="toggler-icon-bar"></span>
+                    <span class="toggler-icon-bar"></span>
+                </button>
+                {# ▲▲▲ 추가 ▲▲▲ #}
+
+                <nav class="main-nav" id="mainNav">
+                    {% if user.is_authenticated %}
+                    {# 모바일 뷰에서만 보일 프로필 섹션 (햄버거 메뉴 상단) #}
+                    <div class="nav-mobile-profile-section">
+                        <a href="#" class="nav-user-info-toggle" data-bs-toggle="collapse" data-bs-target="#navMobileUserMenu" aria-expanded="false" aria-controls="navMobileUserMenu">
+                            <div class="profile-image-wrapper">
+                                <img src="{{ user.profile.get_profile_image_url }}"
+                                    alt="Profile"
+                                    class="{% if not user.profile.has_custom_profile_image %}default-avatar{% endif %}"
+                                    data-has-custom-image="{{ user.profile.has_custom_profile_image|yesno:'true,false' }}">
+                            </div>
+                            <span class="user-display-name">{{ user.profile.get_display_name }}님</span>
+                            <span class="arrow-indicator">▾</span>
+                        </a>
+                        <div class="collapse user-dropdown-menu-mobile" id="navMobileUserMenu">
+                            <ul class="list-unstyled">
+                                <li><a class="dropdown-item" href="#">{% translate "마이페이지" %}</a></li>
+                                <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'flo:logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">{% translate "로그아웃" %}</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <ul class="main-menu">
+                        <li><a href="#">{% translate "Flo와 문제 풀기" %}</a></li>
+                        <li>
+                            {# ▼▼▼ 수정 ▼▼▼ (모바일 서브메뉴 토글 위해 href, data-bs-toggle, 화살표 추가) #}
+                            <a href="#" data-bs-toggle="submenu">{% translate "스터디" %} <span class="submenu-arrow">▾</span></a>
+                            {# ▲▲▲ 수정 ▲▲▲ #}
+                            <ul class="sub-menu">
+                                <li><a href="#">{% translate "스터디 게시판" %}</a></li>
+                                <li><a href="#">{% translate "채팅" %}</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            {# ▼▼▼ 수정 ▼▼▼ (모바일 서브메뉴 토글 위해 href, data-bs-toggle, 화살표 추가) #}
+                            <a href="{% url 'flo:study_post_list' %}" data-bs-toggle="submenu">{% translate "커뮤니티" %} <span class="submenu-arrow">▾</span></a>
+                             {# ▲▲▲ 수정 ▲▲▲ #}
+                            <ul class="sub-menu">
+                                <li><a href="{% url 'flo:study_post_list' %}">{% translate "학습 게시판" %}</a></li>
+                                <li><a href="{% url 'flo:faq_list' %}">{% translate "FAQ" %}</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav> 
+
+                <div class="header-right-controls">
+                    <div class="auth-links ms-auto"> {# ms-auto는 Bootstrap 5에서 오른쪽 정렬 #}
+                        {% if user.is_authenticated %}
+                            <div class="dropdown">
+                                <a href="#" class="user-dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="profile-image-wrapper">
+                                    <img src="{{ user.user_profile.get_profile_image_url }}"
+                                        alt="{{ user.user_profile.get_display_name }} Profile"
+                                        id="user-profile-image"
+                                        class="{% if not user.user_profile.has_custom_profile_image %}default-avatar{% endif %}"
+                                        data-has-custom-image="{{ user.user_profile.has_custom_profile_image|yesno:'true,false' }}">
+                                    </div>
+                                    <span class="user-display-name">{{ user.profile.get_display_name }}님</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#">{% translate "마이페이지" %}</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'accounts:information_redi' %}">{% translate "계정 관리" %}</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form id="logoutForm" method="post" action="{% url 'flo:logout' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item">{% translate "로그아웃" %}</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        {% else %}
+                            <a href="#" id="btn-login" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                {% translate "로그인" %}
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="theme-dropdown dropdown">
+                        <button type="button" id="theme-toggle-btn" class="btn theme-btn" title="{% translate "Change theme" %}" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img id="theme-toggle-icon" src="{% static 'flo/images/light/header/light-auto.png' %}" alt="Theme Icon">
+                        </button>
+                        <div class="dropdown-menu theme-dropdown-menu dropdown-menu-end" id="theme-menu">
+                            <button type="button" class="dropdown-item theme-item" data-theme-mode="light">
+                                {# START: 수정된 부분 - 테마 드롭다운 '라이트' 아이템 아이콘에 ID 추가 #}
+                                <img class="theme-item-icon" id="theme-item-icon-light" src="{% static 'flo/images/light/header/light-light.png' %}" alt="Light Mode Icon">
+                                {# END: 수정된 부분 #}
+                                <span class="theme-text">{% translate "Light" %}</span>
+                            </button>
+                            <button type="button" class="dropdown-item theme-item" data-theme-mode="dark">
+                                {# START: 수정된 부분 - 테마 드롭다운 '다크' 아이템 아이콘에 ID 추가 #}
+                                <img class="theme-item-icon" id="theme-item-icon-dark" src="{% static 'flo/images/light/header/light-dark.png' %}" alt="Dark Mode Icon">
+                                {# END: 수정된 부분 #}
+                                <span class="theme-text">{% translate "Dark" %}</span>
+                            </button>
+                            <button type="button" class="dropdown-item theme-item" data-theme-mode="auto">
+                                {# START: 수정된 부분 - 테마 드롭다운 '자동' 아이템 아이콘에 ID 추가 #}
+                                <img class="theme-item-icon" id="theme-item-icon-auto" src="{% static 'flo/images/light/header/light-auto.png' %}" alt="Auto Mode Icon">
+                                {# END: 수정된 부분 #}
+                                <span class="theme-text">{% translate "Auto" %}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="language-dropdown dropdown">
+                        <button class="btn lang-btn" type="button" id="languageMenuButton" data-bs-toggle="dropdown" aria-expanded="false" title="{% translate "Select language" %}">
+                            <img id="lang-toggle-icon" src="{% static 'flo/images/light/header/light-translate.png' %}" alt="Language Icon">
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageMenuButton">
+                            {% get_available_languages as AVAILABLE_LANGUAGES %}
+                            {% get_language_info_list for AVAILABLE_LANGUAGES as languages_info %}
+                            {% for lang_info in languages_info %}
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="language-form">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path|urlencode }}">
+                                        <input name="language" type="hidden" value="{{ lang_info.code }}">
+                                        <button type="submit" class="dropdown-item {% if lang_info.code == LANGUAGE_CODE %}active{% endif %}">
+                                            {{ lang_info.name_local }} ({{ lang_info.code }})
+                                        </button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content-area">
+        <main id="fullpage">
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container footer-container">
+            {# 로고 섹션 #}
+            <div class="footer-logo-section">
+                <a href="{% url 'flo:home' %}" class="footer-logo-link">
+                    <img id="footer-logo" src="{% static 'flo/images/light/header/light-logo.png' %}" alt="Flo Footer Logo">
+                </a>
+            </div>
+
+            {# 구분선 (로고 아래) #}
+            <hr class="footer-divider top-divider">
+
+            {# 정보 및 링크 섹션 #}
+            <div class="footer-main-content">
+                <div class="footer-info-links-row">
+                    <div class="footer-developer-info">
+                        <span>(주){% translate "Flo" %} | {% translate "개발자:" %} {% translate "이도연, 김시우, 박성민, 최유나" %}</span>
+                    </div>
+                    <div class="footer-nav-links">
+                        <a href="#">{% translate "회사 소개" %}</a>
+                        <a href="#">{% translate "광고 문의" %}</a>
+                        <a href="#">{% translate "이용약관" %}</a>
+                        <a href="#">{% translate "개인정보처리방침" %}</a>
+                    </div>
+                </div>
+                <div class="footer-email-row">
+                    <span>{% translate "개발자 이메일:" %} <strong><a href="mailto:abc@gmail.com">abc@gmail.com</a></strong></span>
+                </div>
+                <div class="footer-copyright">
+                    <span>&copy; 2025 (주)Flo. All rights reserved.</span>
+                </div>
+            </div>
+
+            {# 구분선 (소셜 아이콘 위) #}
+            <hr class="footer-divider bottom-divider">
+
+            {# 소셜 아이콘 섹션 #}
+            <div class="footer-social-section">
+                <a href="#" aria-label="{% translate "YouTube" %}" class="social-icon-link">
+                    {# 여기에 가지고 계신 유튜브 아이콘 이미지 태그를 넣습니다. 예시: #}
+                    <img src="{% static 'flo/images/icons/footer/youtube.png' %}" alt="YouTube" class="footer-youtube-icon">
+                </a>
+                {# 저작권 텍스트를 소셜 아이콘과 같은 줄 또는 다른 곳으로 이동할 수 있습니다. #}
+                {# 두 번째 이미지에는 저작권 텍스트가 보이지 않으므로 일단 주석 처리 또는 삭제 #}
+                {# <p class="copyright-text">© {% now "Y" %} {% translate "Flo Company Lab, Inc." %} All rights reserved.</p> #}
+            </div>
+
+        </div>
+    </footer>
+
+    {% include 'flo/auth/login.html' %}
+
+    <button id="scroll-to-top" title="{% translate "Scroll to top" %}" style="display: none;">
+        <span class="arrow-up">▲</span> {% translate "TOP" %}
+    </button>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/3.1.2/fullpage.min.js"></script>
+
+    <script>
+        window.iconImagePaths = {
+            light: {
+                logo: "{% static 'flo/images/light/header/light-logo.png' %}",
+                themeAuto: "{% static 'flo/images/light/header/light-auto.png' %}",
+                themeDark: "{% static 'flo/images/light/header/light-dark.png' %}",
+                themeLight: "{% static 'flo/images/light/header/light-light.png' %}",
+                translate: "{% static 'flo/images/light/header/light-translate.png' %}"
+            },
+            dark: {
+                logo: "{% static 'flo/images/dark/header/dark-logo.png' %}",
+                themeAuto: "{% static 'flo/images/dark/header/dark-auto.png' %}",
+                themeDark: "{% static 'flo/images/dark/header/dark-dark.png' %}",
+                themeLight: "{% static 'flo/images/dark/header/dark-light.png' %}",
+                translate: "{% static 'flo/images/dark/header/dark-translate.png' %}"
+            }
+        };
+
+        // 만약 기본 프로필 이미지도 테마에 따라 바꾸고 싶다면, 여기에 경로 추가
+        window.defaultProfileImagePaths = {
+            light: "{% static 'flo/images/icons/profile/default_profile_light.png' %}", // 라이트 모드용 기본 프로필
+            dark: "{% static 'flo/images/icons/profile/default_profile_dark.png' %}"   // 다크 모드용 기본 프로필
+        };
+    </script>
+    <script src="{% static 'flo/js/base.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

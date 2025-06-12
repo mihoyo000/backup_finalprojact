@@ -1,0 +1,123 @@
+{% extends 'flo/base.html' %}
+{% load static %}
+
+{% block title %}비밀번호 재설정 안내{% endblock %}
+
+{% block content %}
+<div class="find-container">
+  <div class="find-logo-box">
+    <img src="{% static 'flo/images/light/header/light-logo.png' %}" alt="FL0 로고">
+  </div>
+  <h2 class="find-pending-title">입력하신 이메일의 아이디입니다.</h2>
+  <h2 class="find-sub-title">아이디 전체 확인을 원하시면 이메일 전송을 눌러주세요.</h2>
+
+  <div class="email-box">
+    <span class="find-email-text">아이디 : <strong>fxxxxx99</strong>
+        <button class="find-sub-in-btn" onclick="showEmailModal()">메일로 아이디 전체 확인하기</button>
+    </span>
+  </div>
+
+  <div>
+    <button class="find-button">
+        <span>비밀번호가 기억나지 않는다면?</span>
+        <span class="link-blue-indk">비밀번호 찾기</span>
+    </button>
+    <p class="sub-text">FLO 개인정보 고객센터</p>
+  </div>
+</div>
+
+<!-- 알림 메시지 모달 -->
+<div id="emailModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <p>메일이 전송되었어요! <span id="userEmail">fxxxxx99</span> 메일함을 확인해보세요!</p>
+    <p>메일이 오지 않았다면 스팸함을 확인해 주세요!</p>
+    <button onclick="closeModal()" class="modal-close-btn">확인</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'flo/css/find_page.css' %}">
+<style>
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.modal.show {
+  opacity: 1;
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.7);
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  transition: transform 0.3s ease-in-out;
+}
+
+.modal.show .modal-content {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-close-btn {
+  margin-top: 15px;
+  padding: 8px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-close-btn:hover {
+  background-color: #0056b3;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showEmailModal() {
+  const modal = document.getElementById('emailModal');
+  modal.style.display = 'block';
+  // 약간의 지연 후 show 클래스 추가
+  setTimeout(() => {
+    modal.classList.add('show');
+  }, 10);
+}
+
+function closeModal() {
+  const modal = document.getElementById('emailModal');
+  modal.classList.remove('show');
+  // 애니메이션이 끝난 후 display none
+  setTimeout(() => {
+    modal.style.display = 'none';
+  }, 300);
+}
+
+// 모달 외부 클릭 시 닫기
+window.onclick = function(event) {
+  var modal = document.getElementById('emailModal');
+  if (event.target == modal) {
+    closeModal();
+  }
+}
+</script>
+{% endblock %}
+
+<!-- 아이디확인 메일은 펜딩페이지 없이 말풍선으로 알림 및 노티 -->

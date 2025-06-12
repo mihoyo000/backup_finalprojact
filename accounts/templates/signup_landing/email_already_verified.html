@@ -1,0 +1,30 @@
+{% extends 'flo/base.html' %}
+{% load static %}
+
+{% block title %}이미 인증된 이메일{% endblock %}
+
+{% block content %}
+<div class="email-pending-container">
+  <div class="mail-box">
+    <div class="email-logo-box">
+      <img src="{% static 'flo/images/light/header/light-main-logo.png' %}" alt="FL0 로고">
+    </div>
+    <div class="mail-texts">
+      <div class="mail-title">이미 인증된 이메일이에요!</div>
+      <p>
+        바로 로그인하시면 됩니다 🙌
+      </p>
+      <p>
+        혹시 비밀번호를 잊으셨다면<br>
+        '비밀번호 찾기'를 이용해주세요.
+      </p>
+      <button type="button" class="mail-btn-outline">로그인 하러 가기</button>
+      <button type="button" class="mail-btn-dark">비밀번호 찾기</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'flo/css/email_pending.css' %}">
+{% endblock %}

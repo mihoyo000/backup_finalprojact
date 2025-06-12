@@ -1,0 +1,76 @@
+{% extends 'flo/base.html' %}
+{% load static %}
+
+{% block title %}인증 링크 만료{% endblock %}
+
+{% block content %}
+<div class="email-pending-container">
+  <div class="mail-box">
+    <div class="email-logo-box">
+      <img src="{% static 'flo/images/light/header/light-main-logo.png' %}" alt="FL0 로고">
+    </div>
+    <div class="mail-texts">
+      <div class="mail-title">인증 링크가 만료되었어요!</div>
+      <p>
+        보안상 일정 시간이 지나면<br>
+        인증 링크는 더 이상 사용할 수 없어요.<br>
+        '인증 메일 재전송' 버튼을 눌러 새로운 링크를 받아<br>
+        확인해주세요!
+      </p>
+      <div class="mail-info">
+        전송 이메일 : 
+        <span class="mail-user">{{ user.email }}</span>
+      </div>
+      <button type="button" class="mail-btn-dark" id="resendEmailBtn">인증 메일 다시 보내기</button>
+    </div>
+  </div>
+</div>
+<!-- CSRF 토큰 hidden으로 템플릿에 포함 -->
+<form id="csrf-form" style="display:none;">{% csrf_token %}</form>
+<div id="pending-overlay" style="display:none;">
+  <div class="pending-spinner"></div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'flo/css/email_pending.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const resendBtn = document.getElementById('resendEmailBtn');
+  const overlay = document.getElementById('pending-overlay');
+  resendBtn?.addEventListener('click', function() {
+    const email = '{{ user.email|escapejs }}';
+    const csrfToken = document.querySelector('#csrf-form input[name="csrfmiddlewaretoken"]').value;
+    if (!email) {
+      alert('이메일 정보가 없습니다. 다시 시도해 주세요.');
+      return;
+    }
+    overlay.style.display = 'flex';
+    resendBtn.disabled = true;
+
+    fetch('{% url "accounts:send_verification_email" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken
+      },
+      body: new URLSearchParams({
+        'new_email': email
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.result === 'ok') {
+        // 성공 시 펜딩 페이지로 리디렉션
+        window.location.href = '{% url "accounts:email_pending" %}';
+      } else {
+        alert('메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

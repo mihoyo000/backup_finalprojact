@@ -1,0 +1,135 @@
+{% extends 'flo/base.html' %}
+{% load static i18n %}
+
+{% block title %}Flo | Home{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'flo/css/index.css' %}">
+{% endblock %}
+
+{% block content %}
+{# This content will be inside <main id="fullpage"> from base.html #}
+
+    <!-- Section 1: 프로그램 시작하기 -->
+    <div class="section section-1" data-anchor="program-start"
+         style="background-image: url('{% static "flo/images/slide/slide1.png" %}');">
+        <div class="slide-overlay"></div>
+        <div class="slide-content section1-content">
+            <h1 class="s1-main-title">
+                <span class="s1-title-line1">새로운 공부 시작,</span>
+                <span class="s1-title-line2"><span class="flo-highlight">Flo</span>가 함께할께요.</span>
+            </h1>
+            <a href="#" class="btn btn-flo-start">시작하기</a>
+        </div>
+    </div>
+
+    <!-- Section 2: 기능 소개 -->
+    <div class="section section-2" data-anchor="features">
+        <div class="slide-content section2-content">
+            <h2 class="s2-main-title">기능 소개</h2>
+            <div class="feature-container">
+                {# 첫 번째 기능 블록: 인라인 스타일 제거, 식별 클래스 추가 #}
+                <div class="feature-block feature-bg-1">
+                    <div class="feature-text">
+                        <p>혼자 어떻게 공부할지 몰라<span class="flo-rotated-text">Flo<br>Flo</span> 앓고 계신가요?<br>공부하고 싶으신 자료를 Flo에게 주세요.</p>
+                        <h3>Flo가 맞춤 시험 문제를 만들어 드립니다.</h3>
+                        <a href="#" class="btn btn-flo-feature1">시험 문제 만들기 <i class="bi bi-arrow-right-short"></i></a>
+                    </div>
+                    <div class="feature-image">
+                        <img src="{% static 'flo/images/slide/slide2-1.png' %}" alt="{% translate 'Customized Problems' %}">
+                    </div>
+                </div>
+
+                {# 두 번째 기능 블록: 인라인 스타일 제거, 식별 클래스 추가 #}
+                <div class="feature-block reverse feature-bg-2">
+                    <!-- <div class="feature-block-inner-bg">  -->
+                    <div class="feature-text">
+                        <p>나와 비슷한 사람과 함께 공부하고 싶으신가요?</p>
+                        <div class="middle-text-group">
+                            <span class="section-2-strong">학습 자료 공유</span><span class="section-2-no-strong">부터 소통할 수 있는</span><span class="section-2-strong">커뮤니티</span><span class="section-2-no-strong">까지,</span>
+                        </div>
+                        <h3>스터디 활동을 위한 모든 것이 준비되어 있습니다.</h3>
+                        <a href="#" class="btn btn-flo-feature2">스터디 활동 시작 <i class="bi bi-arrow-right-short"></i></a>
+                    </div>
+                    <div class="feature-image">
+                        <img src="{% static 'flo/images/slide/slide2-2.png' %}" alt="{% translate 'Customized Problems' %}">
+                    </div>
+                    {# feature-image는 작은 화면에서 display: none 이므로, inner-bg에 영향을 주지 않음 #}
+                    <!-- </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: 커뮤니티 - 인기글 (기존과 동일) -->
+    <div class="section section-3" data-anchor="community-posts">
+        <div class="slide-content section3-content">
+            <h2 class="s3-main-title">요즘 뜨는 게시글</h2>
+            
+            <div class="top-posts-container">
+                {% if top_posts %}
+                    {% for post in top_posts %}
+                    <a href="{{ post.get_absolute_url }}" class="top-post-item">
+                        {% if not post.is_notice %}
+                        <div class="top-post-rank">
+                            #{{ forloop.counter }}
+                        </div>
+                        {% endif %}
+                        <div class="top-post-main">
+                            {% if post.is_notice %}
+                                <span class="top-post-notice-badge">공지</span>
+                            {% endif %}
+                            {% if post.categories.all %}
+                                <div class="top-post-category">
+                                {% for cat in post.categories.all|slice:":2" %} {# 최대 2개 카테고리 표시 #}
+                                    <span class="badge">{{ cat.name|truncatechars:10 }}</span>
+                                {% endfor %}
+                                {% if post.categories.all|length > 2 %}
+                                    <span class="badge more-categories-badge">...</span>
+                                {% endif %}
+                                </div>
+                            {% endif %}
+                            <h4 class="top-post-title" title="{{ post.title }}">
+                                {{ post.title|truncatechars:50 }}
+                            </h4>
+                            <div class="top-post-meta">
+                                <span class="author">
+                                    <i class="bi bi-person-fill"></i> {{ post.author.profile.get_display_name|default:post.author.username }}
+                                </span>
+                                <span class="date">
+                                    <i class="bi bi-calendar3"></i> {{ post.created_at|date:"y.m.d" }}
+                                </span>
+                                <span class="views">
+                                    <i class="bi bi-eye-fill"></i> {{ post.views }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="top-post-stats">
+                            <span class="likes" title="좋아요">
+                                <img src="{% static 'flo/images/icons/study_post/heart-red.png' %}" alt="좋아요" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
+                                {{ post.num_likes|default:0 }}
+                            </span>
+                            <span class="comments" title="댓글">
+                                <img src="{% static 'flo/images/icons/study_post/comments-light.png' %}" alt="댓글" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
+                                {{ post.num_comments|default:0 }}
+                            </span>
+                        </div>
+
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-top-posts">아직 인기 게시글이 없습니다.</p>
+                {% endif %}
+            </div>
+
+            <a href="{% url 'flo:study_post_list' %}" class="btn btn-flo-community">
+                학습 게시판 <i class="bi bi-arrow-right-short"></i>
+            </a>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'flo/js/index.js' %}"></script>
+{% endblock %}

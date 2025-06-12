@@ -1,0 +1,160 @@
+/* ===== 공통 ===== */
+.find-container {
+  max-width: 1400px;
+  text-align: center;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.find-logo-box {
+  width: 480px;
+  height: 340px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.find-logo-box img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.find-title {
+  font-size: 50px;
+  font-weight: 1300;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+.find-pending-title {
+  font-size: 50px;
+  font-weight: 1300;
+  margin-bottom: 5px;
+}
+.find-sub-title {
+  font-size: 38px;
+  font-weight: 1300;
+  margin-bottom: 40px;
+}
+
+.input-box,
+.email-box {
+  display: flex;
+  height: 55;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.find-input {
+  width: 100%;
+  max-width: 425px;
+  height: 55px;
+  padding: 16px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+}
+.find-pw-id-input {
+  width: 100%;
+  max-width: 425px;
+  height: 55px;
+  padding: 16px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.find-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  max-width: 425px;
+  height: 50px;
+
+  background-color: #000;
+  color: white;
+  font-size: 18px;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+  margin-top: 15px;
+  margin-bottom: 40px;
+
+  transition: background-color 0.2s ease;
+}
+
+
+.find-button:hover {
+  background-color: #222;
+}
+
+.find-sub-btn {
+  height: 43px;
+  font-size: 14px;
+  padding: 10px 18px;
+  background: #fff;
+  border: 1.5px solid #000;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.find-sub-in-btn {
+  height: 32px;
+  font-size: 14px;
+  padding: 4px 18px;
+  background: #fff;
+  border: 1.5px solid #000;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-left: 100px;
+}
+
+.find-sub-btn:hover {
+  background-color: #f3f3f3;
+}
+
+.find-text {
+  font-size: 16px;
+  color: #333;
+}
+
+.find-email-text {
+  font-size: 16px;
+  color: #222;
+  padding: 15px 20px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+}
+
+.link-blue {
+  color: #1a2cff;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.link-blue-indk {
+  color: #868DE4;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 20px;
+}
+
+.sub-text {
+  color: #aaa;
+  margin-top: 12px;
+  font-size: 14px;
+  margin-top: 40px;
+  margin-bottom: 150px;
+}
+
+
+
