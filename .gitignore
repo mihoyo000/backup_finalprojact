@@ -2,6 +2,7 @@
 venv/
 # 기타 Django 프로젝트에서 제외할 파일들 (예시)
 __pycache__/
+*.pyc
 db.sqlite3
 *.sqlite3
 *.log

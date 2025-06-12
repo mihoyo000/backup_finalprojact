@@ -211,8 +211,17 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
     
-TINYMCE_JS_URL = "https://cdn.tiny.cloud/1/xqn37s38iyj7twa9wlozw51dfmv2mqxbxsr6le9amrbajhlc/tinymce/6/tinymce.min.js"
-# Replace YOUR_API_KEY with your actual free API key from tiny.cloud
+# 1. .env에서 TinyMCE API 키를 불러옵니다.
+TINYMCE_API_KEY = os.environ.get("TINYMCE_API_KEY")
+
+if not TINYMCE_API_KEY:
+    # 키가 없는 경우 기본 'no-api-key'를 사용하거나 오류를 발생시킬 수 있습니다.
+    # 'no-api-key'를 사용하면 개발자 모드로 작동하며, 도메인 등록 알림이 계속 뜹니다.
+    TINYMCE_API_KEY = 'no-api-key' 
+    print("경고: .env 파일에서 TINYMCE_API_KEY를 찾을 수 없습니다. 개발자 모드로 실행됩니다.")
+
+# 2. 불러온 키를 사용하여 TINYMCE_JS_URL을 동적으로 설정합니다.
+TINYMCE_JS_URL = f"https://cdn.tiny.cloud/1/xqn37s38iyj7twa9wlozw51dfmv2mqxbxsr6le9amrbajhlc/tinymce/7/tinymce.min.js"
 
 TINYMCE_DEFAULT_CONFIG = {
     'height': 360,

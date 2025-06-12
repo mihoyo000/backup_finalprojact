@@ -195,56 +195,6 @@
         </main>
     </div>
 
-    <footer class="site-footer">
-        <div class="container footer-container">
-            {# 로고 섹션 #}
-            <div class="footer-logo-section">
-                <a href="{% url 'flo:home' %}" class="footer-logo-link">
-                    <img id="footer-logo" src="{% static 'flo/images/light/header/light-logo.png' %}" alt="Flo Footer Logo">
-                </a>
-            </div>
-
-            {# 구분선 (로고 아래) #}
-            <hr class="footer-divider top-divider">
-
-            {# 정보 및 링크 섹션 #}
-            <div class="footer-main-content">
-                <div class="footer-info-links-row">
-                    <div class="footer-developer-info">
-                        <span>(주){% translate "Flo" %} | {% translate "개발자:" %} {% translate "이도연, 김시우, 박성민, 최유나" %}</span>
-                    </div>
-                    <div class="footer-nav-links">
-                        <a href="#">{% translate "회사 소개" %}</a>
-                        <a href="#">{% translate "광고 문의" %}</a>
-                        <a href="#">{% translate "이용약관" %}</a>
-                        <a href="#">{% translate "개인정보처리방침" %}</a>
-                    </div>
-                </div>
-                <div class="footer-email-row">
-                    <span>{% translate "개발자 이메일:" %} <strong><a href="mailto:abc@gmail.com">abc@gmail.com</a></strong></span>
-                </div>
-                <div class="footer-copyright">
-                    <span>&copy; 2025 (주)Flo. All rights reserved.</span>
-                </div>
-            </div>
-
-            {# 구분선 (소셜 아이콘 위) #}
-            <hr class="footer-divider bottom-divider">
-
-            {# 소셜 아이콘 섹션 #}
-            <div class="footer-social-section">
-                <a href="#" aria-label="{% translate "YouTube" %}" class="social-icon-link">
-                    {# 여기에 가지고 계신 유튜브 아이콘 이미지 태그를 넣습니다. 예시: #}
-                    <img src="{% static 'flo/images/icons/footer/youtube.png' %}" alt="YouTube" class="footer-youtube-icon">
-                </a>
-                {# 저작권 텍스트를 소셜 아이콘과 같은 줄 또는 다른 곳으로 이동할 수 있습니다. #}
-                {# 두 번째 이미지에는 저작권 텍스트가 보이지 않으므로 일단 주석 처리 또는 삭제 #}
-                {# <p class="copyright-text">© {% now "Y" %} {% translate "Flo Company Lab, Inc." %} All rights reserved.</p> #}
-            </div>
-
-        </div>
-    </footer>
-
     {% include 'flo/auth/login.html' %}
 
     <button id="scroll-to-top" title="{% translate "Scroll to top" %}" style="display: none;">

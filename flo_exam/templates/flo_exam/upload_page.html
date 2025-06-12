@@ -1,4 +1,4 @@
-{% extends 'flo/base.html' %}
+{% extends 'flo_exam/base_header.html' %}
 {% load static %}
 {% load static i18n %}
 
@@ -6,6 +6,7 @@
 
 {% block extra_css %}
     {# --- upload_page.html 고유의 CSS --- #}
+    <link rel="stylesheet" href="{% static 'flo/css/base_header.css' %}">
     <link rel="stylesheet" href="{% static 'flo_exam/css/upload_page.css' %}">
 {% endblock %}
 
