@@ -32,8 +32,10 @@ class Profile(models.Model):
 
     @property
     def has_custom_profile_image(self):
+        # 사용자가 직접 프로필 이미지를 업로드했는지 여부를 반환
         return bool(self.profile_image and self.profile_image.name)
 
+# User 모델이 저장될 때 (특히 생성될 때) Profile 모델도 함께 생성/업데이트
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
@@ -216,7 +218,7 @@ class Post(models.Model):
         return self.likes.count()
 
     @property
-    def calculated_comment_count(self): # 다른 이름으로 변경
+    def comment_count(self): # 'calculated_comment_count' -> 'comment_count'
         return self.comments.count()
     
     def get_category_display_names(self): # 선택된 카테고리 이름들을 문자열로 반환 (템플릿 표시용)
@@ -230,7 +232,6 @@ class Post(models.Model):
         verbose_name_plural = "학습 게시글 목록"
         ordering = ['-is_notice', '-created_at']
             
-
 class Attachment(models.Model):
     post = models.ForeignKey(Post, related_name='post_attachments', on_delete=models.CASCADE, verbose_name="게시글")
     file = models.FileField(upload_to='post_attachments/%Y/%m/%d/', verbose_name="첨부파일")
@@ -282,17 +283,29 @@ class Attachment(models.Model):
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name="원본글")
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='study_post_comments', verbose_name="댓글 작성자")
+    
+    parent = models.ForeignKey(
+        'self', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True, 
+        related_name='replies',
+        verbose_name="부모 댓글"
+    )
+    
     content = models.TextField(verbose_name="댓글 내용")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="댓글 작성일")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="댓글 수정일")
 
     def __str__(self):
+        # 답글인 경우와 아닌 경우를 구분하여 표시 (관리자 페이지 등에서 보기 편함)
+        if self.parent:
+            return f"Reply by {self.author.username} on '{self.parent.content[:20]}...'"
         return f"Comment by {self.author.username} on {self.post.title}"
-
     class Meta:
-        verbose_name = "댓글"
-        verbose_name_plural = "댓글 목록"
-        ordering = ['created_at'] # 오래된 댓글부터
+        verbose_name = "댓글 & 답글"
+        verbose_name_plural = "댓글 & 답글 목록"
+        ordering = ['created_at'] # 항상 생성순으로 정렬 (뷰에서 필요시 재정렬)
 
 class FAQCategory(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="FAQ 카테고리명")

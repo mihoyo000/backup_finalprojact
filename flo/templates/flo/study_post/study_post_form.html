@@ -54,7 +54,7 @@
             <hr class="title-underline">
         </div>
 
-        <form method="post" enctype="multipart/form-data" class="study-post-form">
+        <form method="post" enctype="multipart/form-data" class="study-post-form" id="study-post-form">
             {% csrf_token %}
             
             {# categories 필드는 MultipleHiddenInput으로 렌더링되므로, form.categories 자체는 숨겨짐 #}
@@ -245,7 +245,7 @@
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://cdn.tiny.cloud/1/xqn37s38iyj7twa9wlozw51dfmv2mqxbxsr6le9amrbajhlc/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script> {# API 키 변경 #}
+{{ form.media.js }}
 
 <script type="text/javascript">
 console.log("--- JavaScript execution started ---"); // ★★★ 이 로그가 뜨는지 확인 ★★★
@@ -719,6 +719,21 @@ document.addEventListener('DOMContentLoaded', function() {
             $(formsWrapper).append($newFormItem);
             setupAttachmentFormItem($newFormItem);
             totalFormsInput.value = formIdx + 1;
+        });
+    }
+
+    const postForm = document.getElementById('study-post-form');
+    if (postForm) {
+        // 'submit' 이벤트가 발생하면(사용자가 등록/수정 버튼을 누르면) 실행
+        postForm.addEventListener('submit', function(event) {
+            
+            // 확인창을 띄우고, 사용자가 '취소'를 누르면
+            if (!confirm('게시글을 {{ submit_text|default:"등록" }}하시겠습니까?')) {
+                // 폼 제출(서버로 데이터 전송)을 막습니다.
+                event.preventDefault(); 
+            }
+            // '확인'을 누르면 폼이 정상적으로 제출됩니다.
+
         });
     }
 

@@ -41,16 +41,18 @@
 
     {# 제목 셀: 클래스명 'post-title-cell' 사용 #}
     <td class="post-title-cell">
-        <a href="{{ post.get_absolute_url }}" class="post-title-link" title="{{ post.title }}">
-            {% if post.is_notice %}
-                {{ post.title }}
-            {% else %}
-                {{ post.title|truncate_chars:30 }}
+        <div class="title-and-comment-wrapper">
+            <a href="{{ post.get_absolute_url }}" class="post-title-link" title="{{ post.title }}">
+                {% if post.is_notice %}
+                    {{ post.title }}
+                {% else %}
+                    {{ post.title|truncate_chars:30 }}
+                {% endif %}
+            </a>
+            {% if not post.is_notice and post.annotated_comment_count > 0 %}
+                <span class="comment-count-badge">[{{ post.annotated_comment_count }}]</span>
             {% endif %}
-        </a>
-        {% if not post.is_notice and post.annotated_comment_count > 0 %} {# views.py에서 annotate한 필드 사용 #}
-            <span class="comment-count-badge">[{{ post.annotated_comment_count }}]</span>
-        {% endif %}
+        </div>
     </td>
 
     <td>{{ post.author.profile.get_display_name }}</td>

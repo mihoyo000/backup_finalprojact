@@ -154,18 +154,22 @@
                         </td>
 
                         {# 제목 셀 - 클래스 추가 #}
-                        <td class="post-title-cell"> 
-                            <a href="{{ post.get_absolute_url }}" class="post-title-link" title="{{ post.title }}">
-                                {% if post.is_notice %}
-                                    {{ post.title }}
-                                {% else %}
-                                    {{ post.title|truncate_chars:30 }}
+                        <td class="post-title-cell">
+                            {# 제목과 댓글 수를 감싸는 div 추가 #}
+                            <div class="title-and-comment-wrapper">
+                                <a href="{{ post.get_absolute_url }}" class="post-title-link" title="{{ post.title }}">
+                                    {% if post.is_notice %}
+                                        {{ post.title }}
+                                    {% else %}
+                                        {{ post.title|truncate_chars:30 }}
+                                    {% endif %}
+                                </a>
+                                
+                                {# 댓글 수 뱃지를 a 태그 밖, wrapper 안에 배치 #}
+                                {% if not post.is_notice and post.comment_count > 0 %}
+                                    <span class="comment-count-badge">[{{ post.comment_count }}]</span>
                                 {% endif %}
-                            </a>
-                            
-                            {% if not post.is_notice and post.comment_count > 0 %}
-                                <span class="comment-count-badge">[{{ post.comment_count }}]</span>
-                            {% endif %}
+                            </div>
                         </td>
 
                         <td>{{ post.author.profile.get_display_name }}</td>

@@ -1,6 +1,6 @@
 # flo/views.py
 import os
-from django.conf import settings
+from django.conf import settings # settings.STATIC_URL 사용을 위해 추가
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -8,17 +8,18 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count, Prefetch
-from django.db.models.functions import Lower, Coalesce
-from django.db.models import Value
+from django.db.models.functions import Lower, Coalesce # ★★★ Lower, Coalesce 임포트 확인/추가 ★★★
+from django.db.models import Value                     # ★★★ Value 임포트 확인/추가 (Coalesce와 함께 사용 시) ★★★
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.contrib import messages
 from .models import Post, Attachment, Comment, Category, FAQCategory, FAQItem, Profile
 from .forms import PostForm, AttachmentForm, CommentForm
 from django.forms import inlineformset_factory
-from django.core.serializers.json import DjangoJSONEncoder
-import json
+
+from django.core.serializers.json import DjangoJSONEncoder # 추가
+import json # 추가
 from django.template.loader import render_to_string
-from itertools import groupby
+from itertools import groupby # Python 표준 라이브러리
 
 def home(request):
     # 인기 게시글 Top 3 가져오기
@@ -28,7 +29,7 @@ def home(request):
     # 2. (좋아요 수 같을 시) 조회수 많은 순
     # 3. (좋아요 수, 조회수 같을 시) 최신순
     top_posts = Post.objects.filter(
-        is_notice=False
+        is_notice=False  # 공지사항 제외
     ).annotate(
         num_likes=Count('likes', distinct=True),
         num_comments=Count('comments', distinct=True)
@@ -51,38 +52,32 @@ def home(request):
 
 # --- 로그인 뷰 ---
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('flo:home')
+    if request.user.is_authenticated: # 이미 로그인한 사용자는 로그인 페이지 접근 불가
+        return redirect('flo:home') # 또는 'flo:study_post_list'
 
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': True,
-                    'message': f'{user.username}님, 로그인되었습니다.'
-                })
             messages.success(request, f'{user.username}님, 로그인되었습니다.')
             next_url = request.GET.get('next')
             return redirect(next_url or 'flo:home')
         else:
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': False,
-                    'message': '아이디 또는 비밀번호가 올바르지 않습니다.'
-                })
+            # 폼 에러 (아이디/비번 틀림 등)는 AuthenticationForm이 처리
             messages.error(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
     else:
         form = AuthenticationForm()
+    # next 파라미터를 템플릿으로 전달하여 로그인 후 원래 가려던 페이지로 이동할 수 있도록 form action에 포함
     return render(request, 'flo/auth/login.html', {'form': form, 'next': request.GET.get('next', '')})
 
+
 # --- 로그아웃 뷰 ---
-@login_required
+@login_required # 로그아웃은 로그인된 사용자만
 def logout_view(request):
+    # POST 요청으로만 로그아웃을 처리하여 CSRF 공격 방지
     if request.method == 'POST':
-        username = request.user.username
+        username = request.user.username # 로그아웃 전에 사용자 이름 저장 (메시지용)
         auth_logout(request)
         messages.info(request, f'{username}님, 성공적으로 로그아웃되었습니다.')
         return redirect('flo:home')
@@ -222,34 +217,54 @@ def ajax_get_comments(request, post_pk):
 # 기존 study_post_detail 뷰는 초기 로드 시 댓글 정렬을 적용하도록 수정
 def study_post_detail(request, pk):
     post = get_object_or_404(
-        Post.objects.select_related('author').prefetch_related('likes', 'categories'), # comments는 아래에서 정렬
+        Post.objects.select_related('author__profile').prefetch_related(
+            'likes', 
+            'categories',
+            'post_attachments' # ★★★ 첨부파일도 미리 가져옵니다 ★★★
+        ),
         pk=pk
     )
     comment_form = CommentForm()
 
-    # --- 조회수 증가 로직 ---
-    post.views += 1
-    post.save(update_fields=['views'])
+    # 조회수 증가 로직 (세션 등을 이용한 중복 방지는 생략된 상태)
+    session_key = f'post_viewed_{pk}'
+    if not request.session.get(session_key):
+        post.views += 1
+        post.save(update_fields=['views'])
+        request.session[session_key] = True
 
-    # 초기 댓글 정렬 (기본: 등록순)
-    # URL 파라미터로 sort를 받을 수도 있지만, AJAX로 처리하므로 초기엔 고정하거나 세션/쿠키로 기억
-    initial_sort_order = request.GET.get('sort', 'created_at') # 또는 'created_at' 고정
+    # --- ★★★ 댓글/답글 조회 로직 (핵심 수정 부분) ★★★ ---
+    # 1. 최상위 댓글만 가져옵니다 (parent가 없는 댓글).
+    top_level_comments_qs = post.comments.filter(parent__isnull=True).select_related(
+        'author__profile'
+    )
+
+    # 2. prefetch_related를 사용하여 각 댓글에 달린 답글(replies)들을 미리 가져와 N+1 문제를 방지합니다.
+    #    답글들도 작성자와 프로필 정보를 포함하도록 prefetch 내부에서 select_related를 사용합니다.
+    top_level_comments_qs = top_level_comments_qs.prefetch_related(
+        Prefetch(
+            'replies', # models.py의 related_name='replies'
+            queryset=Comment.objects.select_related('author__profile').order_by('created_at'),
+            to_attr='prefetched_replies' # 템플릿에서 사용할 속성 이름
+        )
+    )
+    
+    # 3. 최상위 댓글 정렬
+    initial_sort_order = request.GET.get('sort', 'created_at')
     if initial_sort_order == '-created_at':
-        comments = post.comments.order_by('-created_at').select_related('author__profile')
+        comments = top_level_comments_qs.order_by('-created_at')
     else:
-        comments = post.comments.order_by('created_at').select_related('author__profile')
+        comments = top_level_comments_qs.order_by('created_at')
+    # --- 여기까지 댓글/답글 조회 로직 수정 ---
 
-
-    is_liked = False
-    if request.user.is_authenticated and post.likes.filter(pk=request.user.pk).exists():
-        is_liked = True
+    is_liked = request.user.is_authenticated and post.likes.filter(pk=request.user.pk).exists()
 
     context = {
         'post': post,
-        'comments': comments, # 정렬된 댓글 전달
+        'comments': comments, # 이제 prefetch된 답글을 포함한 댓글 목록이 전달됩니다.
         'comment_form': comment_form,
         'is_liked': is_liked,
-        'current_sort_order': initial_sort_order, # 현재 정렬 상태 전달 (JS에서 초기 active 클래스 설정용)
+        'current_sort_order': initial_sort_order,
     }
     return render(request, 'flo/study_post/study_post_detail.html', context)
 
@@ -306,6 +321,8 @@ def study_post_create(request):
                     'children_exists': major_cat.children.exists(),
                     'is_leaf': major_cat.is_leaf_node()
                 })
+                
+            messages.error(request, '게시글 등록에 실패했습니다. 입력 내용을 확인해주세요.')
 
             context = { # POST 실패 시 context 재구성
                 'form': form,
@@ -751,7 +768,7 @@ def study_post_comment_delete(request, pk):
             return JsonResponse({
                 'status': 'success',
                 'deleted_comment_id': comment_id, # 삭제된 댓글 ID 전달
-                'comment_count': post.comment_count # 최신 댓글 수 전달
+                'comment_count': post.comment_count,  # 최신 댓글 수 전달
             })
         
         messages.success(request, '댓글이 삭제되었습니다.')
@@ -759,6 +776,63 @@ def study_post_comment_delete(request, pk):
     
     # POST 요청이 아닐 경우 (AJAX는 POST로 보내므로 이 경우는 드묾)
     return HttpResponseBadRequest("잘못된 요청입니다. POST 요청만 허용됩니다.")
+
+# ▼▼▼ 답글 관련 뷰 (새로 추가하거나 아래 내용으로 교체) ▼▼▼
+@login_required
+def study_post_reply_create(request, pk): # pk는 부모 댓글의 ID
+    parent_comment = get_object_or_404(Comment, pk=pk)
+    post = parent_comment.post
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            reply = form.save(commit=False)
+            reply.post = post
+            reply.author = request.user
+            reply.parent = parent_comment # ★ 부모 댓글 설정 ★
+            reply.save()
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                # 프로필 정보 가져오기 (AJAX 응답용)
+                profile = getattr(reply.author, 'profile', None)
+                author_display_name = profile.get_display_name if profile else reply.author.username
+                has_custom_profile_image = profile.has_custom_profile_image if profile else False
+                author_profile_image_url = profile.get_profile_image_url if has_custom_profile_image else None
+
+                # 템플릿 렌더링을 통해 HTML 조각을 생성하는 것도 좋은 방법입니다.
+                # 여기서는 JS에서 직접 HTML을 만들 수 있도록 JSON 데이터를 보냅니다.
+                return JsonResponse({
+                    'status': 'success',
+                    'reply_id': reply.id,
+                    'parent_id': parent_comment.id,
+                    'author_display_name': author_display_name,
+                    'author_profile_image_url': author_profile_image_url,
+                    'has_custom_profile_image': has_custom_profile_image,
+                    'content': reply.content, # linebreaksbr 처리는 JS에서
+                    'content_raw': reply.content, # 수정 폼용 원본
+                    'created_at': reply.created_at.strftime('%Y-%m-%d %H:%M'),
+                    'comment_count': post.comment_count,
+                    'edit_url': reverse('flo:study_post_comment_edit', args=[reply.pk]),
+                    'delete_url': reverse('flo:study_post_comment_delete', args=[reply.pk]),
+                })
+            # AJAX 요청이 아닌 경우 (일반적으로 사용되지 않음)
+            messages.success(request, '답글이 작성되었습니다.')
+            return redirect(post.get_absolute_url() + f'#comment-{reply.id}')
+
+        else: # 폼이 유효하지 않을 경우
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+            messages.error(request, '답글 작성에 실패했습니다.')
+            return redirect(post.get_absolute_url() + f'#comment-{parent_comment.id}')
+
+    # GET 요청 등 비정상적인 접근 처리
+    return redirect(post.get_absolute_url())
+
+# 답글의 수정과 삭제는 기존 댓글의 뷰/URL을 공유하는 것이 효율적입니다.
+# 따라서 별도의 reply_edit, reply_delete 뷰는 만들 필요가 없습니다.
+# urls.py에서도 답글 수정/삭제 URL을 지우고, 템플릿에서 
+# 댓글과 답글 모두 study_post_comment_edit/delete를 사용하도록 하면 됩니다.
+# (이전 답변의 템플릿 코드는 이미 그렇게 되어 있습니다.)
 
 
 # FAQ 목록 (faq.html)
