@@ -173,13 +173,35 @@ class PostAdmin(admin.ModelAdmin):
 # --- CommentAdmin 수정 ---
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('post_title_link', 'author_username_display', 'content_excerpt', 'created_at_formatted')
-    readonly_fields = ('post_title_link', 'author_link')
-    # 'post__category' 대신 'post__categories'로 필터링 (또는 Post 자체로 필터링)
-    list_filter = ('created_at', 'author', 'post') # 'post'로 변경 (Post 객체 선택)
-    search_fields = ('content', 'author__username', 'post__title', 'post__categories__name') # 'post__categories__name' 추가
-    autocomplete_fields = ['author', 'post']
+    # 1. 목록 페이지 설정
+    list_display = ('post_title_link', 'author_username_display', 'display_content_with_reply_indicator', 'created_at_formatted')
+    
+    # ★★★ 해결책: 이 한 줄을 추가합니다. ★★★
+    # '내용' 열을 클릭했을 때 댓글 수정 페이지로 이동하도록 지정합니다.
+    list_display_links = ('display_content_with_reply_indicator',)
 
+    list_filter = ('created_at', 'author', 'post')
+    ordering = ('post', 'created_at')
+
+    # 2. 검색 및 자동완성 설정
+    search_fields = ('content', 'author__username', 'post__title', 'parent__content')
+    autocomplete_fields = ['author', 'post', 'parent']
+
+    # 3. 상세/수정 페이지 설정
+    readonly_fields = ('created_at', 'updated_at', 'post_title_link', 'author_link', 'parent_comment_link')
+    fieldsets = (
+        ('관계 정보', {
+            'fields': ('post_title_link', 'author_link', 'parent', 'parent_comment_link')
+        }),
+        ('내용', {
+            'fields': ('content',)
+        }),
+        ('날짜 정보', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+
+    # 4. 커스텀 메소드들 (이전과 동일)
     def post_title_link(self, obj):
         if obj.post:
             link = reverse("admin:flo_post_change", args=[obj.post.id])
@@ -190,9 +212,7 @@ class CommentAdmin(admin.ModelAdmin):
 
     @admin.display(description='작성자', ordering='author__username')
     def author_username_display(self, obj):
-        if obj.author:
-            return obj.author.username
-        return "-"
+        return obj.author.username if obj.author else "-"
 
     def author_link(self, obj):
         if obj.author:
@@ -201,13 +221,28 @@ class CommentAdmin(admin.ModelAdmin):
         return "-"
     author_link.short_description = "작성자 (링크)"
 
-    @admin.display(description='댓글 내용 요약')
-    def content_excerpt(self, obj):
-        return (obj.content[:40] + '...') if len(obj.content) > 40 else obj.content
-
     @admin.display(description='작성일', ordering='created_at')
     def created_at_formatted(self, obj):
         return obj.created_at.strftime("%Y-%m-%d %H:%M")
+
+    def content_excerpt(self, obj):
+        return (obj.content[:30] + '...') if len(obj.content) > 30 else obj.content
+
+    @admin.display(description='내용 (답글 여부)', ordering='content')
+    def display_content_with_reply_indicator(self, obj):
+        if obj.parent:
+            return format_html(
+                '<span style="padding-left: 20px;">ㄴ </span>{}',
+                self.content_excerpt(obj)
+            )
+        return self.content_excerpt(obj)
+
+    @admin.display(description='부모 댓글 (링크)')
+    def parent_comment_link(self, obj):
+        if obj.parent:
+            link = reverse("admin:flo_comment_change", args=[obj.parent.id])
+            return format_html('<a href="{}">{}</a>', link, str(obj.parent))
+        return "─ (최상위 댓글)"
 
 
 # --- FAQCategoryAdmin, FAQItemAdmin ---
