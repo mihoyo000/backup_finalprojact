@@ -111,8 +111,9 @@
                                 </ul>
                             </div>
                         {% else %}
-                            {# 로그인 버튼의 id="btn-login"은 JS와 연동될 수 있으므로 유지하거나, 단순 링크로 변경 #}
-                            <a href="{% include 'flo/auth/login.html' %}" id="btn-login" class="btn btn-outline-light">{% translate "로그인" %}</a>
+                            <a href="#" id="btn-login" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                {% translate "로그인" %}
+                            </a>
                         {% endif %}
                     </div>
 

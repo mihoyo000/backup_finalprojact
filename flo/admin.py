@@ -3,10 +3,10 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 from .models import (
-    Category, MajorCategory, MediumCategory, MinorCategory,
-    Post, Attachment, Comment, FAQCategory, FAQItem
+    Category, MajorCategory, MediumCategory, MinorCategory, # 프록시 모델 임포트
+    Post, Attachment ,Comment, FAQCategory, FAQItem
 )
-from .forms import AttachmentForm
+from .forms import AttachmentForm # ★★★ AttachmentForm 임포트 ★★★
 
 # --- 대분류 관리자 ---
 @admin.register(MajorCategory)
@@ -68,6 +68,7 @@ class MediumCategoryAdmin(admin.ModelAdmin):
         except Category.DoesNotExist:
             return 0
 
+
 # --- 소분류 관리자 ---
 @admin.register(MinorCategory)
 class MinorCategoryAdmin(admin.ModelAdmin):
@@ -112,6 +113,7 @@ class OriginalCategoryAdmin(admin.ModelAdmin):
     
     @admin.display(description='레벨')
     def get_level_display(self, obj):
+        # Category 모델에 get_level() 메서드가 정의되어 있어야 함
         if hasattr(obj, 'get_level'):
             return obj.get_level()
         return '-'
@@ -125,12 +127,13 @@ class AttachmentAdmin(admin.ModelAdmin):
 
     def post_link(self, obj):
         if obj.post:
-            link = reverse("admin:flo_post_change", args=[obj.post.id])
+            link = reverse("admin:flo_post_change", args=[obj.post.id]) # 앱 이름과 모델 이름 확인
             return format_html('<a href="{}">{}</a>', link, obj.post.title)
         return "-"
     post_link.short_description = "게시글"
     post_link.admin_order_field = 'post__title'
 
+# PostAdmin에서 Attachment를 인라인으로 관리할 때
 class AttachmentInline(admin.TabularInline):
     model = Attachment
     form = AttachmentForm
@@ -145,29 +148,60 @@ class AttachmentInline(admin.TabularInline):
         return obj.filename if obj.pk else "-"
     filename_display.short_description = "파일명"
 
+# --- PostAdmin 수정 ---
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'get_category_display_names_admin', 'author', 'created_at', 'is_notice')
-    list_filter = ('is_notice', 'categories', 'created_at', 'author')
-    search_fields = ('title', 'content', 'author__username', 'categories__name')
-    autocomplete_fields = ['author']
-    filter_horizontal = ('categories', 'likes')
-    inlines = [AttachmentInline]
+    # ManyToManyField는 list_filter에 직접적인 경로로 필터링하기 복잡합니다.
+    # 'categories' 필드 자체로 필터링하거나 (선택 위젯 제공), 커스텀 필터 구현 필요.
+    list_filter = ('is_notice', 'categories', 'created_at', 'author') # 'categories'로 변경
+    search_fields = ('title', 'content', 'author__username', 'categories__name') # 'categories__name'으로 변경
+    # autocomplete_fields에서 'category' 제거. ManyToManyField에는 filter_horizontal/vertical 사용
+    autocomplete_fields = ['author'] # 'category' 제거
+    filter_horizontal = ('categories', 'likes') # 'categories'를 filter_horizontal로 관리
+    inlines = [AttachmentInline] # Post 수정/추가 페이지에 Attachment 폼을 인라인으로 추가
 
     @admin.display(description='카테고리(들)')
     def get_category_display_names_admin(self, obj):
+        # Post 모델에 get_category_display_names 메서드가 있어야 함
         if hasattr(obj, 'get_category_display_names'):
             return obj.get_category_display_names()
         return "-"
+    # get_category_display_names_admin.short_description = '카테고리(들)' # @admin.display로 대체
 
+
+# --- CommentAdmin 수정 ---
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('post_title_link', 'author_username_display', 'content_excerpt', 'created_at_formatted')
-    readonly_fields = ('post_title_link', 'author_link')
-    list_filter = ('created_at', 'author', 'post')
-    search_fields = ('content', 'author__username', 'post__title', 'post__categories__name')
-    autocomplete_fields = ['author', 'post']
+    # 1. 목록 페이지 설정
+    list_display = ('post_title_link', 'author_username_display', 'display_content_with_reply_indicator', 'created_at_formatted')
+    
+    # ★★★ 해결책: 이 한 줄을 추가합니다. ★★★
+    # '내용' 열을 클릭했을 때 댓글 수정 페이지로 이동하도록 지정합니다.
+    list_display_links = ('display_content_with_reply_indicator',)
 
+    list_filter = ('created_at', 'author', 'post')
+    ordering = ('post', 'created_at')
+
+    # 2. 검색 및 자동완성 설정
+    search_fields = ('content', 'author__username', 'post__title', 'parent__content')
+    autocomplete_fields = ['author', 'post', 'parent']
+
+    # 3. 상세/수정 페이지 설정
+    readonly_fields = ('created_at', 'updated_at', 'post_title_link', 'author_link', 'parent_comment_link')
+    fieldsets = (
+        ('관계 정보', {
+            'fields': ('post_title_link', 'author_link', 'parent', 'parent_comment_link')
+        }),
+        ('내용', {
+            'fields': ('content',)
+        }),
+        ('날짜 정보', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+
+    # 4. 커스텀 메소드들 (이전과 동일)
     def post_title_link(self, obj):
         if obj.post:
             link = reverse("admin:flo_post_change", args=[obj.post.id])
@@ -178,9 +212,7 @@ class CommentAdmin(admin.ModelAdmin):
 
     @admin.display(description='작성자', ordering='author__username')
     def author_username_display(self, obj):
-        if obj.author:
-            return obj.author.username
-        return "-"
+        return obj.author.username if obj.author else "-"
 
     def author_link(self, obj):
         if obj.author:
@@ -189,13 +221,28 @@ class CommentAdmin(admin.ModelAdmin):
         return "-"
     author_link.short_description = "작성자 (링크)"
 
-    @admin.display(description='댓글 내용 요약')
-    def content_excerpt(self, obj):
-        return (obj.content[:40] + '...') if len(obj.content) > 40 else obj.content
-
     @admin.display(description='작성일', ordering='created_at')
     def created_at_formatted(self, obj):
         return obj.created_at.strftime("%Y-%m-%d %H:%M")
+
+    def content_excerpt(self, obj):
+        return (obj.content[:30] + '...') if len(obj.content) > 30 else obj.content
+
+    @admin.display(description='내용 (답글 여부)', ordering='content')
+    def display_content_with_reply_indicator(self, obj):
+        if obj.parent:
+            return format_html(
+                '<span style="padding-left: 20px;">ㄴ </span>{}',
+                self.content_excerpt(obj)
+            )
+        return self.content_excerpt(obj)
+
+    @admin.display(description='부모 댓글 (링크)')
+    def parent_comment_link(self, obj):
+        if obj.parent:
+            link = reverse("admin:flo_comment_change", args=[obj.parent.id])
+            return format_html('<a href="{}">{}</a>', link, str(obj.parent))
+        return "─ (최상위 댓글)"
 
 
 # --- FAQCategoryAdmin, FAQItemAdmin ---
@@ -209,5 +256,3 @@ class FAQItemAdmin(admin.ModelAdmin):
     list_filter = ('category',)
     search_fields = ('question', 'answer')
     list_editable = ('order',)
-
-
