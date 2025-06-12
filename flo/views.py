@@ -217,16 +217,23 @@ def ajax_get_comments(request, post_pk):
 # 기존 study_post_detail 뷰는 초기 로드 시 댓글 정렬을 적용하도록 수정
 def study_post_detail(request, pk):
     post = get_object_or_404(
-        Post.objects.select_related('author__profile').prefetch_related('likes', 'categories'),
+        Post.objects.select_related('author__profile').prefetch_related(
+            'likes', 
+            'categories',
+            'post_attachments' # ★★★ 첨부파일도 미리 가져옵니다 ★★★
+        ),
         pk=pk
     )
     comment_form = CommentForm()
 
-    # --- 조회수 증가 로직 ---
-    post.views += 1
-    post.save(update_fields=['views'])
+    # 조회수 증가 로직 (세션 등을 이용한 중복 방지는 생략된 상태)
+    session_key = f'post_viewed_{pk}'
+    if not request.session.get(session_key):
+        post.views += 1
+        post.save(update_fields=['views'])
+        request.session[session_key] = True
 
-    # --- 댓글/답글 조회 로직 (핵심 수정 부분) ---
+    # --- ★★★ 댓글/답글 조회 로직 (핵심 수정 부분) ★★★ ---
     # 1. 최상위 댓글만 가져옵니다 (parent가 없는 댓글).
     top_level_comments_qs = post.comments.filter(parent__isnull=True).select_related(
         'author__profile'
@@ -314,6 +321,8 @@ def study_post_create(request):
                     'children_exists': major_cat.children.exists(),
                     'is_leaf': major_cat.is_leaf_node()
                 })
+                
+            messages.error(request, '게시글 등록에 실패했습니다. 입력 내용을 확인해주세요.')
 
             context = { # POST 실패 시 context 재구성
                 'form': form,
@@ -769,11 +778,11 @@ def study_post_comment_delete(request, pk):
     return HttpResponseBadRequest("잘못된 요청입니다. POST 요청만 허용됩니다.")
 
 # ▼▼▼ 답글 관련 뷰 (새로 추가하거나 아래 내용으로 교체) ▼▼▼
-
 @login_required
 def study_post_reply_create(request, pk): # pk는 부모 댓글의 ID
     parent_comment = get_object_or_404(Comment, pk=pk)
     post = parent_comment.post
+
     if request.method == 'POST':
         form = CommentForm(request.POST)
         if form.is_valid():
@@ -784,19 +793,14 @@ def study_post_reply_create(request, pk): # pk는 부모 댓글의 ID
             reply.save()
 
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                # 프로필 정보 가져오기
-                author_display_name = "Unknown"
-                author_profile_image_url = None
-                has_custom_profile_image = False
-                try:
-                    profile = reply.author.profile
-                    author_display_name = profile.get_display_name
-                    has_custom_profile_image = profile.has_custom_profile_image
-                    if has_custom_profile_image:
-                        author_profile_image_url = profile.get_profile_image_url
-                except Profile.DoesNotExist:
-                    author_display_name = reply.author.username
-                
+                # 프로필 정보 가져오기 (AJAX 응답용)
+                profile = getattr(reply.author, 'profile', None)
+                author_display_name = profile.get_display_name if profile else reply.author.username
+                has_custom_profile_image = profile.has_custom_profile_image if profile else False
+                author_profile_image_url = profile.get_profile_image_url if has_custom_profile_image else None
+
+                # 템플릿 렌더링을 통해 HTML 조각을 생성하는 것도 좋은 방법입니다.
+                # 여기서는 JS에서 직접 HTML을 만들 수 있도록 JSON 데이터를 보냅니다.
                 return JsonResponse({
                     'status': 'success',
                     'reply_id': reply.id,
@@ -804,17 +808,24 @@ def study_post_reply_create(request, pk): # pk는 부모 댓글의 ID
                     'author_display_name': author_display_name,
                     'author_profile_image_url': author_profile_image_url,
                     'has_custom_profile_image': has_custom_profile_image,
-                    'content': reply.content,
+                    'content': reply.content, # linebreaksbr 처리는 JS에서
+                    'content_raw': reply.content, # 수정 폼용 원본
                     'created_at': reply.created_at.strftime('%Y-%m-%d %H:%M'),
                     'comment_count': post.comment_count,
-                    # 답글에 대한 수정/삭제 URL도 전달
                     'edit_url': reverse('flo:study_post_comment_edit', args=[reply.pk]),
                     'delete_url': reverse('flo:study_post_comment_delete', args=[reply.pk]),
                 })
-        else:
+            # AJAX 요청이 아닌 경우 (일반적으로 사용되지 않음)
+            messages.success(request, '답글이 작성되었습니다.')
+            return redirect(post.get_absolute_url() + f'#comment-{reply.id}')
+
+        else: # 폼이 유효하지 않을 경우
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
-    
+            messages.error(request, '답글 작성에 실패했습니다.')
+            return redirect(post.get_absolute_url() + f'#comment-{parent_comment.id}')
+
+    # GET 요청 등 비정상적인 접근 처리
     return redirect(post.get_absolute_url())
 
 # 답글의 수정과 삭제는 기존 댓글의 뷰/URL을 공유하는 것이 효율적입니다.

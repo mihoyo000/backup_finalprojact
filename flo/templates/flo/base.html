@@ -13,6 +13,17 @@
     <link rel="stylesheet" href="{% static 'flo/css/base.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
+{% if messages %}
+    <script>
+        // 페이지 로딩이 끝나면 바로 실행됩니다.
+        document.addEventListener('DOMContentLoaded', function() {
+            {% for message in messages %}
+                // 서버에서 보낸 메시지를 alert 창으로 띄웁니다.
+                alert("{{ message|escapejs }}");
+            {% endfor %}
+        });
+    </script>
+    {% endif %}
 <body>
 
     <header id="header">
@@ -85,25 +96,23 @@
                 </nav>
 
                 <div class="header-right-controls">
-                    <div class="auth-links ms-auto"> {# ms-auto는 Bootstrap 5에서 오른쪽 정렬 #}
+                    <div class="auth-links ms-auto">
                         {% if user.is_authenticated %}
                             <div class="dropdown">
-                                {# START: 수정된 사용자 정보 표시 부분 #}
-                                <a href="#" class="user-dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <!-- 프로필 이미지, 닉네임 전체가 하나의 버튼입니다. -->
+                                <button type="button" class="btn user-dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                     <div class="profile-image-wrapper">
                                         <img src="{{ user.profile.get_profile_image_url }}"
                                             alt="{{ user.profile.get_display_name }} Profile"
                                             id="user-profile-image"
+                                            {# ▼▼▼ 여기가 중요합니다. default-avatar 클래스를 조건부로 추가합니다. ▼▼▼ #}
                                             class="{% if not user.profile.has_custom_profile_image %}default-avatar{% endif %}"
                                             data-has-custom-image="{{ user.profile.has_custom_profile_image|yesno:'true,false' }}">
                                     </div>
-                                    {# ▼▼▼ 수정 ▼▼▼ (CSS 선택을 위해 클래스 추가) #}
                                     <span class="user-display-name">{{ user.profile.get_display_name }}님</span>
-                                    {# ▲▲▲ 수정 ▲▲▲ #}
-                                </a>
-                                {# END: 수정된 사용자 정보 표시 부분 #}
+                                </button>
+                                {# ▼▼▼ 여기가 중요합니다. 드롭다운 메뉴 내용을 채워넣습니다. ▼▼▼ #}
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    {# 나중에 마이페이지, 계정 관리 링크 추가 #}
                                     <li><a class="dropdown-item" href="#">{% translate "마이페이지" %}</a></li>
                                     <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li>
                                     <li><hr class="dropdown-divider"></li>
@@ -116,10 +125,17 @@
                                 </ul>
                             </div>
                         {% else %}
-                            {# 로그인 버튼의 id="btn-login"은 JS와 연동될 수 있으므로 유지하거나, 단순 링크로 변경 #}
                             <a href="{% url 'flo:login' %}" id="btn-login" class="btn btn-outline-light">{% translate "로그인" %}</a>
                         {% endif %}
                     </div>
+
+                    {# 프로필 이미지 섹션 #}
+
+                    {# 프로필 이미지가 있는 경우 해당 이미지 사용 #}
+
+                    {# 프로필 이미지가 없는 경우 기본 이미지로 대체 #}
+
+                    {# 테마 및 언어 선택 드롭다운 #}
 
                     <div class="theme-dropdown dropdown">
                         <button type="button" id="theme-toggle-btn" class="btn theme-btn" title="{% translate "Change theme" %}" data-bs-toggle="dropdown" aria-expanded="false">

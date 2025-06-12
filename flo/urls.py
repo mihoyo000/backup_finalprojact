@@ -29,8 +29,9 @@ urlpatterns = [
     path('comment/<int:pk>/delete/', views.study_post_comment_delete, name='study_post_comment_delete'), # (선택적 AJAX)
     path('study_post/<int:post_pk>/comments/', views.ajax_get_comments, name='ajax_get_comments'), # 댓글 AJAX 로드용 URL
     
-    # --- ▼▼▼ 답글 관련 URL 추가 ▼▼▼ ---
-    path('study_post/comment/<int:pk>/reply/', views.study_post_reply_create, name='study_post_reply_create'),
+    # ★★★ 답글 작성 URL 추가 ★★★
+    # pk는 부모 댓글의 ID를 의미합니다.
+    path('comment/<int:pk>/reply/new/', views.study_post_reply_create, name='study_post_reply_create'),
 
     # FAQ
     path('faq/', views.faq_list, name='faq_list'),

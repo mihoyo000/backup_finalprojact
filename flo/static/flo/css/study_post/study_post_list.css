@@ -379,10 +379,19 @@ body:not(.theme-light) .board-table-custom { border: 1px solid var(--dark-line-s
     text-align: left; /* 카테고리는 왼쪽 정렬 */
 }
 .board-table-custom th.col-title,
-.board-table-custom td.post-title-cell { /* 제목 (클래스 사용) */
-    text-align: left; /* 제목은 왼쪽 정렬 (중요! 공지사항 포함) */
-    /* padding-left: 0; */ /* 만약 불필요한 왼쪽 패딩이 있다면 조정 */
+.post-title-cell {
+    text-align: left;
+    /* 이 셀의 너비가 다른 셀보다 유동적으로 변할 수 있도록 설정 */
+    /* width: 100%; /* 이 설정은 테이블 레이아웃을 깨뜨릴 수 있으므로 주의. 필요 시 사용 */
 }
+/* 제목과 댓글 수를 감싸는 wrapper */
+.title-and-comment-wrapper {
+    display: flex; /* Flexbox를 사용하여 내부 요소들을 정렬 */
+    align-items: center; /* 수직 중앙 정렬 */
+    min-width: 0; /* flex-item이 부모 너비를 넘지 않도록 하는 중요한 속성 */
+}
+
+
 .board-table-custom th.col-author,
 .board-table-custom td:nth-child(4) { /* 작성자 */
     text-align: center;
@@ -429,17 +438,27 @@ body:not(.theme-light) .board-table-custom .notice-row .title-cell a { color: #e
 .post-title-link {
     text-decoration: none;
     font-weight: 400; 
+    color: var(--text-main-list);
 
-    flex-grow: 1; 
-    min-width: 0; 
+    /* Flexbox 아이템 관련 설정 */
+    flex-grow: 0;         /* 남는 공간을 차지하지 않음 */
+    flex-shrink: 1;       /* 공간이 부족할 때 줄어들 수 있음 */
+    min-width: 0;         /* 내용이 길어도 줄어들 수 있도록 함 */
     
+    /* 말줄임표(...)를 위한 설정 */
+    white-space: nowrap; 
     overflow: hidden; 
     text-overflow: ellipsis; 
-    white-space: nowrap; 
+
+    display: inline-block; /* 너비와 말줄임표를 적용하기 위해 block 또는 inline-block 필요 */
+    vertical-align: middle; /* 다른 인라인 요소와 수직 정렬을 맞추기 위함 */
+}
+body:not(.theme-light) .post-title-link {
+    color: var(--dark-text-main-list);
 }
 
 body.theme-light .post-title-link { color: #1E3A8A; } /* 일반-라이트 */
-body:not(.theme-light) .post-title-link { color: #e8e8e8; } /* 일반-다크 */
+/*body:not(.theme-light) .post-title-link { color: #e8e8e8; } /* 일반-다크 */
 body.theme-light .notice-row .title-cell a.post-title-link { color: #6a1b9a; } /* 공지-라이트 */
 body:not(.theme-light) .notice-row .title-cell a.post-title-link { color: #e6ceff; } /* 공지-다크 */
 
@@ -462,10 +481,14 @@ body:not(.theme-light) .notice-row .title-cell a.post-title-link:hover { color: 
 .comment-count-badge {
     font-size: 0.8em;
     font-weight: 500;
-    color: #4caf50; 
-    flex-shrink: 0; 
-    white-space: nowrap; 
-    margin-left: 8px; 
+    color: #4caf50;
+    
+    /* Flexbox 아이템 관련 설정 */
+    flex-shrink: 0; /* 공간이 부족해도 줄어들지 않음 (댓글 수는 항상 보여야 함) */
+    
+    margin-left: 8px; /* 제목과의 간격 */
+    white-space: nowrap; /* 댓글 수가 길어져도 줄바꿈 방지 */
+    vertical-align: middle;
 }
 body:not(.theme-light) .comment-count-badge {
     color: #a5d6a7; 
