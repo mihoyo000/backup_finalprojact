@@ -1,7 +1,33 @@
+<<<<<<< HEAD
 {% extends "flo/base.html" %}
 
 {% block title %}자주 묻는 질문 (FAQ){% endblock %}
 
+=======
+{# faq.html #}
+{% extends "flo/base.html" %}
+{% load static %}
+
+{% block title %}자주 묻는 질문 (FAQ){% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'flo/css/faq/faq.css' %}">
+<style>
+    .more-items-indicator {
+        display: inline-block; /* 또는 block */
+        text-align: right; /* 또는 center */
+        font-size: 0.85em;
+        color: #888; /* 원하는 색상으로 조정 */
+        margin-top: 5px; /* 위쪽 아이템과의 간격 */
+        /* padding-left: 25px; */ /* 질문 들여쓰기와 맞추려면 */
+    }
+    body:not(.theme-light) .more-items-indicator {
+        color: #aaa;
+    }
+</style>
+{% endblock %}
+
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 {% block content %}
 <div class="faq-page">
     <div class="faq-header">
@@ -9,6 +35,7 @@
         <hr>
     </div>
 
+<<<<<<< HEAD
     {% for faq_cat in faq_categories_with_items %}
     <section class="faq-category">
         <h3>{{ faq_cat.name }}</h3>
@@ -69,4 +96,118 @@
 .dark-mode .faq-answer { background-color: #3a3a3a; color: #ddd; border-top-color: #555; }
 .dark-mode .faq-item { border-color: #555; }
 </style>
+=======
+    {% if page_obj and page_obj.object_list %}
+        {# views.py에서 미리 regroup하고 플래그를 추가한 category_list_from_view 사용 #}
+        {% for group_info in category_list_from_view %}
+            <section class="faq-category">
+                <h3>{{ group_info.grouper.name }}</h3>
+                {% for item in group_info.list %}
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        Q. {{ item.question }}
+                    </summary>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            A. {{ item.answer|linebreaksbr }}
+                        </div>
+                    </div>
+                </details>
+                {% endfor %}
+                {# "더 보기" 표시 추가 #}
+                {% if group_info.show_more_indicator %}
+                    <div class="more-items-indicator">
+                        (이 카테고리의 내용이 다음 페이지에 계속됩니다.)
+                        {# 또는 아이콘 사용: <span class="material-icons-outlined" style="font-size: 1em; vertical-align: middle;">more_horiz</span> #}
+                    </div>
+                {% endif %}
+            </section>
+        {% empty %}
+            <p>표시할 FAQ가 없습니다.</p> {# regroup 결과가 없을 때 #}
+        {% endfor %}
+
+    {% else %}
+        <p>등록된 FAQ가 없습니다.</p>
+    {% endif %}
+
+    {# 페이지네이션 마크업은 이전과 동일하게 유지 #}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page_obj %} {# page_obj가 있을 때 #}
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                    <a class="page-link" href="{% if page_obj.has_previous %}?page=1{% else %}#{% endif %}" aria-label="First">«</a>
+                </li>
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                    <a class="page-link" href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% else %}#{% endif %}" aria-label="Previous">‹</a>
+                </li>
+
+                {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                        <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+                    {% elif i >= page_obj.number|add:'-2' and i <= page_obj.number|add:'2' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                    {% elif i == page_obj.number|add:'-3' and page_obj.number > 4 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% elif i == page_obj.number|add:'3' and page_obj.number < page_obj.paginator.num_pages|add:'-3' %}
+                         <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% else %}#{% endif %}" aria-label="Next">›</a>
+                </li>
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{% if page_obj.has_next %}?page={{ page_obj.paginator.num_pages }}{% else %}#{% endif %}" aria-label="Last">»</a>
+                </li>
+            {% else %} {# page_obj가 없을 때 (예시 또는 고정된 1페이지만 있는 경우) #}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="First">«</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Previous">‹</span>
+                </li>
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link">1</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Next">›</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Last">»</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{# 이전 JavaScript 코드는 그대로 유지 #}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const detailsElements = document.querySelectorAll('.faq-item');
+    detailsElements.forEach(details => {
+        const summary = details.querySelector('.faq-question');
+        const answerWrapper = details.querySelector('.faq-answer');
+        if (details.open) {
+            answerWrapper.style.maxHeight = answerWrapper.scrollHeight + 'px';
+        }
+        summary.addEventListener('click', (event) => {
+            event.preventDefault(); 
+            const isOpen = details.hasAttribute('open');
+            if (isOpen) {
+                answerWrapper.style.maxHeight = '0';
+                answerWrapper.addEventListener('transitionend', function handler() {
+                    details.removeAttribute('open');
+                    answerWrapper.removeEventListener('transitionend', handler);
+                }, { once: true });
+            } else {
+                details.setAttribute('open', '');
+                answerWrapper.style.maxHeight = answerWrapper.scrollHeight + 'px';
+            }
+        });
+    });
+});
+</script>
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 {% endblock %}

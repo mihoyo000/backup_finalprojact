@@ -1,0 +1,14 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>작업 완료</title>
+</head>
+<body>
+  <script>
+    alert("{{ message|default:'작업이 완료되었습니다.' }}");
+    window.location.href = "{% url redirect_url|default:'flo:home' %}";
+  </script>
+</body>
+</html>

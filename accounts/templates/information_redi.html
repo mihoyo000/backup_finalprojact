@@ -1,0 +1,58 @@
+{% extends 'flo/base.html' %}
+{% load static %}
+
+{% block title %}비밀번호 확인{% endblock %}
+
+{% block content %}
+<div class="nf-page-container">
+    <div class="nf-auth-container">
+        <!-- 프로필 이미지 표시 -->
+        <div class="nf-profile-placeholder">
+        <img src="{{ user.user_profile.get_profile_image_url }}"
+            alt="{{ user.user_profile.get_display_name }} Profile"
+            id="user-profile-image"
+            class="{% if not user.user_profile.has_custom_profile_image %}default-avatar{% endif %}"
+            data-has-custom-image="{{ user.user_profile.has_custom_profile_image|yesno:'true,false' }}">
+        </div>
+
+        <h1 class="nf-title">회원정보를 수정하시려면 비밀번호를 입력하셔야 합니다.</h1>
+        <p class="nf-description">
+            회원님의 개인정보 보호를 위한 본인 확인 절차이오니, 회원 로그인 시 사용하시는 비밀번호를 입력해주세요.
+        </p>
+
+        <form method="post" action="{% url 'accounts:confirm_password' %}" class="nf-form">
+            {% csrf_token %}
+            <div class="nf-form-elements-wrapper">
+                <div class="nf-form-group">
+                    <input type="password" name="current_password" class="nf-password-input" placeholder="비밀번호" required>
+                </div>
+
+                {% if messages %}
+                <div class="nf-error-message">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="nf-button-group">
+                    <button type="button" class="nf-btn nf-btn-cancel" onclick="history.back();">취소</button>
+                    <button type="submit" class="nf-btn nf-btn-confirm">확인</button>
+                </div>
+
+                <div class="nf-forgot-password-section">
+                    <span>비밀번호가 기억나지 않는다면?</span>
+                    <a href="{% url 'accounts:find_password' %}" class="nf-find-password-link">비밀번호 찾기</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'flo/css/infor.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

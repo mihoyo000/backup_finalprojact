@@ -1,0 +1,68 @@
+.terms-modal-content {
+  max-width: 400px;
+  max-height: 600px;
+  border-radius: 10px;
+  border: none;
+  padding: 0;
+  overflow: hidden;
+  background-color: var(--bg-color-body-light);
+}
+
+body.theme-dark .terms-modal-content {
+  background-color: var(--bg-color-body-dark);
+}
+
+.terms-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color-default-light);
+  font-weight: bold;
+  font-size: 18px;
+  color: var(--text-color-heading-light);
+}
+
+body.theme-dark .terms-modal-header {
+  border-bottom: 1px solid var(--border-color-default-dark);
+  color: var(--text-color-heading-dark);
+}
+
+.terms-modal-body {
+  max-height: 490px;
+  overflow-y: auto;
+  padding: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-color-default-light);
+}
+
+body.theme-dark .terms-modal-body {
+  color: var(--text-color-default-dark);
+}
+
+.terms-modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-color-default-light);
+  text-align: right;
+}
+
+body.theme-dark .terms-modal-footer {
+  border-top: 1px solid var(--border-color-default-dark);
+}
+
+.terms-confirm-btn {
+  background-color: transparent;
+  border: none;
+  color: var(--text-color-link-light);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+body.theme-dark .terms-confirm-btn {
+  color: var(--text-color-link-dark);
+}
+
+body.theme-dark .btn-close {
+  filter: invert(1);
+}

@@ -1,0 +1,265 @@
+/* FLO/flo_exam/static/flo_exam/css/exam_spa_styles.css */
+.page-container.spa-container {
+    position: relative; /* 로봇 이미지 고정 기준 */
+    padding-bottom: 50px; 
+    padding-left: 15px; 
+    padding-right: 15px; 
+}
+
+#dynamic-content-area {
+    /* 필요에 따라 최소 높이 등을 설정하여 내용이 없을 때도 공간 유지 */
+    min-height: 300px; 
+    transition: margin-right 0.3s ease-out; /* 마진 변경 시 부드러운 효과 */
+}
+#questions-container-spa, #exam-result-content{
+    width:80%;
+}
+.exam-result-content{
+    width:80%;
+}
+
+/* --- 로딩 UI 스타일 (loading_generating_problems.html 참고) --- */
+.loading-container-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(70vh - 80px); /* 헤더 높이 고려, 뷰포트 높이의 일부 */
+    text-align: center;
+    padding: 20px;
+}
+.loading-text {
+    font-size: 1.8em;
+    font-weight: 500;
+    color: #333333; /* 라이트 모드 기본 글자색 (어두운 회색) */
+    margin-bottom: 30px;
+}
+
+/* 다크모드 .loading-text는 body[data-bs-theme="dark"] 선택자로 base.css나 여기서 처리 */
+
+/* --- 문제 풀이 UI 스타일 --- */
+.solve-exam-content .card-text { white-space: pre-wrap; }
+.solve-exam-content .form-check { margin-bottom: 0.5rem; }
+
+/* --- 결과 UI 스타일 --- */
+.exam-result-content .result-summary p { margin-bottom: 0.5rem; }
+.exam-result-content .flo-comment p { margin-bottom: 0; }
+.exam-result-content .download-buttons a,
+.exam-result-content .action-links a { margin-bottom: 0.5rem; } /* 모바일에서 버튼 간격 */
+
+/* --- 고정 로봇 이미지 스타일 --- */
+.fixed-robot-image-container {
+    position: fixed;
+    right: 3vw;  /* 오른쪽에서 화면 너비의 % */
+    bottom: 3vh; /* 아래쪽에서 화면 높이의 % */
+    width: 30%;  /* 너비는 화면 비율에 따라 조절 */
+    max-width: 320px; /* 최대 너비 제한 */
+    min-width: 180px;
+    z-index: 10; /* 다른 컨텐츠보다 위에 올 수 있도록 (필요시 조절) */
+    opacity: 0.9;
+    pointer-events: none; /* 로봇 이미지 위로 마우스 이벤트가 통과하도록 */
+    transition: width 0.3s ease-out, max-width 0.3s ease-out, opacity 0.3s ease-out; /* 크기 변경 시 부드러운 효과 */
+}
+.fixed-robot-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* 문제 카드 스타일 (기본) */
+.q-item.card {
+    background-color: var(--bs-card-bg); /* Bootstrap 테마 변수 활용 */
+    border: 1px solid var(--bs-border-color);
+    margin-bottom: 1.5rem !important; /* 카드 간 간격 확실히 주기 */
+}
+.q-item .card-header {
+    background-color: var(--bs-secondary-bg);
+    font-weight: bold;
+}
+.q-item .card-body p.card-text {
+    margin-bottom: 0.75rem;
+    font-size: 1rem; /* 문제 텍스트 기본 크기 */
+    line-height: 1.6;
+}
+.q-item .form-check {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem; /* 선택지 텍스트 기본 크기 */
+}
+.q-item .form-check-label {
+    padding-left: 0.25rem;
+}
+
+/* 문제 5번처럼 글씨가 커지는 현상 방지 (특정 태그에 대한 일반화 스타일) */
+/* 만약 문제 텍스트나 선택지 내에 h1~h6, strong, b 태그 등이 포함되어 올 경우,
+   그것들의 폰트 크기를 카드 본문 텍스트와 유사하게 제어합니다. */
+.q-item .card-body p.card-text h1, .q-item .card-body p.card-text h2, 
+.q-item .card-body p.card-text h3, .q_item .card-body p.card-text h4,
+.q-item .card-body p.card-text h5, .q_item .card-body p.card-text h6 {
+    font-size: 1.1em !important; /* 문제 텍스트보다 약간만 크게 */
+    font-weight: bold;
+    margin-top: 0.5em;
+    margin-bottom: 0.25em;
+}
+.q-item .card-body .form-check-label h1, .q-item .card-body .form-check-label h2,
+.q-item .card-body .form-check-label h3, .q-item .card-body .form-check-label h4,
+.q-item .card-body .form-check-label h5, .q-item .card-body .form-check-label h6 {
+    font-size: 1em !important; /* 선택지 내 제목 태그도 일반 선택지 크기와 동일하게 */
+    display: inline; /* 제목 태그가 블록 요소가 되지 않도록 */
+    font-weight: normal; /* 선택지는 보통 일반 굵기 */
+}
+.q-item .card-body p.card-text strong, .q-item .card-body p.card-text b,
+.q-item .card-body .form-check-label strong, .q-item .card-body .form-check-label b {
+    font-weight: 600; /* 기본 bold보다 약간 더 약하게 또는 강하게 조절 가능 */
+    /* font-size: inherit; */ /* 부모 요소의 폰트 크기 상속 */
+}
+
+/* Bootstrap Card 색상 테마 대응 (선택 사항, Bootstrap이 어느정도 처리해줌) */
+body[data-bs-theme="dark"] .bg-body-tertiary {
+    background-color: var(--bs-gray-800) !important; /* 다크모드 카드 배경 예시 */
+    border-color: var(--bs-gray-700) !important;
+}
+body[data-bs-theme="dark"] .border-success { border-color: var(--bs-success-text-emphasis) !important; }
+body[data_bs-theme="dark"] .border-danger { border-color: var(--bs-danger-text-emphasis) !important; }
+
+/* exam_spa_styles.css 또는 base.css */
+
+/* --- 다크 모드 스타일 재정의 --- */
+
+/* body 전체의 기본 텍스트 색상을 다크 모드에 맞게 설정 (base.css에 이미 있을 수 있음) */
+[data-bs-theme="dark"] body {
+    color: #f8f9fa; /* 예: 매우 밝은 회색 또는 흰색 */
+    background-color: #212529; /* 예: 어두운 배경색 */
+}
+
+/* 결과 요약 (result-summary) 섹션 내부 텍스트 */
+body[data-bs-theme="dark"] .result-summary h4,
+body[data-bs-theme="dark"] .result-summary p,
+body[data-bs-theme="dark"] .result-summary span { /* span 태그 안의 텍스트도 포함 */
+    color: #e9ecef; /* 예: 밝은 회색 계열 */
+}
+/* 특정 강조 텍스트 (예: 맞춘 개수)는 그대로 유지하거나 다크 모드용 강조색 사용 가능 */
+body[data-bs-theme="dark"] .result-summary .text-success {
+    color: var(--bs-success-text-emphasis) !important; /* Bootstrap 변수 활용 */
+}
+
+/* Flo 한마디 (flo-comment) 섹션 내부 텍스트 */
+body[data-bs-theme="dark"] .flo-comment h5,
+body[data-bs-theme="dark"] .flo-comment p {
+    color: #dee2e6; /* 예: 약간 어두운 밝은 회색 */
+}
+/* Flo 한마디 배경색도 다크 모드에 맞게 (Bootstrap alert-info-subtle의 다크 모드 버전이 자동으로 적용될 수도 있음) */
+body[data-bs-theme="dark"] .flo-comment.alert-info { /* 만약 Bootstrap 클래스를 직접 쓴다면 */
+    background-color: var(--bs-info-bg-subtle); /* Bootstrap 변수 활용 */
+    border-color: var(--bs-info-border-subtle);
+    color: var(--bs-info-text-emphasis); /* Bootstrap 변수가 글자색까지 조절해줄 수 있음 */
+}
+
+/* PDF 다운로드 버튼 등의 버튼 스타일은 Bootstrap 테마가 어느 정도 처리해 줄 수 있음 */
+/* 만약 커스텀 버튼이라면 명시적으로 색상 지정 필요 */
+body[data-bs-theme="dark"] .action-links .btn-outline-secondary {
+    color: var(--bs-secondary-text-emphasis);
+    border-color: var(--bs-secondary-border-subtle);
+}
+body[data-bs-theme="dark"] .action-links .btn-outline-secondary:hover {
+    color: var(--bs-body-bg);
+    background-color: var(--bs-secondary-text-emphasis);
+    border-color: var(--bs-secondary-text-emphasis);
+}
+
+/* 카드(문제별 결과) 내부 텍스트도 확인 (Bootstrap이 대부분 처리) */
+body[data-bs-theme="dark"] .card {
+    background-color: var(--bs-card-bg);
+    border-color: var(--bs-border-color);
+}
+
+body[data-bs-theme="dark"] .card-body,
+body[data-bs-theme="dark"] .card-body p,
+body[data-bs-theme="dark"] .card-body strong,
+body[data-bs-theme="dark"] .card-body ul li {
+    color: var(--bs-card-color); /* Bootstrap 변수 활용 */
+}
+[data-bs-theme="dark"] .loading-container-wrapper .spinner-border {
+    border-top-color: #f8f9fa;
+    border-right-color: #f8f9fa;
+    border-bottom-color: #f8f9fa;
+    border-left-color: transparent; /* 또는 원하는 밝은 색 */
+}
+
+[data-bs-theme="dark"] .loading-text{
+    border-top-color: #f8f9fa;
+    border-right-color: #f8f9fa;
+    border-bottom-color: #f8f9fa;
+    border-left-color: transparent; /* 또는 원하는 밝은 색 */    
+}
+
+[data-bs-theme="dark"] .loading-text lead mb-3 {
+    color: white;
+}
+
+
+/*-----------------------------------------------------------------------------------*/
+
+
+/*--------------------------------------------------------------------------------------*/
+
+@media (max-width: 1200px) {
+    #dynamic-content-area {
+        margin-right: calc(25% + 4vw); /* 로봇 너비와 간격에 맞춰 마진 조정 */
+    }
+    .fixed-robot-image-container {
+        width: 25%; /* 로봇 너비 약간 줄임 */
+        max-width: 300px;
+        right: 2vw;
+    }
+}
+
+/* 예시: 화면 너비가 992px 이하일 때 (태블릿 가로/세로) */
+@media (max-width: 992px) {
+    #dynamic-content-area {
+        margin-right: calc(20% + 3vw); /* 마진 더 줄임 */
+    }
+    .fixed-robot-image-container {
+        width: 20%;
+        max-width: 250px;
+        /* bottom: 2vh; */ /* 위치도 미세 조정 가능 */
+    }
+    #dynamic-content-area.container { /* Bootstrap .container를 사용할 경우 */
+        margin-right: 380px; /* 로봇 이미지 너비 + 여유 공간 (고정값) */
+    }
+}
+
+/* 태블릿 (로봇 이미지 크기 줄임, 컨텐츠 마진 조정) */
+@media (min-width: 768px) and (max-width: 991.98px) { /* md 브레이크포인트 */
+    #dynamic-content-area.container {
+        margin-right: 280px; /* 로봇 이미지 작아진 만큼 마진 줄임 */
+    }
+    .fixed-robot-image-container {
+        width: 25%;
+        max-width: 250px;
+        right: 2vw;
+    }
+}
+
+/* 예시: 화면 너비가 768px 이하일 때 (작은 태블릿/큰 모바일) */
+@media (max-width: 767.98px) {
+    #dynamic-content-area {
+        margin-right: 15px; /* 기본 컨테이너 패딩 정도로만 유지 또는 0 */
+        /* 또는 margin-right: 0; 으로 하고, 로봇을 아예 숨김 */
+    }
+    .fixed-robot-image-container {
+        /* 로봇 이미지를 아예 숨기려면: */
+        display: none; 
+    }
+        #dynamic-content-area.container {
+        margin-right: 0; /* 오른쪽 마진 제거 */
+    }
+}
+
+
+/* 만약 화면이 매우 좁아질 때 (예: 576px 이하) 컨텐츠 너비도 조절 */
+@media (max-width: 575.98px) {
+    #dynamic-content-area.container { /* Bootstrap .container 클래스에 대한 재정의 */
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}

@@ -1,6 +1,10 @@
 {# flo/templates/study_post/study_post_form.html #}
 {% extends "flo/base.html" %}
 {% load static %}
+<<<<<<< HEAD
+=======
+{% load custom_filters %}  {# 순수 파일명만 추출하는 커스텀 템플릿 필터 #}
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 
 {% block title %}{{ form_title|default:"학습 게시판 글쓰기" }}{% endblock %}
 
@@ -53,6 +57,7 @@
             <hr class="title-underline">
         </div>
 
+<<<<<<< HEAD
         <form method="post" enctype="multipart/form-data" class="study-post-form">
             {% csrf_token %}
                 <div style="display: none;">
@@ -82,10 +87,60 @@
                                     <li class="list-group-item category-item-inline" data-id="{{ major_cat.id }}" data-name="{{ major_cat.name }}" data-level="0">
                                         {{ major_cat.name }}
                                         {% if major_cat.children.exists %}<span class="category-arrow-inline float-end">></span>{% endif %}
+=======
+        <form method="post" enctype="multipart/form-data" class="study-post-form" id="study-post-form">
+            {% csrf_token %}
+            
+            {# categories 필드는 MultipleHiddenInput으로 렌더링되므로, form.categories 자체는 숨겨짐 #}
+            {{ form.categories }} 
+
+            {# study_post_list.html의 카테고리 선택 UI와 유사한 구조로 변경 #}
+            <div class="form-row category-selection-area-wrapper-form"> {# Wrapper 클래스 이름 변경 #}
+                <label class="form-label" for="categorySearchInputForm">{{ form.categories.label }}</label> {# for 속성 ID 변경 #}
+                {% if form.categories.help_text %}
+                    <small class="form-text text-muted d-block mb-2" id="{{ form.categories.auto_id }}_helptext">{{ form.categories.help_text }}</small>
+                {% endif %}
+
+                <div id="selected-category-display-form" class="mb-2">
+                    {# JavaScript로 선택된 카테고리 태그들이 여기에 표시됨 #}
+                </div>
+                {# 이 버튼은 study_post_list에서는 필터 적용용이었으나, 여기서는 기능 없음 (숨기거나 제거 가능) #}
+                {# <div class="text-end mb-2"><button type="button" class="btn btn-sm btn-secondary">필터 적용 (폼에서는 기능 없음)</button></div> #}
+
+                <div class="category-panel-container">
+                    <div class="category-search-box mb-2 position-relative">
+                        <input type="text" id="categorySearchInputForm" class="form-control" placeholder="카테고리 검색..."> {# ID 변경 #}
+                        <span id="clearSearchInputForm" class="clear-search-btn" style="display:none;" title="검색어 지우기">×</span> {# ID 변경 #}
+                    </div>
+                    <div id="categorySearchResultsPanelForm" class="category-panel-col mb-3" style="display:none;"> {# ID 변경 #}
+                        <h6 class="search-results-title">검색 결과</h6>
+                        <ul class="list-group category-list-inline" id="categorySearchResultsForm"></ul> {# ID 변경 #}
+                        <div id="search-results-load-more-container-form" class="text-center mt-2" style="display:none;"> {# ID 변경 #}
+                            <button type="button" id="loadMoreSearchResultsForm" class="btn btn-sm btn-outline-secondary">더보기</button> {# ID 변경 #}
+                        </div>
+                    </div>
+                    <div class="row" id="categoryTreePanelForm"> {# ID 변경 #}
+                        <div class="col-md-4 category-panel-col" id="majorCategoryPanelForm"> {# ID 변경 #}
+                            <h6>대분류</h6>
+                            <ul class="list-group category-list-inline">
+                                {% for major_cat_data in major_categories %} {# views.py에서 major_categories는 dict list로 전달됨 #}
+                                    <li class="list-group-item category-item-inline" 
+                                        data-id="{{ major_cat_data.id }}" 
+                                        data-name="{{ major_cat_data.name }}" 
+                                        data-level="0" 
+                                        data-slug="{{ major_cat_data.slug }}" 
+                                        data-path="{{ major_cat_data.name }}"
+                                        data-is-leaf="{{ major_cat_data.is_leaf|yesno:'true,false' }}">
+                                        {{ major_cat_data.name }}
+                                        {% if major_cat_data.children_exists %}
+                                            <span class="category-arrow-inline float-end">></span>
+                                        {% endif %}
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                                     </li>
                                 {% endfor %}
                             </ul>
                         </div>
+<<<<<<< HEAD
                         <div class="col-md-4 category-panel-col" id="mediumCategoryPanelInline" style="display:none;">
                             <h6 id="mediumCategoryPanelTitleInline">중분류</h6>
                             <ul class="list-group category-list-inline" id="mediumCategoryListInline"></ul>
@@ -93,6 +148,15 @@
                         <div class="col-md-4 category-panel-col" id="minorCategoryPanelInline" style="display:none;">
                             <h6 id="minorCategoryPanelTitleInline">소분류</h6>
                             <ul class="list-group category-list-inline" id="minorCategoryListInline"></ul>
+=======
+                        <div class="col-md-4 category-panel-col" id="mediumCategoryPanelForm" style="display:none;"> {# ID 변경 #}
+                            <h6 id="mediumCategoryPanelTitleForm">중분류</h6> {# ID 변경 #}
+                            <ul class="list-group category-list-inline" id="mediumCategoryListForm"></ul> {# ID 변경 #}
+                        </div>
+                        <div class="col-md-4 category-panel-col" id="minorCategoryPanelForm" style="display:none;"> {# ID 변경 #}
+                            <h6 id="minorCategoryPanelTitleForm">소분류</h6> {# ID 변경 #}
+                            <ul class="list-group category-list-inline" id="minorCategoryListForm"></ul> {# ID 변경 #}
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                         </div>
                     </div>
                 </div>
@@ -132,6 +196,7 @@
             <div class="form-row attachment-formset-container">
                 <label class="form-label">첨부파일</label>
                 {{ formset.management_form }}
+<<<<<<< HEAD
                 <div id="attachment-forms-wrapper">
                     {% for attachment_form in formset %}
                         <div class="attachment-form-item mb-3 p-3 border rounded">
@@ -195,12 +260,73 @@
                             {% if attachment_form.file.errors %}{% for error in attachment_form.file.errors %}<p class="error mt-1 small">{{ error }}</p>{% endfor %}{% endif %}
                             {% if attachment_form.id.errors %}{% for error in attachment_form.id.errors %}<p class="error mt-1 small">ID 오류: {{ error }}</p>{% endfor %}{% endif %} {# ID 필드 에러 #}
                             {% for error in attachment_form.non_field_errors %}<p class="error mt-1 small">{{ error }}</p>{% endfor %}
+=======
+                
+                <div id="attachment-forms-wrapper">
+                    {% for attachment_form in formset %}
+                        <div class="attachment-form-item mb-3 p-3 border rounded">
+                            {{ attachment_form.id }}
+                            <div style="display:none;">{{ attachment_form.DELETE }}</div>
+
+                            {% if attachment_form.instance.pk and attachment_form.instance.file %}
+                                <div class="current-attachment-display mb-2">
+                                    <p class="mb-1">
+                                        <span class="attachment-label-text" style="font-weight: 500;">첨부된 파일:</span>
+                                        <a href="{{ attachment_form.instance.file.url }}"
+                                            download="{{ attachment_form.instance.filename }}" {# 여기에 사용됨 #}
+                                            title="다운로드: {{ attachment_form.instance.filename }}" {# 여기에 사용됨 #}
+                                            class="ms-1">
+                                                {{ attachment_form.instance.filename }} {# 여기에 사용됨 #}
+                                            </a>
+                                        {% if attachment_form.instance.file.size %}
+                                        <span class="small">({{ attachment_form.instance.file.size|filesizeformat }})</span>
+                                        {% endif %}
+                                    </p>
+                                    <p class="mb-2">
+                                        <span class="attachment-label-text" style="font-weight: 500;">현재 파일 새 창으로 열기:</span>
+                                        <a href="{{ attachment_form.instance.file.url }}" target="_blank"
+                                           title="{{ attachment_form.instance.file.name|basename }} 새 창으로 열기" {# 수정 #}
+                                           class="ms-1">
+                                            {{ attachment_form.instance.file.name|basename }} {# 수정 #}
+                                        </a>
+                                    </p>
+                                    {% if attachment_form.can_delete %}
+                                        <div class="d-flex justify-content-end">
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-existing-file-btn"
+                                                    data-checkbox-id="{{ attachment_form.DELETE.id_for_label }}"
+                                                    title="이 파일 삭제">기존 파일 삭제 X</button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <hr class="my-2">
+                                <label for="{{ attachment_form.file.id_for_label }}" class="form-label-attachment-change small d-block mb-1 fw-bold">파일 변경:</label>
+                            {% else %}
+                                <label for="{{ attachment_form.file.id_for_label }}" class="form-label-attachment-new small d-block mb-1 fw-bold">새 파일 첨부:</label>
+                            {% endif %}
+
+                            <div class="attachment-file-input-wrapper d-flex align-items-center">
+                                <input type="file" name="{{ attachment_form.file.html_name }}" id="{{ attachment_form.file.auto_id }}" class="d-none attachment-true-input">
+                                <button type="button" class="btn btn-sm btn-primary select-file-button me-2">파일 선택</button>
+                                <span class="selected-file-name small flex-grow-1">선택된 파일 없음</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary clear-newly-selected-file ms-1" style="display:none;" title="선택한 파일 취소">X</button>
+                            </div>
+
+                            {% if attachment_form.file.errors %}{% for error in attachment_form.file.errors %}<p class="error mt-1 small text-danger">{{ error }}</p>{% endfor %}{% endif %}
+                            {% if attachment_form.id.errors %}{% for error in attachment_form.id.errors %}<p class="error mt-1 small text-danger">ID 오류: {{ error }}</p>{% endfor %}{% endif %}
+                            {% for error in attachment_form.non_field_errors %}<p class="error mt-1 small text-danger">{{ error }}</p>{% endfor %}
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                         </div>
                     {% endfor %}
                 </div>
                 <button type="button" id="add-attachment-form" class="btn btn-outline-secondary btn-sm mt-2">파일 추가</button>
+<<<<<<< HEAD
                 <small class="form-text text-muted d-block mt-1">새 파일을 추가하거나 기존 파일을 변경/삭제할 수 있습니다.</small>
             </div>
+=======
+                <small class="form-text d-block mt-1">새 파일을 추가하거나 기존 파일을 변경/삭제할 수 있습니다.</small>
+            </div>
+            {# === 폼셋(다중 첨부파일) 렌더링 끝 === #}
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 
             {# JavaScript에서 사용할 빈 폼 템플릿 (숨겨둠) #}
             <div id="empty-attachment-form" style="display:none;">
@@ -235,7 +361,11 @@
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<<<<<<< HEAD
 <script src="https://cdn.tiny.cloud/1/xqn37s38iyj7twa9wlozw51dfmv2mqxbxsr6le9amrbajhlc/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script> {# API 키 변경 #}
+=======
+{{ form.media.js }}
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 
 <script type="text/javascript">
 console.log("--- JavaScript execution started ---"); // ★★★ 이 로그가 뜨는지 확인 ★★★
@@ -259,6 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn("[FORM JS] TinyMCE target element not found with ID: " + contentFieldId);
     }
 
+<<<<<<< HEAD
     // --- 카테고리 관련 변수 및 초기화 ---
     const MAX_CATEGORIES = 5;
     let selectedCategories = new Map(); // key: categoryId (string), value: {id, name, path, slug}
@@ -311,10 +442,163 @@ document.addEventListener('DOMContentLoaded', function() {
         // console.log("[FORM JS] Rendering selected category tags. Current map:", selectedCategories);
         selectedCategories.forEach(function(cat) {
             const tag = $(`<span class="badge me-1 mb-1 selected-category-tag" data-id="${cat.id}">${cat.path} <span class="remove-category" data-id="${cat.id}" title="선택 해제" style="cursor:pointer; font-weight:bold; margin-left:3px;">×</span></span>`);
+=======
+    // --- 카테고리 선택 UI 로직 (폼 페이지용) ---
+    const MAX_CATEGORIES_FORM = 5;
+    let selectedCategoriesForm = new Map(); // 폼 페이지용 Map
+    const $form = $('form.study-post-form');
+    console.log("[FORM JS] $form selection result:", $form); // 추가
+    console.log("[FORM JS] Number of forms found with '.study-post-form':", $form.length); // 추가
+
+    const categoriesHiddenInputName = "{{ form.categories.html_name|default:'categories' }}"; // PostForm의 categories 필드 이름
+
+    // 초기 선택된 카테고리 로드 (수정 폼의 경우)
+    let initialCategoriesJsonForm = '{{ initial_selected_categories_for_js|escapejs|default:"[]" }}';
+    try {
+        const initialCategoriesDataForm = JSON.parse(initialCategoriesJsonForm);
+        if (initialCategoriesDataForm && initialCategoriesDataForm.length > 0) {
+            initialCategoriesDataForm.forEach(function(catData) {
+                if (catData.id && selectedCategoriesForm.size < MAX_CATEGORIES_FORM) {
+                    selectedCategoriesForm.set(catData.id.toString(), {
+                        id: catData.id.toString(),
+                        name: catData.name,
+                        path: catData.path,
+                        slug: catData.slug // slug 정보도 Map에 저장
+                    });
+                }
+            });
+        }
+    } catch (e) {
+        console.error("[FORM JS] Error parsing initial_selected_categories_for_js:", e, "Raw:", initialCategoriesJsonForm);
+    }
+    renderSelectedCategoryTagsForm();
+    updateHiddenCategoryInputs();
+    updatePanelActiveStatesForm(); // 페이지 로드 시 패널 active 상태 초기화
+
+
+    // 카테고리 패널 아이템 클릭 (대/중/소)
+    $('#majorCategoryPanelForm, #mediumCategoryPanelForm, #minorCategoryPanelForm').on('click', '.category-item-inline', function() {
+        const $item = $(this);
+        const categoryId = $item.data('id')?.toString();
+        const categoryName = $item.data('name');
+        const categorySlug = $item.data('slug');
+        const categoryPath = $item.data('path') || categoryName;
+        const isLeaf = $item.data('is-leaf'); // is-leaf 값 사용 (true/false 불린값이어야 함)
+        let hasChildren;
+
+        if (isLeaf === true || isLeaf === 'true') { // 명확한 불린값 비교
+            hasChildren = false;
+        } else if (isLeaf === false || isLeaf === 'false') {
+            hasChildren = true;
+        } else { // data-is-leaf 속성이 없거나 유효하지 않은 경우, 화살표로 판단 (fallback)
+            hasChildren = $item.find('.category-arrow-inline').length > 0;
+        }
+        
+        const $parentPanel = $item.closest('.category-panel-col');
+
+        if (!categoryId) {
+            console.warn("[FORM JS] Clicked category item missing data-id.", $item);
+            return;
+        }
+
+        // 같은 패널 내 다른 active-parent 해제
+        if (!$item.hasClass('active-parent')) {
+            $parentPanel.find('.category-item-inline.active-parent').removeClass('active-parent');
+        }
+
+        if (hasChildren) { // 자식이 있는 경우 (패널 확장)
+            $item.addClass('active-parent');
+            if ($parentPanel.is('#majorCategoryPanelForm')) {
+                $('#mediumCategoryPanelForm').hide().find('.category-list-inline').empty();
+                $('#minorCategoryPanelForm').hide().find('.category-list-inline').empty();
+                loadChildCategoriesForm(categoryId, categoryPath, '#mediumCategoryPanelForm', '#mediumCategoryListForm', 1);
+            } else if ($parentPanel.is('#mediumCategoryPanelForm')) {
+                $('#minorCategoryPanelForm').hide().find('.category-list-inline').empty();
+                // 중분류 클릭 시, 부모 경로(categoryPath)는 해당 중분류 아이템의 data-path를 사용
+                loadChildCategoriesForm(categoryId, categoryPath, '#minorCategoryPanelForm', '#minorCategoryListForm', 2);
+            }
+        } else { // 자식이 없는 경우 (말단 노드 선택/해제)
+             // active-parent는 하위 패널을 열 때만 의미 있으므로, 말단 노드에서는 제거할 수도 있음
+            $parentPanel.find('.category-item-inline.active-parent').removeClass('active-parent'); // 현재 패널의 active-parent 해제
+            handleCategorySelectionForm({ id: categoryId, name: categoryName, slug: categorySlug, path: categoryPath }, $item);
+        }
+    });
+
+    // 검색 결과 패널 아이템 클릭
+    $('#categorySearchResultsPanelForm').on('click', '.category-item-inline', function() {
+        const $item = $(this);
+        const categoryId = $item.data('id')?.toString();
+        const categoryName = $item.data('name');
+        const categorySlug = $item.data('slug');
+        const categoryPath = $item.data('path') || categoryName;
+        
+        if (!categoryId) { return; }
+        // 검색 결과는 항상 말단으로 간주하고 선택/해제 처리
+        handleCategorySelectionForm({ id: categoryId, name: categoryName, slug: categorySlug, path: categoryPath }, $item);
+    });
+
+
+    // 선택된 카테고리 태그의 X 버튼 클릭
+    $('#selected-category-display-form').on('click', '.remove-category-form', function(event) {
+        event.stopPropagation(); // 상위 이벤트 전파 중단
+        const $tag = $(this).closest('.selected-category-tag');
+        const categoryIdToRemove = $tag.data('id')?.toString();
+        
+        if (categoryIdToRemove && selectedCategoriesForm.has(categoryIdToRemove)) {
+            const categoryData = selectedCategoriesForm.get(categoryIdToRemove);
+            // 패널 내 해당 아이템을 찾아서 active 해제
+            const $itemInPanel = $(`.category-panel-container .category-item-inline[data-id="${categoryIdToRemove}"]`);
+            if ($itemInPanel.length) {
+                $itemInPanel.removeClass('active'); // active-parent는 여기서 직접 건드리지 않음
+            }
+            // Map에서 제거하고 UI 업데이트
+            handleCategorySelectionForm(categoryData, $itemInPanel); // 선택 해제 로직 재활용 (두 번째 인자는 UI 업데이트용)
+        }
+    });
+
+    // 폼 페이지용 카테고리 선택/해제 처리 함수
+    function handleCategorySelectionForm(category, $clickedItemElement) {
+        console.log("[FORM JS] handleCategorySelectionForm called. Category:", category, "Clicked Element:", $clickedItemElement); // 추가
+        if (!category.id) { alert("카테고리 정보(ID)가 없어 처리할 수 없습니다."); return; }
+        const categoryIdStr = category.id.toString();
+
+        if (selectedCategoriesForm.has(categoryIdStr)) {
+            selectedCategoriesForm.delete(categoryIdStr);
+            if ($clickedItemElement && $clickedItemElement.length) {
+                $clickedItemElement.removeClass('active');
+            }
+            console.log(`[FORM JS] Category DESELECTED. ID: ${categoryIdStr}. Current Map:`, new Map(selectedCategoriesForm)); // Map 복사해서 로깅
+        } else {
+            if (selectedCategoriesForm.size < MAX_CATEGORIES_FORM) {
+                selectedCategoriesForm.set(categoryIdStr, category);
+                if ($clickedItemElement && $clickedItemElement.length) {
+                    $clickedItemElement.addClass('active');
+                }
+                console.log(`[FORM JS] Category SELECTED. ID: ${categoryIdStr}, Data:`, category, "Current Map:", new Map(selectedCategoriesForm)); // Map 복사해서 로깅
+            } else {
+                alert(`카테고리는 최대 ${MAX_CATEGORIES_FORM}개까지 선택할 수 있습니다.`);
+                return;
+            }
+        }
+        renderSelectedCategoryTagsForm();
+        updateHiddenCategoryInputs(); // 중요!
+    }
+
+    // 선택된 카테고리 태그 UI 렌더링 (폼 페이지용)
+    function renderSelectedCategoryTagsForm() {
+        const $displayArea = $('#selected-category-display-form');
+        $displayArea.empty();
+        selectedCategoriesForm.forEach(function(cat) {
+            const tag = $(`<span class="badge me-1 mb-1 selected-category-tag" data-id="${cat.id}" data-slug="${cat.slug || ''}" title="선택된 카테고리: ${cat.path}">
+                            ${cat.path}
+                            <span class="remove-category-form" title="선택 해제" style="cursor:pointer; font-weight:bold; margin-left:5px;">×</span>
+                           </span>`);
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             $displayArea.append(tag);
         });
     }
 
+<<<<<<< HEAD
     function updateHiddenSelect() {
         if (!$hiddenSelectElement || $hiddenSelectElement.length === 0) {
             console.error(`[FORM JS] CRITICAL: Hidden select element '{{ form.categories.html_name }}' NOT FOUND. Cannot update form values for submission.`);
@@ -339,10 +623,47 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#ajaxSearchResultsPanel .category-search-result-item').each(function() { /* 검색 결과 패널도 동일하게 */
             const $item = $(this);
             if (selectedCategories.has($item.data('id')?.toString())) {
+=======
+    // 숨겨진 MultipleHiddenInput 업데이트 (폼 페이지용)
+    function updateHiddenCategoryInputs() {
+        const currentName = categoriesHiddenInputName; // 현재 사용 중인 name 확인
+        console.log(`[FORM JS] updateHiddenCategoryInputs CALLED. Target input name: "${currentName}"`);
+
+        // 기존 hidden input 제거 시, $form 컨텍스트 내에서만 제거하도록 명확히
+        $form.find(`input[type="hidden"][name="${currentName}"]`).remove(); 
+        console.log(`[FORM JS] Removed existing hidden inputs with name: "${currentName}"`);
+
+        let currentSelectedIds = Array.from(selectedCategoriesForm.keys());
+        console.log("[FORM JS] Current selected category IDs for hidden inputs:", currentSelectedIds);
+
+        currentSelectedIds.forEach(function(id) {
+            const $hiddenInput = $('<input>').attr({ type: 'hidden', name: currentName, value: id });
+            // $form.append($hiddenInput); // 기존 방식
+            $hiddenInput.appendTo($form); // 변경된 방식
+            console.log(`[FORM JS] Appended hidden input using appendTo: name="${currentName}", value="${id}"`);
+        });
+
+        // 실제로 폼에 추가되었는지 다시 한번 확인
+        let appendedInputsDebug = [];
+        $form.find(`input[type="hidden"][name="${currentName}"]`).each(function() {
+            appendedInputsDebug.push($(this).val());
+        });
+        console.log("[FORM JS] VERIFY - Hidden inputs currently in form for categories:", appendedInputsDebug);
+    }
+
+    // 카테고리 패널 아이템 active 상태 업데이트 (폼 페이지용)
+    function updatePanelActiveStatesForm() {
+        // console.log("[FORM JS] Updating all panel active states. selectedCategoriesForm:", selectedCategoriesForm);
+        $('#categoryTreePanelForm .category-item-inline, #categorySearchResultsPanelForm .category-item-inline').each(function() {
+            const $item = $(this);
+            const itemIdStr = $item.data('id')?.toString();
+            if (itemIdStr && selectedCategoriesForm.has(itemIdStr)) {
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 $item.addClass('active');
             } else {
                 $item.removeClass('active');
             }
+<<<<<<< HEAD
         });
     }
 
@@ -461,6 +782,21 @@ document.addEventListener('DOMContentLoaded', function() {
         $list.html('<li class="list-group-item disabled p-3 text-center"><div class="spinner-border spinner-border-sm"></div></li>');
         $panel.show();
         $panelTitle.text((basePathForTitle || "하위") + " 카테고리");
+=======
+            // active-parent는 패널 확장 로직에서 관리
+        });
+    }
+    
+    // 하위 카테고리 로드 (폼 페이지용)
+    function loadChildCategoriesForm(parentId, basePathForTitle, panelSelector, listSelector, level) {
+        const $list = $(listSelector);
+        const $panel = $(panelSelector);
+        const $panelTitle = $panel.find('h6'); // ID 대신 내부 h6 찾기
+
+        $list.html('<li class="list-group-item disabled p-3 text-center"><div class="spinner-border spinner-border-sm"></div></li>');
+        $panel.show();
+        $panelTitle.text(basePathForTitle + "의 하위 분류"); // 부모 카테고리 이름을 포함한 경로로 제목 설정
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 
         $.ajax({
             url: "{% url 'flo:ajax_get_child_categories' %}",
@@ -469,6 +805,7 @@ document.addEventListener('DOMContentLoaded', function() {
             success: function(data) {
                 $list.empty();
                 if (data.children && data.children.length > 0) {
+<<<<<<< HEAD
                     console.log(`[FORM JS] Received ${data.children.length} child categories for parentId=${parentId}`);
                     data.children.forEach(function(child) {
                         const listItem = $(`
@@ -479,22 +816,47 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ${child.has_children ? '<span class="category-arrow-inline float-end">></span>' : ''}
                             </li>`);
                         if (selectedCategories.has(child.id.toString())) {
+=======
+                    data.children.forEach(function(child) {
+                        // child.full_path는 서버에서 "대분류 > ... > 현재자식" 형태로 제공
+                        const displayPath = child.full_path || (basePathForTitle + " > " + child.name);
+                        const listItem = $(`
+                            <li class="list-group-item category-item-inline" 
+                                data-id="${child.id}" 
+                                data-name="${child.name}" 
+                                data-level="${level}" 
+                                data-path="${displayPath}" 
+                                data-slug="${child.slug || ''}"
+                                data-is-leaf="${child.is_leaf !== undefined ? child.is_leaf : !child.has_children}">
+                                ${child.name}
+                                ${child.has_children ? '<span class="category-arrow-inline float-end">></span>' : ''}
+                            </li>`);
+                        if (selectedCategoriesForm.has(child.id.toString())) {
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                             listItem.addClass('active');
                         }
                         $list.append(listItem);
                     });
                 } else {
+<<<<<<< HEAD
                     console.log(`[FORM JS] No child categories found for parentId=${parentId}`);
                     $list.html('<li class="list-group-item disabled text-muted">하위 카테고리가 없습니다.</li>');
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error("[FORM JS] AJAX Error loading child categories:", textStatus, errorThrown, jqXHR.responseText);
+=======
+                    $list.html('<li class="list-group-item disabled text-muted">하위 카테고리가 없습니다.</li>');
+                }
+            },
+            error: function() {
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 $list.html('<li class="list-group-item text-danger">목록을 불러오는데 실패했습니다.</li>');
             }
         });
     }
 
+<<<<<<< HEAD
     // --- 카테고리 검색 관련 (AJAX) ---
     const $categorySearchInput = $('#categorySearchInputInline');
     const $clearSearchButton = $('#clearSearchInput');
@@ -577,11 +939,63 @@ document.addEventListener('DOMContentLoaded', function() {
     function fetchSearchResults(term, page) {
         console.log(`[FORM JS] Fetching search results for: ${term}, page: ${page}`);
         $loadMoreButton.prop('disabled', true).text('로딩 중...');
+=======
+    // 카테고리 검색 관련 (폼 페이지용)
+    const $categorySearchInputForm = $('#categorySearchInputForm');
+    const $clearSearchInputFormBtn = $('#clearSearchInputForm');
+    const $categoryTreePanelForm = $('#categoryTreePanelForm');
+    const $searchResultsPanelForm = $('#categorySearchResultsPanelForm');
+    const $resultsListForm = $('#categorySearchResultsForm');
+    const $loadMoreContainerForm = $('#search-results-load-more-container-form');
+    const $loadMoreButtonForm = $('#loadMoreSearchResultsForm');
+    let currentPageForm = 1;
+    let currentSearchTermForm = '';
+    let searchTimeoutForm;
+
+    $categorySearchInputForm.on('keyup input', function() {
+        clearTimeout(searchTimeoutForm);
+        const searchTerm = $(this).val().trim();
+        if (searchTerm.length > 0) { $clearSearchInputFormBtn.show(); } 
+        else { $clearSearchInputFormBtn.hide(); }
+
+        if (currentSearchTermForm.toLowerCase() !== searchTerm.toLowerCase()) {
+            currentPageForm = 1; $resultsListForm.empty(); $loadMoreContainerForm.hide();
+        }
+        currentSearchTermForm = searchTerm;
+
+        if (searchTerm.length === 0) {
+            $searchResultsPanelForm.hide(); $categoryTreePanelForm.show();
+            updatePanelActiveStatesForm();
+            return;
+        }
+        searchTimeoutForm = setTimeout(function() {
+            if (currentPageForm === 1) {
+                $categoryTreePanelForm.hide(); $searchResultsPanelForm.show();
+                $resultsListForm.html('<li class="list-group-item disabled p-3 text-center"><div class="spinner-border spinner-border-sm"></div></li>');
+            }
+            fetchSearchResultsForm(currentSearchTermForm, currentPageForm);
+        }, 300);
+    });
+
+    $clearSearchInputFormBtn.on('click', function() {
+        $categorySearchInputForm.val('').focus().trigger('input');
+    });
+
+    $loadMoreButtonForm.on('click', function() {
+        if (currentSearchTermForm) {
+            fetchSearchResultsForm(currentSearchTermForm, currentPageForm);
+        }
+    });
+
+    function fetchSearchResultsForm(term, page) {
+        $loadMoreButtonForm.prop('disabled', true).text('로딩 중...');
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         $.ajax({
             url: "{% url 'flo:ajax_search_categories' %}",
             data: { 'q': term, 'page': page },
             dataType: 'json',
             success: function(data) {
+<<<<<<< HEAD
                 if (page === 1) { $resultsList.empty(); }
                 if (data.categories && data.categories.length > 0) {
                     data.categories.forEach(function(cat) {
@@ -607,6 +1021,77 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- 첨부파일 폼셋 관련 로직 ---
+=======
+                if (page === 1) { $resultsListForm.empty(); }
+                if (data.categories && data.categories.length > 0) {
+                    data.categories.forEach(function(cat) {
+                        // 검색 결과는 항상 is_leaf=true, has_children=false 로 간주
+                        const listItem = $(`
+                            <li class="list-group-item category-item-inline search-result-item" 
+                                data-id="${cat.id}" 
+                                data-name="${cat.name}" 
+                                data-slug="${cat.slug}" 
+                                data-path="${cat.full_path}" 
+                                data-is-leaf="true">
+                                <span class="search-result-path">${cat.full_path}</span>
+                            </li>`);
+                        if (selectedCategoriesForm.has(cat.id.toString())) {
+                            listItem.addClass('active');
+                        }
+                        $resultsListForm.append(listItem);
+                    });
+                    if (data.has_next_page) {
+                        $loadMoreContainerForm.show();
+                        currentPageForm = data.current_page + 1;
+                    } else {
+                        $loadMoreContainerForm.hide();
+                    }
+                } else {
+                    if (page === 1) {
+                        $resultsListForm.html('<li class="list-group-item disabled text-muted">검색 결과가 없습니다.</li>');
+                    }
+                    $loadMoreContainerForm.hide();
+                }
+            },
+            error: function() {
+                if (page === 1) { $resultsListForm.html('<li class="list-group-item text-danger">검색 중 오류가 발생했습니다.</li>'); }
+                $loadMoreContainerForm.hide();
+            },
+            complete: function() {
+                $loadMoreButtonForm.prop('disabled', false).text('더보기');
+            }
+        });
+    }
+    // 카테고리 UI 로직 끝
+
+
+    // --- 폼 제출 유효성 검사 ---
+    $form.on('submit', function(event) {
+        console.log("[FORM JS] Form submit event for category validation (final check).");
+        updateHiddenCategoryInputs(); // 제출 직전에 hidden input 최종 업데이트
+
+        if (selectedCategoriesForm.size === 0) {
+            alert('카테고리를 최소 1개 이상 선택해주세요.');
+            event.preventDefault();
+            const categoryArea = document.querySelector('.category-selection-area-wrapper-form');
+            if (categoryArea) {
+                categoryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return false;
+        }
+        if (selectedCategoriesForm.size > MAX_CATEGORIES_FORM) {
+            alert(`카테고리는 최대 ${MAX_CATEGORIES_FORM}개까지 선택할 수 있습니다.`);
+            event.preventDefault();
+            const categoryArea = document.querySelector('.category-selection-area-wrapper-form');
+            if (categoryArea) {
+                categoryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return false;
+        }
+    });
+
+    // --- 첨부파일 폼셋 관련 로직 (기존 코드 유지) ---
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     const addFormButton = document.getElementById('add-attachment-form');
     const formsWrapper = document.getElementById('attachment-forms-wrapper');
     const totalFormsInput = document.querySelector('input[name="attachments-TOTAL_FORMS"]');
@@ -614,13 +1099,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const emptyFormHtml = emptyFormElement ? emptyFormElement.innerHTML : "";
 
     function setupAttachmentFormItem($formItem) {
+<<<<<<< HEAD
         const formItemId = $formItem.find('input[type="file"].attachment-true-input').attr('id') || $formItem.index(); // 고유 식별자
         console.log(`[ATTACHMENT] setupAttachmentFormItem 호출 시작 - FormItem ID/Index: ${formItemId}`); // ★★★ 로그 추가 ★★★
 
+=======
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         const $actualFileInput = $formItem.find('input[type="file"].attachment-true-input');
         const $selectFileTriggerButton = $formItem.find('.select-file-button');
         const $selectedFileNameSpan = $formItem.find('.selected-file-name');
         const $clearNewlySelectedFileButton = $formItem.find('.clear-newly-selected-file');
+<<<<<<< HEAD
 
         // 기존 파일 삭제 관련 요소
         const $deleteExistingFileButton = $formItem.find('.delete-existing-file-btn'); // 이 버튼은 기존 렌더링된 폼에만 있음
@@ -642,33 +1131,55 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // 2. 실제 파일 입력 필드 변경
+=======
+        const $deleteExistingFileButton = $formItem.find('.delete-existing-file-btn');
+        let $deleteCheckbox = $formItem.find('input[type="checkbox"][name$="-DELETE"]');
+
+        $selectFileTriggerButton.off('click').on('click', function(event) {
+            event.stopPropagation(); $actualFileInput.click();
+        });
+
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         $actualFileInput.off('change').on('change', function() {
             const $currentAttachmentDisplay = $formItem.find('.current-attachment-display');
             if (this.files && this.files.length > 0) {
                 $selectedFileNameSpan.text(this.files[0].name).removeClass('no-file-selected text-muted file-cleared').addClass('file-selected');
                 $clearNewlySelectedFileButton.show();
+<<<<<<< HEAD
                 if ($currentAttachmentDisplay.length) { // 기존 파일 정보가 있었다면 숨김
                     $currentAttachmentDisplay.hide();
                 }
 
+=======
+                if ($currentAttachmentDisplay.length) $currentAttachmentDisplay.hide();
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 if ($deleteCheckbox.length && $deleteCheckbox.prop('checked')) {
                     $deleteCheckbox.prop('checked', false);
                     if ($deleteExistingFileButton.length) {
                         $deleteExistingFileButton.removeClass('marked-for-delete btn-danger').addClass('btn-outline-danger').attr('title', '이 파일 삭제');
+<<<<<<< HEAD
                         // 파일 변경 UI 다시 표시
+=======
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                         $formItem.find('.attachment-file-input-wrapper').find('input[type="file"], .select-file-button, .selected-file-name, .clear-newly-selected-file').show();
                     }
                 }
             } else {
                 $selectedFileNameSpan.text('선택된 파일 없음').removeClass('file-selected').addClass('no-file-selected text-muted');
+<<<<<<< HEAD
                 if ($currentAttachmentDisplay.length && $currentAttachmentDisplay.find('.current-file-link').length > 0) {
                     $currentAttachmentDisplay.show(); // 기존 파일 정보 다시 표시
+=======
+                if ($currentAttachmentDisplay.length && $currentAttachmentDisplay.find('a[href^="/media/"]').length > 0) {
+                    $currentAttachmentDisplay.show();
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 }
                 $clearNewlySelectedFileButton.hide();
                 $selectedFileNameSpan.removeClass('file-cleared');
             }
         });
 
+<<<<<<< HEAD
         // 3. "X" (새로 선택한 파일 취소) 버튼 클릭
         $clearNewlySelectedFileButton.off('click').on('click', function() {
             $actualFileInput.val('');
@@ -677,12 +1188,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // 4. "X" (기존 저장된 파일 삭제) 버튼 클릭
+=======
+        $clearNewlySelectedFileButton.off('click').on('click', function() {
+            $actualFileInput.val(''); $selectedFileNameSpan.addClass('file-cleared'); $actualFileInput.trigger('change');
+        });
+
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         if ($deleteExistingFileButton.length && $deleteCheckbox.length) {
             $deleteExistingFileButton.off('click').on('click', function() {
                 const isCurrentlyChecked = $deleteCheckbox.prop('checked');
                 $deleteCheckbox.prop('checked', !isCurrentlyChecked);
                 $(this).toggleClass('marked-for-delete btn-danger', !isCurrentlyChecked).toggleClass('btn-outline-danger', isCurrentlyChecked);
                 $(this).attr('title', !isCurrentlyChecked ? '삭제 취소' : '이 파일 삭제');
+<<<<<<< HEAD
 
                 const $fileInputControls = $formItem.find('.attachment-file-input-wrapper').find('input[type="file"], .select-file-button, .selected-file-name, .clear-newly-selected-file');
                 const $currentAttachmentInfo = $formItem.find('.current-attachment-display'); // 기존 파일 정보
@@ -701,18 +1219,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     $fileInputControls.show();
                     if($fileChangeLabel.length) $fileChangeLabel.show();
                     // 파일 선택이 없었다면 "선택된 파일 없음"으로 초기화
+=======
+                const $fileInputControls = $formItem.find('.attachment-file-input-wrapper').find('input[type="file"], .select-file-button, .selected-file-name, .clear-newly-selected-file');
+                const $fileChangeLabel = $formItem.find('.form-label-attachment-change');
+                if (!isCurrentlyChecked) {
+                    if ($actualFileInput.val()) { $actualFileInput.val(''); $actualFileInput.trigger('change'); }
+                    $fileInputControls.hide(); if($fileChangeLabel.length) $fileChangeLabel.hide();
+                } else {
+                    $fileInputControls.show(); if($fileChangeLabel.length) $fileChangeLabel.show();
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                     if (!$actualFileInput.val() && $selectedFileNameSpan.length){
                         $selectedFileNameSpan.text('선택된 파일 없음').removeClass('file-selected').addClass('no-file-selected text-muted');
                         if($clearNewlySelectedFileButton.length) $clearNewlySelectedFileButton.hide();
                     }
                 }
             });
+<<<<<<< HEAD
 
             // 초기 상태: DELETE 체크박스가 이미 체크되어 있다면 버튼 스타일 및 UI 업데이트
+=======
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             if ($deleteCheckbox.prop('checked')) {
                 $deleteExistingFileButton.addClass('marked-for-delete btn-danger').removeClass('btn-outline-danger').attr('title', '삭제 취소');
                 const $fileInputControls = $formItem.find('.attachment-file-input-wrapper').find('input[type="file"], .select-file-button, .selected-file-name, .clear-newly-selected-file');
                 const $fileChangeLabel = $formItem.find('.form-label-attachment-change');
+<<<<<<< HEAD
                 $fileInputControls.hide();
                 if($fileChangeLabel.length) $fileChangeLabel.hide();
             }
@@ -741,10 +1272,29 @@ document.addEventListener('DOMContentLoaded', function() {
             setupAttachmentFormItem($newFormItem); // 새로 추가된 폼에도 JS 로직 적용
             console.log("[ATTACHMENT] 새 폼에 setupAttachmentFormItem 적용 완료"); // ★★★
 
+=======
+                $fileInputControls.hide(); if($fileChangeLabel.length) $fileChangeLabel.hide();
+            }
+        }
+    }
+
+    $('#attachment-forms-wrapper .attachment-form-item').each(function(index) {
+        setupAttachmentFormItem($(this));
+    });
+
+    if (addFormButton && formsWrapper && totalFormsInput && emptyFormHtml) {
+        addFormButton.addEventListener('click', function() {
+            let formIdx = parseInt(totalFormsInput.value);
+            let newFormHtmlWithIndex = emptyFormHtml.replace(/__prefix__/g, formIdx);
+            const $newFormItem = $(newFormHtmlWithIndex);
+            $(formsWrapper).append($newFormItem);
+            setupAttachmentFormItem($newFormItem);
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             totalFormsInput.value = formIdx + 1;
         });
     }
 
+<<<<<<< HEAD
     // study_post_form.html의 JavaScript 최하단 또는 적절한 위치에 추가
     $('form.study-post-form').on('submit', function(event) {
         // 실제 제출을 막고 싶다면: event.preventDefault();
@@ -758,6 +1308,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         // 실제 제출을 계속하려면 이 함수에서 아무것도 반환하지 않거나 true를 반환합니다.
     });
+=======
+    const postForm = document.getElementById('study-post-form');
+    if (postForm) {
+        // 'submit' 이벤트가 발생하면(사용자가 등록/수정 버튼을 누르면) 실행
+        postForm.addEventListener('submit', function(event) {
+            
+            // 확인창을 띄우고, 사용자가 '취소'를 누르면
+            if (!confirm('게시글을 {{ submit_text|default:"등록" }}하시겠습니까?')) {
+                // 폼 제출(서버로 데이터 전송)을 막습니다.
+                event.preventDefault(); 
+            }
+            // '확인'을 누르면 폼이 정상적으로 제출됩니다.
+
+        });
+    }
+
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 });
 </script>
 {% endblock %}

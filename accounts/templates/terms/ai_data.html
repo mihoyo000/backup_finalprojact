@@ -1,0 +1,44 @@
+{% load static %}
+
+<div class="modal fade" id="terms-ai-data" tabindex="-1" aria-labelledby="terms-ai-data-label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content terms-modal-content">
+
+      <div class="terms-modal-header">
+        <h5 class="modal-title" id="terms-ai-data-label">AI 학습용 데이터 수집 및 활용 동의</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+      </div>
+
+      <div class="terms-modal-body">
+        <p>
+          flo는 인공지능(AI) 기반의 서비스 품질 향상 및 개인 맞춤형 기능 제공을 위하여
+          이용자의 커뮤니티 활동 데이터를 수집·분석하여 AI 모델 학습에 활용합니다.
+        </p>
+
+        <p><strong>1. 수집 항목</strong><br>
+        - 사용자가 서비스 내에서 자발적으로 생성한 게시글, 댓글, 1:1 대화 내용 등 커뮤니티 활동 관련 비정형 데이터</p>
+
+        <p><strong>2. 수집 목적</strong><br>
+        - AI 챗봇 성능 개선<br>
+        - 개인 맞춤형 콘텐츠 및 커뮤니티 추천 기능 고도화</p>
+
+        <p><strong>3. 처리 방식</strong><br>
+        - 수집된 데이터는 익명화(비식별화) 처리된 후 AI 학습에 활용되며, 개별 이용자를 식별할 수 없습니다.</p>
+
+        <p><strong>4. 보유 및 이용 기간</strong><br>
+        - 회원 탈퇴 시점으로부터 최대 30일까지 보관되며, 이후 자동 폐기됩니다.</p>
+
+        <p><strong>5. 유의 사항</strong><br>
+        - 본 동의는 서비스의 핵심 기능 제공을 위해 필수적입니다.<br>
+        - 동의하지 않으실 경우 flo의 회원가입 및 주요 기능 이용이 제한될 수 있습니다.</p>
+      </div>
+
+      <div class="terms-modal-footer">
+        <button type="button" class="terms-confirm-btn" data-bs-dismiss="modal">확인</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{% static 'flo/css/trems.css' %}">

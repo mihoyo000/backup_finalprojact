@@ -1,0 +1,123 @@
+{# FLO/flo_exam/templates/flo_exam/exam_spa_page.html #}
+{% extends 'flo_exam/base_header.html' %}
+{% load static %}
+{% load static i18n %}
+
+{% block title %}FLO 시험 진행{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'flo/css/base_header.css' %}">
+    <link rel="stylesheet" href="{% static 'flo_exam/css/exam_spa_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-container spa-container">
+        {# === 동적으로 내용이 변경될 메인 컨텐츠 영역 === #}
+        <div id="dynamic-content-area" class="container mt-4">
+            {# 초기 페이지 로드 시: 이 부분은 "로딩 중" UI가 먼저 표시되고,
+               JS가 AJAX로 문제 생성을 요청한 후, 그 결과에 따라
+               문제 풀이 UI 또는 에러 메시지 등으로 내용이 바뀝니다.
+               업로드 폼은 이전 페이지(upload_page.html)에서 이미 제출되었으므로,
+               이 페이지에서는 바로 "문제 생성 중" 로딩 화면부터 시작합니다.
+            #}
+        </div>
+
+        {# === 고정 로봇 이미지 === #}
+        <div class="fixed-robot-image-container">
+            {# 초기 로봇 이미지는 views.py에서 전달된 initial_robot_image 사용 #}
+            <img id="robot-image" src="{{ initial_robot_image}}" alt="Robot Image" class="fixed-robot-image">
+        </div>
+    </div>
+
+    {# --- JavaScript에서 사용할 HTML 템플릿 조각들 (숨겨둠) --- #}
+    <template id="loading-ui-template-spa">
+        <div class="loading-container-wrapper text-center py-5">
+            <div class="loading-content-area">
+                <p class="loading-text lead mb-3">메시지 로딩 중...</p> {# JS로 실제 메시지 채움 #}
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="solve-exam-ui-template-spa">
+        <div class="solve-exam-content">
+            <h2 id="exam-title-placeholder-spa" class="mb-4">문제 풀이</h2>
+            <form id="solveExamFormSpa" method="POST"> {# CSRF 토큰은 JS에서 AJAX 요청 시 포함 #}
+                <div id="questions-container-spa">
+                    {# 문제는 JavaScript로 동적으로 채워짐 #}
+                </div>
+                <div class="text-center mt-4 mb-5">
+                    <button type="submit" class="btn btn-primary btn-lg">제출하기</button>
+                </div>
+            </form>
+        </div>
+    </template>
+    
+    <template id="exam-result-ui-template-spa">
+        <div class="exam-result-content">
+            <h2 id="result-exam-title-placeholder-spa" class="mb-4">시험 결과</h2>
+            <div class="result-summary mb-4 p-3 bg-body-tertiary border rounded">
+                <h4 style="color: black;">결과 요약</h4>
+                <p style="color: black;"><strong style="color: black;">총 문제 수:</strong> <span class="total-questions-count" style="color: black;">0</span>개</p>
+                <p style="color: black;"><strong style="color: black;">맞춘 개수:</strong> <span class="correct-answers-count" style="color: black;">0</span>개</p>
+                <p style="color: black;"><strong style="color: black;">점수:</strong> <span class="exam-score" style="color: black;">0</span>점</p>
+            </div>
+            <div class="flo-comment mb-4 p-3 bg-info-subtle border rounded">
+                <h5 style="color: black;">Flo 한마디</h5>
+                <p class="flo-comment-text" style="color: black;">코멘트 로딩 중...</p>
+            </div>
+            <div class="download-buttons mb-4">
+                <a href="#" class="btn btn-dark me-2 download-questions-btn" target="_blank">시험문제 PDF 다운로드</a>
+                <a href="#" class="btn btn-dark download-answers-btn" target="_blank">답지&풀이 PDF 다운로드</a>
+            </div>
+            <div class="action-links mb-5">
+                {# upload_page_url은 views.py의 context에서 전달받음 #}
+                <a href="{{ upload_page_url }}" class="btn btn-outline-secondary me-2">문제 더 풀기</a>
+                <a href="#" class="btn btn-outline-secondary">마이페이지로 이동</a> {# 실제 URL로 변경 필요 #}
+            </div>
+            <h4 class="mb-3">문제별 결과</h4>
+            <div id="question-results-container-spa">
+                {# 문제별 결과는 JavaScript로 동적으로 채워짐 #}
+            </div>
+        </div>
+    </template>
+{% endblock %}
+
+{% block extra_js %}
+{# CSRF 토큰을 JS에서 사용할 수 있도록 hidden input으로 추가 (폼 제출 시 JS가 FormData에 포함시키거나 헤더에 넣음) #}
+    {# 이 방법보다는 JS에서 쿠키를 읽는 getCsrfToken() 함수를 사용하는 것이 더 일반적일 수 있음 #}
+    {# {% csrf_token %} #} <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    
+    {# Django context 변수를 JavaScript에서 사용할 수 있도록 설정 #}
+    <script>
+        const EXAM_DOCUMENT_ID = {{ exam_document_id }}; // views.py에서 전달
+        const EXAM_DOCUMENT_TITLE = "{{ exam_document_title|escapejs }}"; // views.py에서 전달
+        const PAGE_INITIAL_MESSAGE = "{{ page_initial_message|escapejs }}"; // views.py에서 전달
+        
+        const APP_URLS = {
+            processPdf: "{{ ajax_process_pdf_url }}", // views.py에서 전달 (exam_document_id 포함된 완전한 URL)
+            processScoringTemplate: "{{ ajax_process_scoring_url_template }}", // views.py에서 전달 (플레이스홀더 포함)
+            downloadQuestionsTemplate: "{{ download_questions_pdf_url_template }}", // views.py에서 전달
+            downloadAnswersTemplate: "{{ download_answers_pdf_url_template }}" // views.py에서 전달
+        };
+        const STATIC_PATHS = { // 로봇 이미지 경로 등
+            robotIdle: "{% static 'flo_exam/images/robot.png' %}", // 이 페이지에서는 주로 generating부터 시작
+            robotGenerating: "{{ initial_robot_image }}", // views.py에서 전달된 초기 로봇 이미지
+            robotSolving: "{% static 'flo_exam/images/robot.png' %}",
+            robotScoring: "{% static 'flo_exam/images/robot.png' %}",
+            robotResults: "{% static 'flo_exam/images/robot.png' %}"
+        };
+
+        function initDropdowns() {
+            // 예: 드롭다운 클릭 시 열고 닫는 로직
+            document.querySelectorAll(".dropdown-toggle").forEach((toggle) => {
+                toggle.addEventListener("click", function () {
+                    this.parentElement.classList.toggle("open");
+                });
+            });
+        }
+    </script>
+    <script src="{% static 'flo_exam/js/exam_spa_logic.js' %}"></script> {# SPA 전용 JS 파일 #}
+{% endblock %}

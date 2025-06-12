@@ -5,10 +5,17 @@ from . import views
 app_name = 'flo' # 앱 네임스페이스 설정
 
 urlpatterns = [
+<<<<<<< HEAD
     path('', views.home_view_in_flo, name='home'),
     
     # 인증 관련 URL 추가
     path('signup/', views.signup_view, name='signup'),
+=======
+    path('', views.home, name='home'),
+    
+    # 인증 관련 URL 추가
+    # path('signup/', views.signup_view, name='signup'),
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     
@@ -27,10 +34,23 @@ urlpatterns = [
     path('study_post/<int:post_pk>/comment/new/', views.study_post_comment_create, name='study_post_comment_create'),
     path('comment/<int:pk>/edit/', views.study_post_comment_edit, name='study_post_comment_edit'), # (선택적 AJAX)
     path('comment/<int:pk>/delete/', views.study_post_comment_delete, name='study_post_comment_delete'), # (선택적 AJAX)
+<<<<<<< HEAD
+=======
+    path('study_post/<int:post_pk>/comments/', views.ajax_get_comments, name='ajax_get_comments'), # 댓글 AJAX 로드용 URL
+    
+    # ★★★ 답글 작성 URL 추가 ★★★
+    # pk는 부모 댓글의 ID를 의미합니다.
+    path('comment/<int:pk>/reply/new/', views.study_post_reply_create, name='study_post_reply_create'),
+
+    # ★★★ 답글 작성 URL 추가 ★★★
+    # pk는 부모 댓글의 ID를 의미합니다.
+    path('comment/<int:pk>/reply/new/', views.study_post_reply_create, name='study_post_reply_create'),
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 
     # FAQ
     path('faq/', views.faq_list, name='faq_list'),
 
+<<<<<<< HEAD
     # PDF 파일 업로드
     path('pdf/upload/', views.pdf_upload_view, name='pdf_upload'),
 
@@ -60,4 +80,32 @@ urlpatterns = [
     path('attempt/<int:attempt_pk>/retake_incorrect/', views.retake_incorrect_answers_view, name='retake_incorrect_answers'), # 오답노트 다시풀기
     path('retake_result/', views.retake_result_view, name='retake_result'), # 세션에서 데이터 가져오므로 별도 pk 필요 없을 수 있음
     path('materials/delete/<int:test_set_pk>/', views.delete_test_set_view, name='delete_test_set'),
+=======
+    # Account URLs
+    # path('accounts/signup/', views.signup_view, name='account_signup'), # /flo/accounts/signup/
+    # path('accounts/login/', views.login_view, name='account_login'),   # /flo/accounts/login/
+    # path('accounts/logout/', views.logout_view, name='account_logout'), # /flo/accounts/logout/
+    # path('accounts/activate/<str:uidb64>/<str:token>/', views.activate_view, name='activate'), # /flo/accounts/activate/.../
+
+    # # AJAX URLs (선택 사항)
+    # path('ajax/check_username/', views.ajax_check_username, name='ajax_check_username'),
+    # path('ajax/check_nickname/', views.ajax_check_nickname, name='ajax_check_nickname'),
+    # path('ajax/resend_activation_email/', views.ajax_resend_activation_email, name='ajax_resend_activation_email'),
+    
+    # # --- 학습 게시판 URL 패턴 ---
+    # path('study-board/', views.StudyPostListView.as_view(), name='study_post_list'),
+    # path('study-board/post/new/', views.StudyPostCreateView.as_view(), name='study_post_create'),
+    # path('study-board/post/<int:pk>/', views.StudyPostDetailView.as_view(), name='study_post_detail'),
+    # path('study-board/post/<int:pk>/edit/', views.StudyPostUpdateView.as_view(), name='study_post_update'),
+    # path('study-board/post/<int:pk>/delete/', views.StudyPostDeleteView.as_view(), name='study_post_delete'),
+    
+    # # 댓글 및 답글
+    # path('study-board/post/<int:post_pk>/comment/add/', views.add_study_comment_or_reply, name='study_add_comment'),
+    # path('study-board/post/<int:post_pk>/comment/<int:parent_comment_pk>/reply/add/', views.add_study_comment_or_reply, name='study_add_reply'),
+    # path('study-board/comment/<int:comment_pk>/edit/', views.edit_study_comment, name='study_edit_comment'),
+    # path('study-board/comment/<int:comment_pk>/delete/', views.delete_study_comment, name='study_delete_comment'),
+
+    # 좋아요
+    # path('study-board/post/<int:post_pk>/like/', views.toggle_study_post_like_view, name='study_toggle_like'),
+>>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 ]

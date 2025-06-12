@@ -1,0 +1,38 @@
+{# flo/templates/flo/study_post/_pagination.html #}
+{% load custom_filters %}
+
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if posts.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword|urlencode }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}{% if category_q %}&category_q={{ category_q|urlencode }}{% endif %}" aria-label="First">«</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ posts.previous_page_number }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword|urlencode }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}{% if category_q %}&category_q={{ category_q|urlencode }}{% endif %}" aria-label="Previous">‹</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">«</span></li>
+            <li class="page-item disabled"><span class="page-link">‹</span></li>
+        {% endif %}
+
+        {% for i in posts.paginator.page_range %}
+            {% if posts.number == i %}
+                <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+            {% elif i >= posts.number|add:'-2' and i <= posts.number|add:'2' %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword|urlencode }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}{% if category_q %}&category_q={{ category_q|urlencode }}{% endif %}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if posts.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ posts.next_page_number }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword|urlencode }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}{% if category_q %}&category_q={{ category_q|urlencode }}{% endif %}" aria-label="Next">›</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ posts.paginator.num_pages }}{% if search_keyword %}&search_type={{ search_type }}&search_keyword={{ search_keyword|urlencode }}{% endif %}{% if current_category_slugs_str %}&category_slugs={{ current_category_slugs_str }}{% endif %}{% if category_q %}&category_q={{ category_q|urlencode }}{% endif %}" aria-label="Last">»</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">›</span></li>
+            <li class="page-item disabled"><span class="page-link">»</span></li>
+        {% endif %}
+    </ul>
+</nav>

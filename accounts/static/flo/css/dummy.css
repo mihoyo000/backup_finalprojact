@@ -1,0 +1,381 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #fafafa;
+}
+
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 200px);
+  gap: 80px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.signup-logo-box {
+  display: flex;
+  align-items: center;
+  margin-top: -250px;
+  width: 520px;
+  height: auto;
+}
+
+.signup-logo-box img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.right-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 150px;
+  margin-top: 100px;
+  width: 100%;
+  max-width: 850px;
+  padding-bottom: 150px;
+}
+
+.signup-title {
+  font-size: 35px;
+  letter-spacing: -1.5px;
+  margin: 0 0 30px 0; 
+  padding-left: 0;
+  width: 100%;
+  text-align: left;
+  align-self: flex-start;
+}
+
+.form-box {
+  background: #fff;
+  padding: 48px 54px;
+  border-radius: 16px;
+  border: 1.5px solid #e0e0e0;
+  width: 100%;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 22px;
+  position: relative;
+  width: 100%;
+}
+
+.form-group label {
+  font-size: 14px;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.input-btn-wrap {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.input-btn-wrap input {
+  flex: 1;
+  max-width: 350px;
+  height: 40px;
+  padding: 0 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #1a1a1a;
+  background: #fff;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.input-btn-wrap input:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+
+.input-btn-wrap input::placeholder {
+  color: #cccccc;
+}
+
+.small-btn {
+  width: 126px;
+  height: 40px;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.small-btn:hover {
+  background: #333;
+}
+
+.email-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.email-wrap input {
+  width: 240px;
+  height: 40px;
+  padding: 0 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #1a1a1a;
+  background: #fff;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.email-wrap input:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+
+.email-wrap span {
+  color: #1a1a1a;
+  font-size: 16px;
+}
+
+.email-wrap select {
+  width: 240px;
+  height: 40px;
+  padding: 0 40px 0 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #1a1a1a;
+  background: #fff;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1a1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+}
+
+.email-wrap select:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+
+.all-agree {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: start;
+}
+
+.all-agree label {
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+}
+
+.agreement {
+  display: flex;
+  flex-direction: column; /* 자식들을 수직으로 쌓기 위함 */
+  align-items: flex-start; /* flex-box 안에서 왼쪽 정렬 */
+  width: 100%;
+  min-width: 350px;
+  max-width: 650px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+
+.agreement-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+
+.agreement-item label {
+  flex-grow: 1;
+}
+
+.agreement ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.agreement li {
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+}
+
+.agreement li:last-child {
+  margin-bottom: 0;
+}
+
+.agree-checkbox {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.agreement label {
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.more-view-button {
+  width: 24px;
+  height: 24px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat center;
+  background-size: 20px 20px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.submit-btn {
+  min-width: 750px;
+  height: 42px;
+  margin-top: 12px;
+  background-color: #1a1a1a;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover {
+  background: #333;
+}
+
+.google-btn {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 42px;
+  min-width: 750px;
+  border: 1.5px solid #ccc;
+  border-radius: 7px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: border 0.2s;
+}
+
+.google-btn:hover {
+  border: 1.5px solid #888;
+}
+
+.google-btn .google-icon {
+  width: 22px;
+  height: 22px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E") no-repeat center center;
+  background-size: contain;
+  flex-shrink: 0;
+}
+
+
+/* 소형 디바이스 → 가로(기본) → 세로로 바꿈 */
+@media (max-width: 1050px) {
+  .signup-container {
+    flex-direction: column;  
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    gap: 40px;
+  }
+
+  .signup-logo-box {
+    margin-top: -150px;
+    width: 340px;
+  }
+
+  .signup-logo-box img {
+    width: 100%;
+  }
+
+  .right-box {
+    margin: 0;
+    max-width: 600px;
+  }
+
+  .form-box {
+    padding: 40px 30px;
+  }
+
+  .signup-title {
+    font-size: 28px;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="password"],
+  .input-btn-wrap input {
+    width: 100%;
+    max-width: 422px;
+  }
+
+  .input-btn-wrap {
+    flex-direction: row;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .small-btn {
+    width: 126px;
+    min-width: 80px;
+  }
+
+  .email-wrap {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .email-wrap input,
+  .email-wrap select {
+    width: 240px;
+  }
+
+  .email-wrap span {
+    display: inline;
+  }
+
+  .submit-btn,
+  .google-btn {
+    width: 100%;
+    max-width: 422px;
+  }
+}

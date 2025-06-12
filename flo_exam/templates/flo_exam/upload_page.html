@@ -1,0 +1,123 @@
+{% extends 'flo_exam/base_header.html' %}
+{% load static %}
+{% load static i18n %}
+
+{% block title %}PDF 파일 업로드 | FLO{% endblock %}
+
+{% block extra_css %}
+    {# --- upload_page.html 고유의 CSS --- #}
+    <link rel="stylesheet" href="{% static 'flo/css/base_header.css' %}">
+    <link rel="stylesheet" href="{% static 'flo_exam/css/upload_page.css' %}">
+{% endblock %}
+
+{% block content %}
+    {# === 메인 컨텐츠 === #}
+    <main class="main-content">
+        <section class="intro-section">
+            <div class="intro-text">
+                <h1>공부하며 정리한</h1>
+                <h2>자료를 업로드하세요</h2>
+            </div>
+            <div class="robot-hand-image-container">
+                <img src="{% static 'flo_exam/images/robot_hand.png' %}" alt="AI Robot Hand">
+            </div>
+        </section>
+
+        <section class="upload-section-container">
+            <div class="upload-section">
+                <h3>PDF 파일 업로드</h3>
+
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    {# PDF 파일 선택 필드 #}
+                    <div class="form-group">
+                        {{ form.pdf_file.label_tag }}  {# PDF 파일 선택: #}
+                        {{ form.pdf_file }}
+                        {% if form.pdf_file.errors %}
+                            <ul class="errorlist">{% for error in form.pdf_file.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+
+                    {#  문항수 필드 #}
+                    <div class="form-group">
+                        {{ form.num_questions_requested.label_tag }} {# 문항수: #}
+                        <div class="radio-group">
+                        {% for radio in form.num_questions_requested %}
+                            <label for="{{ radio.id_for_label }}">
+                                {{ radio.tag }}
+                                <span class="radio-label-text">{{ radio.choice_label }}</span>
+                            </label>
+                        {% endfor %}
+                        </div>
+                        {% if form.num_questions_requested.errors %}
+                            <ul class="errorlist">{% for error in form.num_questions_requested.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+
+                    {#  문제 유형 필드 #}
+                    <div class="form-group">
+                        {{ form.question_type_requested.label_tag }} {# 문제 유형: #}
+                        <div class="radio-group">
+                        {% for radio in form.question_type_requested %}
+                            <label for="{{ radio.id_for_label }}">
+                                {{ radio.tag }}
+                                <span class="radio-label-text">{{ radio.choice_label }}</span>
+                            </label>
+                        {% endfor %}
+                        </div>
+                        {% if form.question_type_requested.errors %}
+                            <ul class="errorlist">{% for error in form.question_type_requested.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+                            
+                    {# 분야필드(드롭다운+직접입력) #}
+                    <div class="form-group">
+                        {{ form.subject_area.label_tag }} {# 분야: #}
+                        <div class="multi-widget-container">
+                            {{ form.subject_area }} {# MultiWidget이 여기에 렌더링됨 #}
+                        </div>
+                        {% if form.subject_area.help_text %}
+                            <small class="form-help-text">{{ form.subject_area.help_text }}</small>
+                        {% endif %}
+                        {# MultiValueField의 에러는 리스트의 리스트일 수 있음 #}
+                        {% if form.subject_area.errors %}
+                            <ul class="errorlist">
+                                {% for error_list in form.subject_area.errors %}
+                                    {% for error in error_list %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                    {# 제목 필드 #}
+
+                    <div class="form-group">
+                        {{ form.title.label_tag }}
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <ul class="errorlist">{% for error in form.title.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="submit-button">문제 생성하기</button>
+                </form>
+            </div>
+        </section>
+    </main>
+{% endblock %}
+
+{% block extra_js %}
+{# --- 헤더 및 페이지 기능에 필요한 JavaScript --- #}
+    <script src="{% static 'flo_exam/js/upload_page.js' %}"></script>
+{% endblock %}
