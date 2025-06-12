@@ -1,0 +1,120 @@
+{# flo/templates/flo/pdf/test_set_pdf_template.html #}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ test_set.title }} - 학습 자료</title>
+    <style>
+        /* PDF에 적용될 기본 스타일 */
+        @page {
+            size: A4;
+            margin: 1in; /* 상하좌우 여백 */
+            /* 
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+            }
+            */ /* 페이지 번호는 필요시 추가 */
+        }
+        body {
+            font-family: 'NanumGothic', 'Malgun Gothic', sans-serif; /* 한글 폰트 지정 (시스템에 설치된 폰트 사용) */
+            line-height: 1.6;
+            font-size: 10pt; /* 기본 폰트 크기 */
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .test-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 16pt;
+        }
+        .section-title {
+            font-size: 14pt;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+        .question-block {
+            margin-bottom: 20px;
+            page-break-inside: avoid; /* 한 문제가 페이지 중간에 잘리지 않도록 */
+        }
+        .question-content {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .choices ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .choices li {
+            margin-bottom: 5px;
+        }
+        .correct-answer {
+            color: green;
+            font-weight: bold;
+        }
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            font-size: 9pt;
+        }
+        .answer-key-item {
+            margin-bottom: 15px;
+        }
+        .page-break { /* 문제 파트와 정답/해설 파트 분리 */
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="test-title">{{ test_set.title }}</h1>
+
+    {# --- 문제 파트 --- #}
+    <div class="section-title">문제</div>
+    {% for q_item in questions %}
+        <div class="question-block">
+            <div class="question-content">{{ q_item.order }}. {{ q_item.content|linebreaksbr }}</div>
+            {% if q_item.choices_list %}
+                <div class="choices">
+                    <ul>
+                        {% for choice in q_item.choices_list %}
+                            <li>
+                                {{ forloop.counter }}) {{ choice.content }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    {# --- 정답 및 해설 파트 (새 페이지에서 시작) --- #}
+    <div class="page-break"></div>
+    <div class="section-title">정답 및 해설</div>
+    {% for q_item in questions %}
+        <div class="answer-key-item">
+            <div class="question-content">{{ q_item.order }}. 문제 내용 생략 또는 일부 표시</div>
+            <p>
+                <strong>정답: </strong>
+                {% for choice in q_item.choices_list %}
+                    {% if choice.is_correct %}
+                        <span class="correct-answer">{{ forloop.counter }}) {{ choice.content }}</span> 
+                    {% endif %}
+                {% endfor %}
+                {# 만약 주관식이라면, q_item.correct_answer_text 등으로 표시 #}
+            </p>
+            {% if q_item.explanation %}
+                <div class="explanation">
+                    <strong>해설:</strong><br>
+                    {{ q_item.explanation|linebreaksbr }}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+</body>
+</html>

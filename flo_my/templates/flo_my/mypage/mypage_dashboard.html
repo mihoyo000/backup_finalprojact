@@ -1,0 +1,185 @@
+{% extends "flo_my/mypage_base.html" %}
+{% load static i18n %}
+
+{% block title %}{% translate "대시보드" %} - 마이페이지{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 1. 레이아웃: Bootstrap 그리드 사용 및 높이 맞춤 */
+    .dashboard-row {
+        --bs-gutter-x: 1.5rem;
+        --bs-gutter-y: 1.5rem;
+    }
+    .dashboard-col {
+        display: flex; /* 카드 높이 맞춤을 위해 필요 */
+    }
+    .dashboard-card {
+        width: 100%;
+        height: 100%; /* 부모 .col의 높이를 꽉 채움 */
+        background-color: var(--dark-surface-card);
+        border: 1px solid var(--dark-border);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+    body.theme-light .dashboard-card {
+        background-color: var(--light-surface-card);
+        border: 1px solid #E9ECEF;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .dashboard-card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.2rem;
+    }
+    .text-accent { color: var(--dark-accent); }
+    body.theme-light .text-accent { color: var(--light-accent); }
+    
+    .card-content {
+        flex-grow: 1; /* 남는 공간을 모두 차지 */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* 2. 학습 목표 달성률 (이미지 제거, 숫자 강조) */
+    .achievement-visual {
+        text-align: center;
+    }
+    .achievement-visual .percentage-text {
+        font-size: 3.5rem;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--dark-accent);
+        margin-bottom: 1rem;
+    }
+    body.theme-light .achievement-visual .percentage-text {
+        color: var(--light-accent);
+    }
+    .achievement-visual .subtext {
+        font-size: 0.9rem;
+        color: var(--dark-text-secondary);
+    }
+    body.theme-light .achievement-visual .subtext {
+        color: var(--light-text-secondary);
+    }
+
+    /* 3. 리스트형 카드들 */
+    .list-group { background: none; }
+    .list-group-item {
+        background: none;
+        border: none;
+        padding: .8rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .list-item-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .list-item-title { text-decoration: none; color: inherit; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1; padding-right: 1rem; }
+    .list-item-meta { font-size: 0.85rem; color: var(--dark-text-secondary); white-space: nowrap; flex-shrink: 0; }
+    body.theme-dark a.list-item-title:hover { color: var(--dark-accent); }
+    body.theme-light a.list-item-title:hover { color: var(--light-accent); }
+    body.theme-light .list-item-meta { color: var(--light-text-secondary); }
+    
+    .progress { height: 8px; background-color: var(--dark-border); border-radius: 4px; margin-top: 0.5rem; }
+    body.theme-light .progress { background-color: #e9ecef; }
+    .progress-bar { background-color: var(--dark-accent); }
+    body.theme-light .progress-bar { background-color: var(--light-accent); }
+
+    /* 4. 바로가기 카드 */
+    .shortcut-buttons {
+        margin-top: auto; /* 버튼들을 카드의 맨 아래로 */
+    }
+    .shortcut-buttons .btn { width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: 500; }
+    .shortcut-buttons .btn:first-child { margin-bottom: 1rem; }
+    body.theme-dark .btn-primary { background-color: var(--dark-accent); border-color: var(--dark-accent); color: var(--dark-button-text-on-accent); }
+    body.theme-dark .btn-outline-primary { border: 2px solid var(--dark-accent); color: var(--dark-accent); }
+    body.theme-dark .btn-outline-primary:hover { background-color: var(--dark-accent); color: var(--dark-button-text-on-accent); }
+    body.theme-light .btn-primary { background-color: var(--light-accent); border-color: var(--light-accent); color: #fff; }
+    body.theme-light .btn-outline-primary { border: 2px solid var(--light-accent); color: var(--light-accent); }
+    body.theme-light .btn-outline-primary:hover { background-color: var(--light-accent); color: #fff; }
+</style>
+{% endblock %}
+
+
+{% block mypage_content %}
+    <div class="page-title-container mb-4">
+        <i class="bi bi-grid-1x2-fill page-title-icon"></i>
+        <h2 class="page-main-title">{% translate "대시보드" %}</h2>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 dashboard-row g-4">
+        <!-- 1. 학습 목표 달성률 -->
+        <div class="col dashboard-col">
+            <div class="dashboard-card">
+                <h3 class="dashboard-card-title">{% translate "학습 목표 달성률" %}</h3>
+                <div class="card-content achievement-visual">
+                    <div class="percentage-text">{{ achievement_rate }}%</div>
+                    <div class="subtext">
+                        {% blocktranslate %}최근 7일 목표 {{ total_goals_count }}개 중 {{ completed_goals_count }}개 완료{% endblocktranslate %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 최근 학습 활동 -->
+        <div class="col dashboard-col">
+            <div class="dashboard-card">
+                <h3 class="dashboard-card-title">{% translate "최근 학습 활동" %}</h3>
+                <ul class="list-group list-group-flush">
+                    {% for activity in recent_learning_activities %}
+                    <li class="list-group-item">
+                        <div class="list-item-header">
+                            {% if activity.goal_type == 'TEST_RETAKE' and activity.target_test_set %}
+                                <a href="{% url 'flo_my:take_test' activity.target_test_set.id %}" class="list-item-title" title="{{ activity.title }}">{{ activity.title }}</a>
+                            {% elif activity.goal_type == 'INCORRECT_ANSWERS_RETAKE' and activity.target_attempt_for_incorrect_notes %}
+                                 <a href="{% url 'flo_my:retake_incorrect_answers' activity.target_attempt_for_incorrect_notes.id %}" class="list-item-title" title="{{ activity.title }}">{{ activity.title }}</a>
+                            {% else %}
+                                <span class="list-item-title">{{ activity.title }}</span>
+                            {% endif %}
+                            <span class="list-item-meta">{{ activity.updated_at|timesince }} 전</span>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item">{% translate "최근 활동 기록이 없습니다." %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- 3. 마감 임박 학습 목표 -->
+        <div class="col dashboard-col">
+            <div class="dashboard-card">
+                <h3 class="dashboard-card-title">{% translate "마감 임박 학습 목표" %}</h3>
+                 <ul class="list-group list-group-flush">
+                     {% for goal in imminent_goals %}
+                     <li class="list-group-item">
+                         <a href="{% url 'flo_my:mypage_learning_goals' %}#goal-{{ goal.id }}" class="list-item-title" title="{{ goal.title }}">{{ goal.title }}</a>
+                         <div class="progress w-100">
+                             <div class="progress-bar" role="progressbar" style="width: {{ goal.achievement_rate }}%;"></div>
+                         </div>
+                     </li>
+                     {% empty %}
+                     <li class="list-group-item">{% translate "마감 임박 목표가 없습니다." %}</li>
+                     {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4. 바로가기 -->
+        <div class="col dashboard-col">
+            <div class="dashboard-card">
+                <h3 class="dashboard-card-title">{% translate "바로가기" %}</h3>
+                <div class="shortcut-buttons">
+                    <a href="{% url 'flo_my:pdf_upload' %}" class="btn btn-primary">{% translate "Test 생성하기" %}</a>
+                    {% if weakest_attempt %}
+                        <a href="{% url 'flo_my:retake_incorrect_answers' weakest_attempt.pk %}" class="btn btn-outline-primary">
+                            {% translate "가장 취약한 시험 다시 풀기" %}
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "flo/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "시험 응시" %} - {{ test_set.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2 class="text-center mb-4">{{ test_set.title }}</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="duration_seconds" id="duration-seconds-input" value="0">
+        {% for question in questions %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>{% translate "문제" %} {{ forloop.counter }}.</strong> {{ question.content|safe }} {# |safe는 HTML 태그 허용 시 #}
+                </div>
+                <div class="card-body">
+                    {% if question.choices.all %}
+                        {% for choice in question.choices.all %}
+                        <div class="form-check">
+                            {# 각 문제의 보기 그룹 이름을 question_<question_id> 형태로 하여, 문제별로 하나의 답만 선택되도록 함 #}
+                            <input class="form-check-input" type="radio" name="question_{{ question.pk }}" id="choice_{{ choice.pk }}" value="{{ choice.pk }}" required>
+                            <label class="form-check-label" for="choice_{{ choice.pk }}">
+                                {{ choice.content }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>{% translate "이 문제에 대한 보기가 없습니다." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+        {% if questions %}
+        <div class="d-grid">
+            <button type="submit" class="btn btn-success btn-lg">{% translate "답안 제출" %}</button>
+        </div>
+        {% else %}
+        <p class="text-center">{% translate "이 시험에는 아직 문제가 없습니다." %}</p>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 페이지 로드 시 시작 시간 기록
+    const startTime = Date.now();
+    const testForm = document.getElementById('test-form');
+    const durationInput = document.getElementById('duration-seconds-input');
+
+    if (testForm) {
+        // 폼 제출 이벤트 리스너 추가
+        testForm.addEventListener('submit', function() {
+            // 제출 직전, 경과 시간(초)을 계산하여 hidden input에 값 설정
+            const duration = Math.round((Date.now() - startTime) / 1000);
+            durationInput.value = duration;
+        });
+    }
+});
+</script>
+{% endblock %}
+{# ▲▲▲ 여기까지 ▲▲▲ #}
+

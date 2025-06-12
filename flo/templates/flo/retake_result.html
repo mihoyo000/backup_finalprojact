@@ -1,0 +1,114 @@
+{% extends "flo/mypage/mypage_base.html" %}
+{% load static i18n %}
+
+{% block title %}{% translate "오답 다시 풀기 결과" %} - Flo{% endblock %}
+
+{% block extra_css %}
+    {# test_results.css를 만들었다면 아래 링크를 사용하세요. 
+       만약 만들지 않았다면, 인라인 스타일이 적용됩니다. #}
+    {% comment %} <link rel="stylesheet" href="{% static 'flo/css/test_results.css' %}"> {% endcomment %}
+    <style>
+        .result-page-container { max-width: 800px; margin: 0 auto; }
+        .result-page-title { text-align: center; margin-bottom: 1.5rem; font-weight: 600; font-size: 1.8rem;}
+        
+        .score-summary-box { padding: 1.5rem; margin-bottom: 2.5rem; border-radius: 0.5rem; text-align: center; font-size: 1.25rem; font-weight: 500; }
+        body.theme-light .score-summary-box { background-color: #e9f5ff; color: #212529; border: 1px solid #bde0fe; }
+        body.theme-dark .score-summary-box { background-color: #2C3A47; color: #EAEAEA; border: 1px solid #4A5568; }
+        
+        .results-section-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; border-bottom: 2px solid; padding-bottom: 0.5rem; }
+        body.theme-light .results-section-title { border-bottom-color: #0D6EFD; }
+        body.theme-dark .results-section-title { border-bottom-color: #66FCF1; }
+        body.theme-light .result-page-container .btn-primary {
+            color: #FFFFFF !important; /* 흰색으로 강제 */
+        }
+        
+        /* ★★★★★★★★★★★★★★★★ 핵심 수정 부분 ★★★★★★★★★★★★★★★★ */
+
+        /* 1. 다크 모드에서 question-result-card 자체의 기본 글자색을 밝게 설정 */
+        body.theme-dark .question-result-card {
+            margin-bottom: 1.5rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid #4A5568;
+            background-color: #2C3A47;
+            color: #E0E0E0 !important; /* 카드 내부 모든 텍스트의 기본 색상을 밝게! */
+        }
+        body.theme-light .question-result-card {
+            border: 1px solid #dee2e6;
+            background-color: #fff;
+        }
+        
+        .question-header { padding: 0.75rem 1.25rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        body.theme-light .question-header { background-color: #f8f9fa; }
+        /* 2. 다크 모드에서 question-header는 더 밝은 색으로 강조 */
+        body.theme-dark .question-header {
+             background-color: rgba(0,0,0,0.2);
+             color: #FFFFFF !important; /* 제목은 순백색으로 더 강조 */
+        }
+        
+        .question-body { padding: 1.25rem; }
+        
+        .choice-item { padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-radius: 0.3rem; display: flex; align-items: center; gap: 0.75rem; border: 1px solid #4A5568; }
+        
+        /* 3. 정답/오답일 때의 스타일은 그대로 유지 */
+        body.theme-dark .choice-item.correct {
+            background-color: rgba(74, 222, 128, 0.1) !important;
+            color: #A7F3D0 !important;
+            border-color: rgba(74, 222, 128, 0.3) !important;
+        }
+        body.theme-dark .choice-item.incorrect-selected { 
+            background-color: rgba(248, 113, 113, 0.1) !important;
+            color: #FECACA !important;
+            border-color: rgba(248, 113, 113, 0.3) !important;
+        }
+
+        .explanation-box { margin-top: 1rem; padding: 1rem; border-radius: 0.3rem; }
+        body.theme-light .explanation-box { background-color: #cff4fc; color: #055160; }
+        body.theme-dark .explanation-box { background-color: rgba(13, 202, 240, 0.15); color: #9eeaf9; }
+        
+    </style>
+{% endblock %}
+
+{% block mypage_content %}
+<div class="result-page-container">
+    <h2 class="result-page-title">{{ test_set_title }}</h2>
+    
+    <div class="score-summary-box">
+        {% translate "점수" %}: {{ score|floatformat:0 }} / 100 
+        ({{ correct_count }} / {{ total_questions }} {% translate "개 맞음" %})
+    </div>
+    
+    <h3 class="results-section-title">{% translate "상세 결과 및 해설" %}</h3>
+    {% for result in results_data %}
+        <div class="card question-result-card">
+            <div class="card-header">
+                <span><strong>{% translate "문제" %} {{ forloop.counter }}.</strong> {{ result.question_content|safe }}</span>
+                {% if not result.is_correct %}<span class="badge bg-danger">{% translate "오답" %}</span>{% endif %}
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                     {% for choice in result.choices %}
+                        <li class="list-group-item choice-item {% if choice.is_correct %}correct{% endif %} {% if not choice.is_correct and choice.pk == result.selected_choice_pk %}incorrect-selected{% endif %}">
+                            <span class="me-2">
+                                {% if choice.is_correct %}<i class="bi bi-check-circle-fill text-success"></i>
+                                {% elif choice.pk == result.selected_choice_pk %}<i class="bi bi-x-circle-fill text-danger"></i>
+                                {% else %}<i class="bi bi-circle"></i>{% endif %}
+                            </span>
+                            {{ choice.content }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% if result.question_explanation %}
+                    <div class="explanation-box mt-3">
+                        <strong>{% translate "해설" %}:</strong> {{ result.question_explanation|safe }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'flo:mypage_learning_goals' %}" class="btn btn-primary">{% translate "학습 목표 목록으로" %}</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,208 @@
+from pathlib import Path
+import os
+from dotenv import load_dotenv # python-dotenv 임포트
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# .env 파일의 위치를 정확히 지정해야 합니다.
+# 일반적으로 .env 파일은 manage.py 파일과 같은 프로젝트 루트 디렉토리에 위치합니다.
+# BASE_DIR은 현재 settings.py 파일이 있는 디렉토리의 부모 디렉토리(프로젝트 루트)를 가리킵니다.
+ENV_PATH = os.path.join(BASE_DIR, '.env')
+load_dotenv(dotenv_path=ENV_PATH) # .env 파일 로드 명시적 경로 지정
+
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-88+8)+%86)(@u#@xmx-gh8v+b!=j3@4ivsiqwqr&8yt*3m9g@t'
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = []
+
+
+# Application definition
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'modeltranslation',  # 추가한 부분
+    # 'multilang.apps.MultilangConfig',  # 추가된 부분
+    'tinymce',  # 추가된 부분
+    'flo.apps.FloConfig',  # 추가된 부분
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'flo_project.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        # 'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'flo_project', 'templates'),
+            # os.path.join(BASE_DIR, 'careerhub', 'accounts', 'templates'),  # careerhub 앱의 templates 폴더 경로 추가
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',  # 추가된 부분 (이미지 안 뜨면 이 부분 보기)
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'flo_project.wsgi.application'
+
+
+# Database
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+
+# Password validation
+# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+
+# Internationalization
+# https://docs.djangoproject.com/en/5.2/topics/i18n/
+
+# LANGUAGE_CODE = 'en-us'
+# LANGUAGE_CODE = 'ko-kr'  # 한국어로 변경
+LANGUAGE_CODE = 'ko'
+
+LANGUAGES = [
+    ('en', 'English'),
+    ('ko', 'Korean'),
+    ('es', 'Spanish'),
+]
+
+USE_I18N = True
+USE_L10N = True
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR / 'locale'),
+]
+
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'  # 한국 표준시로 변경
+
+# USE_TZ = True
+USE_TZ = False  # 타임존 사용 안함
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.2/howto/static-files/
+
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+   os.path.join(BASE_DIR, 'static'), # 프로젝트 루트의 static 폴더를 지정
+]  # 추가된 부분
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_URL = '/media/'  # 추가된 부분
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 추가된 부분
+
+# Vectorstore Root 정의
+VECTORSTORE_ROOT = os.path.join(BASE_DIR, 'vectorstores') # 프로젝트 루트 아래 'vectorstores' 폴더
+# 해당 디렉토리가 없으면 생성하는 코드 (선택 사항, 뷰에서 처리할 수도 있음)
+if not os.path.exists(VECTORSTORE_ROOT):
+    os.makedirs(VECTORSTORE_ROOT)
+if not os.path.exists(os.path.join(VECTORSTORE_ROOT, 'document_specific_vs')):
+     os.makedirs(os.path.join(VECTORSTORE_ROOT, 'document_specific_vs'))
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'purpleluna56756@gmail.com' # 본인 Gmail 주소
+EMAIL_HOST_PASSWORD = 'alde sjpl ftrq xiqx' # Gmail 앱 비밀번호
+
+# 로그인 성공 후 리디렉션될 URL (예: 홈페이지 또는 게시판 목록)
+LOGIN_REDIRECT_URL = 'flo:study_post_list' # 또는 '/' 등 원하는 경로
+
+# 로그인이 필요한 페이지 접근 시 리디렉션될 URL (login 뷰의 name)
+LOGIN_URL = 'flo:login'
+
+# 로그아웃 성공 후 리디렉션될 URL
+LOGOUT_REDIRECT_URL = 'flo:study_post_list' # 또는 '/' 등 원하는 경로
+
+# settings.py
+# 이메일 보내기 설정 (개발용)
+# 실제 이메일로 인증하고 싶으면 아래 2줄을 지우면 됨.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    # EmailBackend: 이메일에서 보낸 것처럼 링크를 보여줌.
+        # <a href="http://127.0.0.1:8000/accounts/activate/MTE/comdnf-50575b9549f83384b77e42c119d7709d/">http://127.0.0.1:8000/accounts/activate/MTE/comdnf-50575b9549f83384b77e42c119d7709d/</a>
+            # 위 링크에서 http://127.0.0.1:8000/accounts/activate/MTE/comdnf-50575b9549f83384b77e42c119d7709d/를 들어가면 마치 이메일 인증을 받은 것 같은 효과를 줌.
+DEFAULT_FROM_EMAIL = 'webmaster@localhost'
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# API 키가 로드되었는지 확인하는 print 문 (개발 중에만 사용하고 배포 시 제거)
+if not OPENAI_API_KEY:
+    print("경고: .env 파일에서 OPENAI_API_KEY를 로드하지 못했습니다. settings.py와 .env 파일 설정을 확인하세요.")
+    
+TINYMCE_JS_URL = "https://cdn.tiny.cloud/1/xqn37s38iyj7twa9wlozw51dfmv2mqxbxsr6le9amrbajhlc/tinymce/6/tinymce.min.js"
+# Replace YOUR_API_KEY with your actual free API key from tiny.cloud
+
+TINYMCE_DEFAULT_CONFIG = {
+    'height': 360,
+    'menubar': False, # Based on your image
+    'plugins': 'advlist autolink lists link image charmap preview anchor '
+               'searchreplace visualblocks code fullscreen insertdatetime media table '
+               'help wordcount', # Common plugins, adjust as needed
+    'toolbar': 'undo redo | formatselect | fontsizeselect | ' # Added font size
+               'bold italic underline strikethrough | '
+               'link image media table | ' # Added table
+               'alignleft aligncenter alignright alignjustify | '
+               'bullist numlist outdent indent | '
+               'removeformat | code | help',
+    'content_style': "body { background-color: #FFFFFF; color: #333333; font-family: Pretendard-Regular; } " +
+                     "body.mce-content-body::placeholder { color: #a0a0a0; opacity: 1; }",
+    # Add other default settings if needed
+}
+TINYMCE_SPELLCHECKER = False
+TINYMCE_COMPRESSOR = False # Usually not needed with minified CDN versions

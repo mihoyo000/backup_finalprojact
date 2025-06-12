@@ -1,0 +1,74 @@
+{% extends "flo/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "시험 결과" %} - {{ test_set.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2 class="text-center mb-4">{% translate "시험 결과" %}: {{ test_set.title }}</h2>
+    <div class="card mb-4">
+        <div class="card-body text-center">
+            <h4 class="card-title">{% translate "총 점수" %}: {{ attempt.score|floatformat:2 }} / 100</h4>
+            <p class="card-text">
+                {% translate "응시자" %}: {{ attempt.user.username }} | 
+                {% translate "응시 완료 시간" %}: {{ attempt.completed_at|date:"Y년 m월 d일 H:i" }}
+            </p>
+        </div>
+    </div>
+
+    <h3 class="mb-3">{% translate "상세 결과 및 오답 노트" %}</h3>
+    {% for result in results_data %}
+        <div class="card mb-3 {% if result.is_correct %}border-success{% else %}border-danger{% endif %}">
+            <div class="card-header">
+                <strong>{% translate "문제" %} {{ forloop.counter }}.</strong> {{ result.question_content|safe }}
+                {% if result.is_correct %}
+                    <span class="badge bg-success float-end">{% translate "정답" %}</span>
+                {% else %}
+                    <span class="badge bg-danger float-end">{% translate "오답" %}</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for choice in result.choices %}
+                        <li class="list-group-item
+                            {% if choice.pk == result.selected_choice_pk and not result.is_correct %}
+                                list-group-item-danger
+                            {% elif choice.pk == result.correct_choice_pk %}
+                                list-group-item-success
+                            {% endif %}">
+                            <input type="radio" name="dummy_question_{{ forloop.parentloop.counter }}" id="choice_{{ choice.pk }}_result" value="{{ choice.pk }}" 
+                                   {% if choice.pk == result.selected_choice_pk %}checked{% endif %} disabled>
+                            <label for="choice_{{ choice.pk }}_result" class="ms-2">
+                                {{ choice.content }}
+                                {% if choice.pk == result.correct_choice_pk %}(정답){% endif %}
+                                {% if choice.pk == result.selected_choice_pk and choice.pk != result.correct_choice_pk %}(나의 답){% endif %}
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% if not result.is_correct and result.question_explanation %}
+                    <div class="mt-3 alert alert-info">
+                        <strong>{% translate "해설" %}:</strong> {{ result.question_explanation|safe }}
+                    </div>
+                {% elif result.is_correct and result.question_explanation %}
+                     <div class="mt-3 alert alert-secondary">
+                        <strong>{% translate "해설" %}:</strong> {{ result.question_explanation|safe }}
+                    </div>
+                {% endif %}
+                {# {% if not result.is_correct and result.ai_explanation %}
+                    <div class="mt-3 alert alert-warning">
+                        <strong>{% translate "AI 추가 해설" %}:</strong> {{ result.ai_explanation|safe }}
+                    </div>
+                {% endif %} #}
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="text-center mt-4">
+        <a href="{% url 'flo:study_post_list' %}" class="btn btn-secondary">{% translate "게시판으로 돌아가기" %}</a>
+        {# <a href="{% url 'flo:take_test' test_set_pk=test_set.pk %}" class="btn btn-info">{% translate "다시 풀어보기" %}</a> #}
+        {# <a href="#" class="btn btn-primary">{% translate "마이페이지로 이동" %}</a> #}
+    </div>
+</div>
+{% endblock %}

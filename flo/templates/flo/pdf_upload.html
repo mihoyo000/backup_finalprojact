@@ -1,0 +1,47 @@
+{% extends "flo/base.html" %} {# 또는 기본 레이아웃 템플릿 #}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "PDF 업로드" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="max-width: 600px;">
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4">{% translate "PDF 파일 업로드하여 시험 생성" %}</h2>
+
+            <form method="post" enctype="multipart/form-data" action="{% url 'flo:pdf_upload' %}"> {# 'flo:pdf_upload'는 urls.py에 정의할 이름 #}
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="{{ form.file.id_for_label }}" class="form-label">{{ form.file.label }}</label>
+                    {{ form.file }}
+                    {% if form.file.help_text %}
+                        <small class="form-text text-muted">{{ form.file.help_text }}</small>
+                    {% endif %}
+                    {% for error in form.file.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                {# 추가적으로 사용자에게 문제 수 등을 입력받고 싶다면 여기에 폼 필드 추가 가능 #}
+                {# 예를 들어 TestSet 모델의 num_questions_requested 필드 등 #}
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg mt-3">{% translate "업로드 및 시험 생성 요청" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

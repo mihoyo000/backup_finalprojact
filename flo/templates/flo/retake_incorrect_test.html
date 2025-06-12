@@ -1,0 +1,72 @@
+{% extends "flo/mypage/mypage_base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block mypage_title %}{% translate "오답 다시 풀기" %} - {{ test_set_title }}{% endblock %}
+{# 또는 block title 로 하고, mypage_base.html을 상속받지 않는다면 기본 title 블록 사용 #}
+
+{% block mypage_content %} {# 또는 block content #}
+<div class="container mt-5 mb-5">
+    <h2 class="text-center mb-4">{{ test_set_title }}</h2>
+    
+    {% if questions %}
+    <form method="post" action="{{ form_action_url }}"> {# 뷰에서 전달받은 action URL 사용 #}
+        {% csrf_token %}
+        <input type="hidden" name="duration_seconds" id="duration-seconds-input" value="0">
+        {% for question in questions %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>{% translate "문제" %} {{ forloop.counter }}.</strong> {{ question.content|safe }}
+                </div>
+                <div class="card-body">
+                    {% if question.choices.all %}
+                        {% for choice in question.choices.all %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="question_{{ question.pk }}" id="choice_{{ choice.pk }}_retake" value="{{ choice.pk }}" required>
+                            <label class="form-check-label" for="choice_{{ choice.pk }}_retake">
+                                {{ choice.content }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>{% translate "이 문제에 대한 보기가 없습니다." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-success btn-lg">{% translate "답안 제출" %}</button>
+        </div>
+    </form>
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+        {% translate "다시 풀 오답이 없습니다." %}
+    </div>
+    <div class="text-center mt-3">
+        <a href="{% url 'flo:mypage_learning_goals' %}" class="btn btn-secondary">{% translate "학습 목표로 돌아가기" %}</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 페이지 로드 시 시작 시간 기록
+    const startTime = Date.now();
+    const retakeTestForm = document.getElementById('retake-test-form');
+    const durationInput = document.getElementById('duration-seconds-input');
+
+    if (retakeTestForm) {
+        // 폼 제출 이벤트 리스너 추가
+        retakeTestForm.addEventListener('submit', function() {
+            // 제출 직전, 경과 시간(초)을 계산하여 hidden input에 값 설정
+            const duration = Math.round((Date.now() - startTime) / 1000);
+            durationInput.value = duration;
+        });
+    }
+});
+</script>
+{% endblock %}
+{# ▲▲▲ 여기까지 ▲▲▲ #}

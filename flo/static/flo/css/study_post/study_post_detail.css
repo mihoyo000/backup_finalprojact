@@ -1,0 +1,581 @@
+/* static/flo/css/study_post/study_post_detail.css */
+
+/* 기본 변수 (base.css 등에서 가져오거나 여기서 정의) */
+:root {
+    --text-color-main: #212529;
+    --text-color-secondary: #6c757d;
+    --link-color: #0d6efd;
+    --border-color: #dee2e6;
+    --background-color-page: #f8f9fa; /* 페이지 배경 */
+    --background-color-content: #fff; /* 컨텐츠 영역 배경 */
+    --button-primary-bg: #0d6efd;
+    --button-primary-text: #fff;
+    --button-secondary-bg: #6c757d;
+    --button-secondary-text: #fff;
+    --avatar-border-color: #ddd;
+
+    /* 다크모드 변수 */
+    --dark-text-color-main: #f8f9fa;
+    --dark-text-color-secondary: #adb5bd;
+    --dark-link-color: #6ea8fe;
+    --dark-border-color: #495057;
+    --dark-background-color-page: #1a1a1a; /* 어두운 페이지 배경 */
+    --dark-background-color-content: #2c2c2c; /* 어두운 컨텐츠 영역 배경 */
+    --dark-button-primary-bg: #378bf9;
+    --dark-button-secondary-bg: #5a6268;
+    --dark-avatar-border-color: #555;
+
+    /* 드롭다운 메뉴용 변수 */
+    --dropdown-bg: #fff;
+    --dropdown-border-color: #ddd;
+    --dropdown-text-color: black;
+    --dropdown-hover-bg: #f1f1f1;
+    --dark-dropdown-bg: #2c2c2c;
+    --dark-dropdown-border-color: #444;
+    --dark-dropdown-text-color: #f1f1f1;
+    --dark-dropdown-hover-bg: #383838;
+
+}
+
+body {
+    background-color: var(--background-color-page);
+    color: var(--text-color-main);
+}
+body:not(.theme-light) {
+    background-color: var(--dark-background-color-page);
+    color: var(--dark-text-color-main);
+}
+body:not(.theme-light) a#attachments-dropdown-toggle{
+    color: var(--dark-link-color);
+}
+
+.badge {
+    border-color: var(--text-color-main);
+    color: var(--text-color-main);
+}
+
+body:not(.theme-light) .badge {
+    border-color: var(--background-color-content);
+    color: var(--background-color-content);
+}
+
+
+/* 전체 페이지 래퍼 */
+.post-detail-page-wrapper {
+    padding: 20px 0; /* 상하 패딩 */
+    max-width: 1140px; /* 예시 최대 너비 */
+    margin: 0 auto; /* 중앙 정렬 */
+}
+
+/* 게시글 상세 내용 컨테이너 */
+.post-detail-container {
+    background-color: var(--background-color-content);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
+}
+body:not(.theme-light) .post-detail-container {
+    background-color: var(--dark-background-color-content);
+    border-color: var(--dark-border-color);
+    box-shadow: 0 2px 10px rgba(255,255,255,0.05);
+}
+
+
+/* 게시글 헤더 */
+.post-header {
+    margin-bottom: 20px;
+}
+.post-board-name {
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+    margin-bottom: 5px;
+}
+body:not(.theme-light) .post-board-name {
+    color: var(--dark-text-color-secondary);
+}
+.post-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    line-height: 1.3;
+}
+
+.post-meta-info {
+    display: flex;
+    flex-wrap: wrap; /* 작은 화면에서 줄바꿈 */
+    align-items: center;
+    justify-content: space-between; /* 양쪽 정렬 */
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+body:not(.theme-light) .post-meta-info {
+    color: var(--dark-text-color-secondary);
+    border-bottom-color: var(--dark-border-color);
+}
+
+.author-info {
+    display: flex;
+    align-items: center;
+    margin-right: 20px; /* 오른쪽 여백 */
+    margin-bottom: 5px; /* 작은 화면 줄바꿈 시 하단 여백 */
+}
+.author-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 1px solid var(--avatar-border-color);
+    object-fit: cover;
+}
+body:not(.theme-light) .author-avatar {
+    border-color: var(--dark-avatar-border-color);
+}
+.author-name {
+    font-weight: 500;
+    color: var(--text-color-main);
+}
+body:not(.theme-light) .author-name {
+    color: var(--dark-text-color-main);
+}
+
+.post-stats {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* 남은 공간 차지 */
+    margin-bottom: 5px;
+}
+.post-stats > span:not(:last-child) {
+    margin-right: 15px;
+    position: relative; /* 구분선용 */
+}
+.post-stats > span:not(:last-child)::after { /* 구분선 */
+    content: '|';
+    position: absolute;
+    right: -8px;
+    color: var(--border-color);
+}
+body:not(.theme-light) .post-stats > span:not(:last-child)::after {
+    color: var(--dark-border-color);
+}
+.post-attachment-info a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+.post-attachment-info a:hover {
+    text-decoration: underline;
+}
+
+#attachments-list-container {
+    /* margin-top, margin-bottom, border-top, padding-top 등 기존 스타일 유지 */
+    /* ★★★ 배경색 추가 ★★★ */
+    background-color: var(--background-color-page); /* 라이트 모드: 페이지 배경과 유사하게 또는 약간 다르게 */
+    border: 1px solid var(--border-color); /* 테두리 추가하여 구분 명확히 */
+    border-radius: 4px; /* 약간의 둥근 모서리 */
+    padding: 15px; /* 내부 여백 */
+    margin-bottom: 20px; /* 본문과의 하단 여백 */
+}
+body:not(.theme-light) #attachments-list-container {
+    background-color: #252528; /* 다크 모드: 컨텐츠 영역보다 약간 다른 어두운 색 */
+    /* 또는 var(--dark-background-color-content) 보다 살짝 다른 톤으로 */
+    border-color: var(--dark-border-color);
+}
+
+#attachments-list-container h6 {
+    /* 기존 스타일 유지 */
+    color: var(--text-color-secondary);
+    margin-bottom: 12px; /* 제목과 목록 사이 여백 조정 */
+}
+body:not(.theme-light) #attachments-list-container h6 {
+    color: var(--dark-text-color-secondary);
+}
+
+.post-header-actions {
+    display: flex;
+    align-items: center;
+    margin-left: auto; /* 오른쪽으로 밀기 */
+}
+.btn-list-top, .btn-more-options {
+    /* Bootstrap btn-sm 과 유사하게 또는 커스텀 */
+    padding: .25rem .5rem;
+    font-size: .875rem;
+    border-radius: .2rem;
+    margin-left: 8px;
+}
+.btn-more-options svg {
+    vertical-align: middle;
+}
+
+/* 구분선 */
+hr.post-divider {
+    margin: 25px 0;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+}
+body:not(.theme-light) hr.post-divider {
+    border-top-color: var(--dark-border-color);
+}
+
+/* 게시글 본문 */
+.post-body-content {
+    line-height: 1.7;
+    font-size: 1rem;
+    margin-bottom: 30px;
+    /* TinyMCE에서 생성된 이미지 등 스타일 조정 */
+
+    /* === 추가 또는 수정 === */
+    word-wrap: break-word; /* IE, Edge, Safari 등 */
+    overflow-wrap: break-word; /* 표준 속성 */
+    word-break: break-all; /* CJK 외 언어에서 강제 줄바꿈 (선택적) */
+    /* word-break: keep-all; 한글 등 단어 단위 줄바꿈이 필요하면 이 옵션 고려, 그러나 긴 영문자열에는 break-word/overflow-wrap 필수 */
+}
+.post-body-content p,
+.post-body-content div,
+.post-body-content span,
+.post-body-content li,
+.post-body-content a { /* 링크도 포함하여 긴 URL 처리 */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    /* word-break: break-all; 필요에 따라 더 강력한 줄바꿈 적용 */
+}
+.post-body-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+/* 추천, 댓글 수 영역 */
+.post-feedback-section {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* 중앙 정렬 */
+    gap: 20px; /* 버튼 사이 간격 */
+    margin-bottom: 25px;
+    padding: 15px 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+body:not(.theme-light) .post-feedback-section {
+    border-color: var(--dark-border-color);
+}
+
+.btn-like {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    border-radius: 20px; /* 둥근 버튼 */
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-like:hover, .btn-like.active {
+    border-color: var(--button-primary-bg);
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
+}
+body:not(.theme-light) .btn-like {
+    border-color: var(--dark-border-color);
+    color: var(--dark-text-color-secondary);
+}
+body:not(.theme-light) .btn-like:hover, body:not(.theme-light) .btn-like.active {
+    border-color: var(--dark-button-primary-bg);
+    background-color: var(--dark-button-primary-bg);
+    color: var(--button-primary-text); /* 보통 흰색 */
+}
+.btn-like svg path { transition: fill 0.2s; }
+.btn-like.active svg path { fill: var(--button-primary-text); }
+
+
+.comment-count-display {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+}
+body:not(.theme-light) .comment-count-display {
+    color: var(--dark-text-color-secondary);
+}
+
+
+/* 작성자 프로필 및 다른 글 보기 */
+.author-profile-more {
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: var(--background-color-page); /* 페이지 배경과 같거나 약간 다른 색 */
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+body:not(.theme-light) .author-profile-more {
+    background-color: var(--dark-background-color-content); /* 컨텐츠 배경과 유사하게 */
+    border-color: var(--dark-border-color);
+}
+.author-profile-box {
+    display: flex;
+    align-items: center;
+}
+.author-avatar-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    border: 1px solid var(--avatar-border-color);
+    object-fit: cover;
+}
+body:not(.theme-light) .author-avatar-small {
+     border-color: var(--dark-avatar-border-color);
+}
+
+.author-name-link {
+    font-size: 0.95rem;
+}
+.author-name-link strong {
+    color: var(--text-color-main);
+}
+body:not(.theme-light) .author-name-link strong {
+    color: var(--dark-text-color-main);
+}
+.author-name-link a {
+    margin-left: 8px;
+    color: var(--text-color-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+.author-name-link a:hover {
+    text-decoration: underline;
+}
+body:not(.theme-light) .author-name-link a {
+    color: var(--dark-text-color-secondary);
+}
+
+/* 댓글 영역 */
+.comments-area {
+    margin-top: 30px;
+}
+.comments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+body:not(.theme-light) .comments-header {
+    border-bottom-color: var(--dark-border-color);
+}
+
+.comments-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+.comment-sort-options a {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    text-decoration: none;
+    margin-left: 10px;
+}
+.comment-sort-options a.active, .comment-sort-options a:hover {
+    color: var(--text-color-main);
+    font-weight: 500;
+}
+body:not(.theme-light) .comment-sort-options a {
+    color: var(--dark-text-color-secondary);
+}
+body:not(.theme-light) .comment-sort-options a.active,
+body:not(.theme-light) .comment-sort-options a:hover {
+    color: var(--dark-text-color-main);
+}
+
+
+.comment-list-ul {
+    list-style: none;
+    padding: 0;
+}
+.comment-item-wrapper {
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.comment-item-wrapper:last-child {
+    border-bottom: none;
+}
+body:not(.theme-light) .comment-item-wrapper {
+    border-bottom-color: var(--dark-border-color);
+}
+
+.comment-author-meta {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.commenter-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 1px solid var(--avatar-border-color);
+    object-fit: cover;
+}
+body:not(.theme-light) .commenter-avatar {
+    border-color: var(--dark-avatar-border-color);
+}
+.comment-author-details .commenter-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-right: 8px;
+}
+.comment-author-details .comment-date {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+}
+body:not(.theme-light) .comment-author-details .comment-date {
+    color: var(--dark-text-color-secondary);
+}
+.comment-content-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    white-space: pre-wrap; /* 줄바꿈, 공백 유지 */
+}
+.comment-item-actions {
+    font-size: 0.8rem;
+}
+.btn-link-style { /* 수정, 삭제 버튼 스타일 */
+    background: none;
+    border: none;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    padding: 0;
+    margin-right: 10px;
+    text-decoration: none;
+}
+.btn-link-style:hover {
+    color: var(--text-color-main);
+    text-decoration: underline;
+}
+body:not(.theme-light) .btn-link-style {
+    color: var(--dark-text-color-secondary);
+}
+body:not(.theme-light) .btn-link-style:hover {
+    color: var(--dark-text-color-main);
+}
+
+.edit-comment-form {
+    margin-top: 10px;
+}
+.edit-comment-form textarea {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    /* Bootstrap form-control 스타일 상속 또는 직접 지정 */
+}
+.edit-form-actions button {
+    margin-right: 5px;
+}
+
+.no-comments-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+}
+body:not(.theme-light) .no-comments-message {
+    color: var(--dark-text-color-secondary);
+}
+
+/* 새 댓글 작성 폼 */
+.new-comment-form {
+    display: flex;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+body:not(.theme-light) .new-comment-form {
+    border-top-color: var(--dark-border-color);
+}
+.comment-form-author-avatar {
+    margin-right: 15px;
+}
+.current-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--avatar-border-color);
+    object-fit: cover;
+}
+body:not(.theme-light) .current-user-avatar {
+    border-color: var(--dark-avatar-border-color);
+}
+
+.comment-form-input-area {
+    flex-grow: 1;
+    position: relative;
+}
+.comment-form-input-area textarea { /* {{ comment_form.content }} 에 해당 */
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    resize: vertical; /* 수직 크기 조절만 허용 */
+    background-color: var(--background-color-content);
+    color: var(--text-color-main);
+}
+body:not(.theme-light) .comment-form-input-area textarea {
+    background-color: var(--dark-background-color-content);
+    color: var(--dark-text-color-main);
+    border-color: var(--dark-border-color);
+}
+.comment-form-input-area textarea::placeholder {
+    color: var(--text-color-secondary);
+}
+body:not(.theme-light) .comment-form-input-area textarea::placeholder {
+    color: var(--dark-text-color-secondary);
+}
+
+.btn-submit-comment {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    /* Bootstrap btn-primary 스타일 참고 */
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
+    border: none;
+    border-radius: 4px;
+}
+.btn-submit-comment:hover {
+    opacity: 0.85;
+}
+body:not(.theme-light) .btn-submit-comment {
+     background-color: var(--dark-button-primary-bg);
+}
+
+
+.login-prompt-for-comment {
+    text-align: center;
+    padding: 20px;
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
+body:not(.theme-light) .login-prompt-for-comment {
+    border-color: var(--dark-border-color);
+}
+
+/* 하단 목록으로 버튼 */
+.post-navigation-bottom {
+    text-align: center;
+    margin-top: 40px;
+}
+.btn-list-bottom {
+    /* Bootstrap btn-secondary 스타일 참고 */
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+}

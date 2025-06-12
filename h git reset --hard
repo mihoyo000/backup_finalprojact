@@ -1,0 +1,97 @@
+[33mcommit 27820444d468d91f1b078a2670448b445a190536[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdev_sungmin[m[33m, [m[1;31morigin/dev_sungmin[m[33m)[m
+Merge: 5867320 f76fd2c
+Author: soulmeant09@gmail.com <soulmeant09@gmail.com>
+Date:   Wed Jun 11 17:48:59 2025 +0900
+
+    Merge branch 'dev_sungmin' of https://github.com/doyeon-l/FinalProject into dev_sungmin
+
+[33mcommit 58673201ed94ab473fc8f1e3d565c56b67e35251[m[33m ([m[1;32mldy[m[33m)[m
+Author: soulmeant09@gmail.com <soulmeant09@gmail.com>
+Date:   Wed Jun 11 17:46:32 2025 +0900
+
+    feat: 프로젝트 전체 초기 설정 및 파일 추가
+
+[33mcommit f76fd2cbed7998e8f1ec80fc7873d80793cdc271[m
+Author: mihoyo000 <soulmeant09@gmail.com>
+Date:   Wed Jun 11 16:03:36 2025 +0900
+
+    Delete testldy.txt
+
+[33mcommit 94782a70224325222f1f2146b471ab3ca646c1e4[m
+Author: mihoyo000 <soulmeant09@gmail.com>
+Date:   Wed Jun 11 16:03:29 2025 +0900
+
+    Delete test.py
+
+[33mcommit ac2136a8dd785cbca9079c0457b70bcd0b873ee1[m
+Author: mihoyo000 <soulmeant09@gmail.com>
+Date:   Wed Jun 11 16:03:03 2025 +0900
+
+    Delete README.md
+
+[33mcommit df527bb6e31d86bf703c20cf8c97cb15ab04c47d[m
+Author: doyeon_l <mango312@naver.com>
+Date:   Tue Jun 3 10:09:00 2025 +0900
+
+    footer 이메일 색상 수정
+
+[33mcommit 9bcf2f32a7a40e3a8ebc312a6394c51b8f55298d[m
+Author: doyeon_l <mango312@naver.com>
+Date:   Tue Jun 3 10:03:44 2025 +0900
+
+    헤더 수정, 학습 게시판 수정 중
+
+[33mcommit 54ca77347a6507012f7a96b81edafbb8bfb2b0f7[m
+Author: doyeon_l <mango312@naver.com>
+Date:   Mon Jun 2 18:12:48 2025 +0900
+
+    학습 게시판 수정 중
+
+[33mcommit 479ac8648f2f886ac0ede39211d514b76eb8a2ae[m
+Author: doyeon_l <mango312@naver.com>
+Date:   Mon Jun 2 11:50:29 2025 +0900
+
+    헤더에 프로필 이미지 부분 추가
+
+[33mcommit a1a0986fa8949f9bcd7a58561c17c22e14dcb234[m
+Author: soulmeant09@gmail.com <soulmeant09@gmail.com>
+Date:   Tue May 20 11:09:32 2025 +0900
+
+    브릿지 테스트_sungmin
+
+[33mcommit 568cca6df1fdb1e1677bd2a6df7abfa99bfd957e[m
+Merge: 24fb6e5 d56e471
+Author: istpLdy <mango312@naver.com>
+Date:   Mon May 19 18:00:03 2025 +0900
+
+    testldy.txt 추가됨.
+
+[33mcommit 24fb6e5d4e29117515064ab7d53763176864aa87[m
+Author: istpLdy <mango312@naver.com>
+Date:   Mon May 19 17:57:35 2025 +0900
+
+    testldy.txt 추가됨.
+
+[33mcommit d56e4714e44e22c3a4143b6711c6d481a03d73e3[m
+Author: choiyn0607 <choiyn0607@gmail.com>
+Date:   Mon May 19 17:55:18 2025 +0900
+
+    충돌시키기
+
+[33mcommit 6b6ff4c35db12852cb8907b9d880cbd79bd77781[m
+Author: siwoo-zen <seazonablerain@gmail.com>
+Date:   Mon May 19 16:40:40 2025 +0900
+
+    TEST
+
+[33mcommit 26441ddf73f87fe98d6f8ae2c2a747480dbd9ca7[m
+Author: siwoo-zen <seazonablerain@gmail.com>
+Date:   Mon May 19 16:01:53 2025 +0900
+
+    메시지
+
+[33mcommit 48ca85b55a90af87acf877bb028d6257b62698c5[m
+Author: istpLdy <115778912+istpLdy@users.noreply.github.com>
+Date:   Mon May 19 15:46:29 2025 +0900
+
+    Initial commit

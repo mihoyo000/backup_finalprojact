@@ -1,0 +1,281 @@
+{% extends "flo_my/mypage_base.html" %}
+{% load static i18n %}
+{% block title %}{% translate "나의 오답노트" %} - 마이페이지{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'flo/css/mypage_incorrect_notes.css' %}">
+{% endblock %}
+
+{% block mypage_content %}
+    <div class="page-title-container mb-4">
+        <i class="bi bi-journal-x page-title-icon"></i>
+        <h2 class="page-main-title">{% translate "나의 오답노트" %}</h2>
+    </div>
+
+    {# --- 검색 및 필터 폼 --- #}
+    <form method="get" action="{% url 'flo_my:mypage_incorrect_notes' %}" class="mb-4 search-filters-form">
+        <div class="d-flex flex-wrap align-items-end">
+            <div class="form-group">
+                <label for="{{ search_form.search_title.id_for_label }}" class="form-label fw-bold">시험지명</label>
+                {{ search_form.search_title }}
+            </div>
+            <div class="form-group">
+                <label for="{{ search_form.search_date_start.id_for_label }}" class="form-label fw-bold">응시일 (시작)</label>
+                {{ search_form.search_date_start }}
+            </div>
+            <div class="form-group">
+                <label for="{{ search_form.search_date_end.id_for_label }}" class="form-label fw-bold">응시일 (종료)</label>
+                {{ search_form.search_date_end }}
+            </div>
+            <div class="form-group form-check ms-2 mb-3">
+                {{ search_form.show_important_only }}
+                <label for="{{ search_form.show_important_only.id_for_label }}" class="form-check-label">중요 표시만</label>
+            </div>
+            <div class="form-group ms-auto d-flex">
+                <button type="submit" class="btn btn-primary btn-sm">검색</button>
+                <a href="{% url 'flo_my:mypage_incorrect_notes' %}" class="btn btn-outline-secondary btn-sm ms-2">초기화</a>
+            </div>
+        </div>
+        {% if search_form.errors %}
+            <div class="alert alert-danger mt-2 p-2" role="alert">
+                <small>
+                {% for field, errors in search_form.errors.items %}{% for error in errors %}{{ error }}<br>{% endfor %}{% endfor %}
+                </small>
+            </div>
+        {% endif %}
+    </form>
+
+    {# --- 오답노트 목록 --- #}
+    {% if attempts_page %}
+        {# --- 오답노트가 있을 때 --- #}
+        <div class="table-responsive">
+            <table class="materials-table">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width: 5%;">중요</th>
+                        <th scope="col">응시한 시험 (점수)</th>
+                        <th scope="col" style="width: 15%;">응시 날짜</th>
+                        <th scope="col" style="width: 10%; text-align: center;">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in attempts_page %}
+                    <tr>
+                        <td class="text-center">
+                            <span class="star-icon {% if attempt.is_important %}important{% endif %}" data-attempt-id="{{ attempt.pk }}" data-url="{% url 'flo_my:toggle_incorrect_note_importance' attempt.pk %}" title="중요도 표시/해제">
+                                {% if attempt.is_important %}★{% else %}☆{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="#" class="view-incorrect-note" data-attempt-id="{{ attempt.pk }}">{{ attempt.test_set.title }} ({{ attempt.score|floatformat:1 }}점)</a>
+                        </td>
+                        <td>{{ attempt.started_at|date:"Y.m.d" }}</td>
+                        <td class="text-center action-icons">
+                            <a href="{% url 'flo_my:retake_from_note' attempt.pk %}" class="btn btn-sm btn-icon" title="오답 다시풀기"><i class="bi bi-arrow-clockwise"></i></a>
+                            <button type="button" class="btn btn-sm btn-icon text-danger delete-incorrect-note" data-url="{% url 'flo_my:delete_incorrect_note' attempt.pk %}" title="삭제"><i class="bi bi-trash3"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if attempts_page.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if attempts_page.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">« 처음</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ attempts_page.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">이전</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">« 처음</span></li>
+                        <li class="page-item disabled"><span class="page-link">이전</span></li>
+                    {% endif %}
+                    {% for i in attempts_page.paginator.page_range %}
+                        {% if i >= attempts_page.number|add:'-2' and i <= attempts_page.number|add:'2' %}
+                            {% if attempts_page.number == i %}
+                                <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a></li>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if attempts_page.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ attempts_page.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">다음</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ attempts_page.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">마지막 »</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">다음</span></li>
+                        <li class="page-item disabled"><span class="page-link">마지막 »</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+
+    {% else %}
+        {# --- 오답노트가 없을 때 --- #}
+        <div class="no-content-container text-center py-5"> 
+            {% if search_form.is_bound %}
+                <div class="no-content-message">
+                    <i class="bi bi-search" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p class="lead">{% translate "검색된 오답 기록이 없습니다." %}</p>
+                    <a href="{% url 'flo_my:mypage_incorrect_notes' %}" class="btn btn-outline-secondary mt-3">{% translate "전체 목록 보기" %}</a>
+                </div>
+            {% else %}
+                <div class="no-content-message">
+                    <a href="{% url 'flo_my:mypage_materials' %}" class="no-content-icon-link">
+                         <i class="bi bi-pencil-square" style="font-size: 4rem;"></i>
+                    </a>
+                    <p class="lead mt-3">{% translate "아직 오답 기록이 없어요." %}</p>
+                    <p class="text-muted">{% translate "학습 자료에서 시험에 응시하고 틀린 문제를 확인해보세요!" %}</p>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="modal fade" id="incorrectNoteDetailsModal" tabindex="-1" aria-labelledby="incorrectNoteDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="incorrectNoteDetailsModalLabel">오답노트 상세 내용</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modal-incorrect-note-title" class="mb-3 h5"></div>
+                    <div id="modal-incorrect-questions-container"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrfToken = getCookie('csrftoken');
+
+    // 중요도 토글
+    document.querySelectorAll('.star-icon').forEach(icon => {
+        icon.addEventListener('click', function() {
+            if (this.classList.contains('processing')) return;
+            this.classList.add('processing');
+            const url = this.dataset.url;
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrfToken }
+            })
+            .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok.'))
+            .then(data => {
+                if (data.status === 'success') {
+                    this.innerHTML = data.is_important ? '★' : '☆';
+                    this.classList.toggle('important', data.is_important);
+                } else {
+                    alert(data.message || '중요도 변경 실패');
+                }
+            })
+            .catch(error => console.error('Error toggling importance:', error))
+            .finally(() => this.classList.remove('processing'));
+        });
+    });
+
+    // 오답노트 삭제
+    document.querySelectorAll('.delete-incorrect-note').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            if (confirm('정말로 이 오답 기록을 삭제하시겠습니까?')) {
+                const url = this.dataset.url;
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        this.closest('tr').remove();
+                    } else {
+                        alert(data.message || '삭제 실패');
+                    }
+                });
+            }
+        });
+    });
+
+    // 오답노트 상세 보기 모달
+    const incorrectNoteDetailsModal = new bootstrap.Modal(document.getElementById('incorrectNoteDetailsModal'));
+    const modalTitleEl = document.getElementById('modal-incorrect-note-title');
+    const questionsContainer = document.getElementById('modal-incorrect-questions-container');
+
+    document.querySelectorAll('.view-incorrect-note').forEach(link => {
+        link.addEventListener('click', function(event) {
+            event.preventDefault();
+            const attemptId = this.dataset.attemptId;
+            const url = `/mypage/incorrect-notes/details/${attemptId}/`; // URL 변경
+            
+            modalTitleEl.textContent = '로딩 중...';
+            questionsContainer.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+            incorrectNoteDetailsModal.show();
+
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        modalTitleEl.textContent = data.attempt_title;
+                        let questionsHtml = '';
+                        if (data.incorrect_answers && data.incorrect_answers.length > 0) {
+                            data.incorrect_answers.forEach((item, index) => {
+                                let choicesHtml = '';
+                                item.choices.forEach(choice => {
+                                    let choiceClass = '';
+                                    let choiceIcon = '';
+                                    if (choice.id === item.selected_choice_id) {
+                                        choiceClass = 'text-danger fw-bold';
+                                        choiceIcon = ' <i class="bi bi-x-circle-fill"></i> (나의 오답)';
+                                    } else if (choice.is_correct) {
+                                        choiceClass = 'text-success fw-bold';
+                                        choiceIcon = ' <i class="bi bi-check-circle-fill"></i> (정답)';
+                                    }
+                                    choicesHtml += `<li class="${choiceClass}">${choice.content}${choiceIcon}</li>`;
+                                });
+                                questionsHtml += `
+                                    <div class="mb-4 p-3 border rounded">
+                                        <p class="fw-bold">Q${index + 1}. ${item.question_content}</p>
+                                        <ul class="list-unstyled ms-3">${choicesHtml}</ul>
+                                        <hr>
+                                        <p class="ms-3"><strong>해설:</strong> ${item.explanation || '해설 없음'}</p>
+                                    </div>`;
+                            });
+                        } else {
+                            questionsHtml = '<p>이 시험에서는 틀린 문제가 없습니다.</p>';
+                        }
+                        questionsContainer.innerHTML = questionsHtml;
+                    } else {
+                        modalTitleEl.textContent = '오류';
+                        questionsContainer.innerHTML = `<p class="text-danger">${data.message || '데이터 로드 실패'}</p>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching details:', error);
+                    modalTitleEl.textContent = '오류';
+                    questionsContainer.innerHTML = `<p class="text-danger">요청 중 오류 발생</p>`;
+                });
+        });
+    });
+});
+</script>
+{% endblock %}

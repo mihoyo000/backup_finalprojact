@@ -1,0 +1,667 @@
+/* static/flo/css/mypage_learning_goals.css */
+
+/* ============================================= */
+/* CSS 변수 정의 (다크/라이트 공통 및 모드별)     */
+/* ============================================= */
+:root {
+    /* --- 크기 및 간격 변수 --- */
+    --header-height: 150px;
+    --sidebar-width: 350px;
+    --main-content-max-width: 1400px;
+    
+    /* 폰트 크기 */
+    --font-size-root: 16px;
+    --font-size-base: 1rem; 
+    --font-size-sm: 0.875rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-page-main-title: 1.75rem;
+    /* --font-size-sidebar-title: 1.6rem; "MY PAGE" 문구 제거 */
+    --font-size-sidebar-menu: 2rem;   
+    --font-size-card-title: 1.15rem;
+
+    /* --- 다크 모드 색상 변수 --- */
+    --dark-bg: #0B0C10;
+    --dark-surface-1: #141A22;      /* 헤더, 사이드바 배경 */
+    --dark-surface-2: #1F2833;      /* 메인 콘텐츠 배경 */
+    --dark-surface-card: #2C3A47;   /* 카드 배경 */
+    --dark-surface-input: #2C3A47;  /* 입력 필드 배경 */
+    --dark-border: #4A5568;
+    --dark-input-border-focus: var(--dark-accent);
+    --dark-text-primary: #EAEAEA;
+    --dark-text-secondary: #C0C0C0;
+    --dark-text-label: #D0D0D0;
+    --dark-text-placeholder: rgba(200, 200, 200, 0.85);
+    --dark-accent: #66FCF1;
+    --dark-accent-hover: #4FC1BB;
+    --dark-icon-color: #B0B0B0;
+    --dark-button-text-on-accent: #141A22; 
+
+    /* --- 라이트 모드 색상 변수 --- */
+    --light-bg: #F8F9FA; 
+    --light-surface-1: #FFFFFF; 
+    --light-surface-2: #FFFFFF; 
+    --light-surface-card: #FFFFFF; 
+    /* ★★★★★★★★★★★★★★★★★★★★ 수정 1: 테두리 색상 변경 ★★★★★★★★★★★★★★★★★★★★ */
+    --light-border: #ced4da; /* #FFFFFF 에서 Bootstrap 기본 회색 테두리 색상으로 변경 */
+    --light-input-border-focus: var(--light-accent);
+    --light-text-primary: #212529; 
+    --light-text-secondary: #5A6268;    
+    --light-text-label: #495057;        
+    --light-text-placeholder: rgba(108, 117, 125, 0.7);
+    --light-accent: #0D6EFD; 
+    --light-accent-hover: #0A58CA;
+    --light-icon-color: #495057;
+    --light-button-text-on-accent: #FFFFFF;
+}
+
+/* ============================================= */
+/* 기본 HTML 및 body 스타일                     */
+/* ============================================= */
+html {
+    font-size: var(--font-size-root);
+}
+body {
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+body.theme-dark { background-color: var(--dark-bg); color: var(--dark-text-primary); }
+body.theme-dark a { color: var(--dark-accent); text-decoration: none; }
+body.theme-dark a:hover { color: var(--dark-accent-hover); }
+body.theme-light { background-color: var(--light-bg); color: var(--light-text-primary); }
+body.theme-light a { color: var(--light-accent); text-decoration: none; }
+body.theme-light a:hover { color: var(--light-accent-hover); }
+
+/* Bootstrap 아이콘 기본 색상 */
+body.theme-dark .bi { color: var(--dark-icon-color); }
+body.theme-light .bi { color: var(--light-icon-color); }
+
+/* ============================================= */
+/* 마이페이지 헤더 (검색창, 오른쪽 아이콘)        */
+/* ============================================= */
+#mypage-header {
+    height: var(--header-height);
+    position: fixed; 
+    top: 0; 
+    left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    padding: 0 30px;
+    z-index: 1030; 
+    display: flex; 
+    align-items: center;
+    box-sizing: border-box;
+}
+body.theme-dark #mypage-header { background-color: var(--dark-surface-1); border-bottom: 1px solid var(--dark-border); }
+body.theme-light #mypage-header { background-color: var(--light-surface-1); border-bottom: 1px solid var(--light-border);}
+
+#mypage-header .mypage-header-container {
+    display: flex; 
+    justify-content: space-between;
+    align-items: center; 
+    width: 100%;
+    max-width: var(--main-content-max-width);
+    margin: 0 auto;
+    padding-left: 0;
+    box-sizing: border-box;
+}
+
+#mypage-header .mypage-header-center-section { flex-grow: 1; display: flex; justify-content: center; }
+#mypage-header .mypage-search-form {
+    border-radius: 22px; padding: 7px 16px; max-width: 460px; width: 100%; display: flex; align-items: center;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+body.theme-dark #mypage-header .mypage-search-form { background-color: var(--dark-surface-card); border: 1px solid var(--dark-border); }
+body.theme-light #mypage-header .mypage-search-form { background-color: #EEF2F6; border: 1px solid #E0E6EC; }
+
+#mypage-header .mypage-search-form .search-icon { margin-right: 10px; font-size: 1rem; }
+body.theme-dark #mypage-header .mypage-search-form .search-icon { color: var(--dark-text-secondary); }
+body.theme-light #mypage-header .mypage-search-form .search-icon { color: #5F6368; }
+
+#mypage-header .mypage-search-input { background-color: transparent; border: none; outline: none; font-size: 0.9rem; width: 100%; }
+body.theme-dark #mypage-header .mypage-search-input { color: var(--dark-text-primary); }
+body.theme-light #mypage-header .mypage-search-input { color: var(--light-text-primary); }
+body.theme-dark #mypage-header .mypage-search-input::placeholder { color: var(--dark-text-placeholder); }
+body.theme-light #mypage-header .mypage-search-input::placeholder { color: #70757A; }
+
+#mypage-header .header-right-controls { display: flex; align-items: center; gap: 18px; }
+#mypage-header .header-right-controls .btn.theme-btn img,
+#mypage-header .header-right-controls .btn.lang-btn img { height: 22px; width: 22px; }
+body.theme-dark #mypage-header .header-right-controls .btn:hover { background-color: rgba(255,255,255,0.08); }
+body.theme-light #mypage-header .header-right-controls .btn:hover { background-color: rgba(0,0,0,0.05); }
+
+#mypage-header .auth-links .profile-image-wrapper { width: 34px; height: 34px; border-width: 1.5px; }
+body.theme-dark #mypage-header .auth-links .profile-image-wrapper { border-color: var(--dark-text-secondary); }
+body.theme-light #mypage-header .auth-links .profile-image-wrapper { border-color: var(--light-border); }
+
+#mypage-header .auth-links .user-display-name { font-size: var(--font-size-sm); margin-left: 8px; font-weight: 500; }
+body.theme-dark #mypage-header .auth-links .user-display-name { color: var(--dark-text-primary); }
+body.theme-light #mypage-header .auth-links .user-display-name { color: var(--light-text-primary); }
+
+.dropdown-menu { font-size: 0.9rem; border-radius: 0.3rem; }
+body.theme-dark .dropdown-menu { background-color: var(--dark-surface-card); border: 1px solid var(--dark-border); box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.2); }
+body.theme-dark .dropdown-item { color: var(--dark-text-secondary); padding: 0.5rem 1rem; }
+body.theme-dark .dropdown-item:hover, body.theme-dark .dropdown-item:focus { color: var(--dark-text-primary); background-color: rgba(var(--dark-accent-rgb, 102, 252, 241), 0.1); }
+body.theme-dark .dropdown-item.active, body.theme-dark .dropdown-item:active { background-color: var(--dark-accent) !important; color: var(--dark-button-text-on-accent) !important; }
+body.theme-light .dropdown-menu { background-color: var(--light-surface-card); border: 1px solid var(--light-border); box-shadow: 0 0.125rem .25rem rgba(0,0,0,.075); }
+body.theme-light .dropdown-item { color: var(--light-text-secondary); padding: 0.5rem 1rem; }
+body.theme-light .dropdown-item:hover, body.theme-light .dropdown-item:focus { color: var(--light-text-primary); background-color: #e9ecef; }
+body.theme-light .dropdown-item.active, body.theme-light .dropdown-item:active { background-color: var(--light-accent) !important; color: #fff !important; }
+
+/* ============================================= */
+/* 마이페이지 사이드바 (로고, MY PAGE, 메뉴)       */
+/* ============================================= */
+#mypage-sidebar {
+    width: var(--sidebar-width); min-width: var(--sidebar-width); height: 100vh; 
+    position: fixed; left: 0; top: 0; z-index: 1025; 
+    display: flex; flex-direction: column;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+body.theme-dark #mypage-sidebar { background-color: var(--dark-surface-1); }
+body.theme-light #mypage-sidebar { background-color: var(--light-surface-1); }
+
+#mypage-sidebar .sidebar-header {
+    display: flex; 
+    align-items: center; 
+    padding: 0 0px;
+    height: var(--header-height);
+    box-sizing: border-box; 
+    flex-shrink: 0;
+}
+body.theme-dark #mypage-sidebar .sidebar-header {}
+body.theme-light #mypage-sidebar .sidebar-header {}
+
+#mypage-sidebar .sidebar-header .logo-container {
+    display: flex; 
+    align-items: center; 
+    height: 10px;
+    line-height: normal; 
+}
+#mypage-sidebar .sidebar-header .logo-container a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+#mypage-sidebar .sidebar-header .logo-container img#sidebar-logo {
+    display: block; 
+    height: 135px;
+    width: auto;
+}
+
+#mypage-sidebar .mypage-sidebar-nav { flex-grow: 1; overflow-y: auto; padding-top: 0px; }
+.mypage-sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
+.mypage-sidebar-nav .nav-item a {
+    display: flex; align-items: center; padding: 15px 30px; 
+    font-size: var(--font-size-sidebar-menu); font-weight: 400; 
+    text-decoration: none; 
+    transition: color 0.15s ease, background-color 0.15s ease, border-left-color 0.15s ease;
+    border-left: 3px solid transparent;
+}
+.mypage-sidebar-nav .nav-item a i { margin-right: 16px; font-size: 1.2rem; width: 22px; text-align: center; line-height: 1; }
+
+body.theme-dark .mypage-sidebar-nav .nav-item a { color: var(--dark-text-secondary); }
+body.theme-dark .mypage-sidebar-nav .nav-item a:hover { color: var(--dark-accent); background-color: rgba(var(--dark-accent-rgb, 102, 252, 241), 0.07); }
+body.theme-dark .mypage-sidebar-nav .nav-item.active a { color: var(--dark-accent); background-color: rgba(var(--dark-accent-rgb, 102, 252, 241), 0.12); border-left-color: var(--dark-accent); font-weight: 500; }
+body.theme-light .mypage-sidebar-nav .nav-item a { color: var(--light-text-secondary); }
+body.theme-light .mypage-sidebar-nav .nav-item a:hover { color: var(--light-accent); background-color: rgba(var(--light-accent-rgb, 13, 110, 253), 0.04); }
+body.theme-light .mypage-sidebar-nav .nav-item.active a { color: var(--light-accent); background-color: rgba(var(--light-accent-rgb, 13, 110, 253), 0.08); border-left-color: var(--light-accent); font-weight: 500; }
+
+/* ============================================= */
+/* 마이페이지 메인 콘텐츠 영역                     */
+/* ============================================= */
+.mypage-body-wrapper { padding-left: var(--sidebar-width); padding-top: var(--header-height); width: 100%; box-sizing: border-box; flex-grow: 1; display: flex; }
+#mypage-main-content { min-height: calc(100vh - var(--header-height)); padding: 0; flex-grow: 1; transition: background-color 0.3s ease; }
+body.theme-dark #mypage-main-content { background-color: var(--dark-surface-2); }
+body.theme-light #mypage-main-content { background-color: var(--light-surface-2); }
+
+.main-content-inner-wrapper { max-width: var(--main-content-max-width); margin: 0 auto; padding: 30px 40px; }
+
+.page-title-container { 
+    display: flex; align-items: center; gap: 0.7rem; margin-bottom: 2rem !important; 
+}
+.page-title-icon { 
+    font-size: 1.7rem; position: relative;
+    top: -5px; /* 모든 아이콘의 기본 위치를 약간 위로 조정 */
+} 
+
+/* 테마별 아이콘 공통 색상 */
+body.theme-dark .page-title-icon {
+    color: var(--dark-accent) !important; 
+}
+body.theme-light .page-title-icon {
+    color: var(--light-accent) !important;
+}
+
+.page-main-title { 
+    font-size: var(--font-size-page-main-title); font-weight: 600;
+}
+
+/* ▼▼▼ 이 부분을 수정/대체합니다 ▼▼▼ */
+/* 페이지 제목 아이콘 개별 스타일링 */
+body.theme-dark .page-title-container .page-title-icon { color: var(--dark-accent) !important; }
+body.theme-light .page-title-container .page-title-icon { color: var(--light-accent) !important; }
+
+/* 각 아이콘별 세로 위치 미세 조정 */
+.page-title-container .bi-grid-1x2-fill.page-title-icon { top: -10px; }
+.page-title-container .bi-bullseye.page-title-icon { top: 2px; }
+.page-title-container .bi-file-earmark-text-fill.page-title-icon { top: -10px; }
+.page-title-container .bi-journal-x.page-title-icon { top: -2px; }
+/* ▲▲▲ 여기까지 ▲▲▲ */
+
+
+
+/* ============================================= */
+/* "학습 목표가 없을 때" UI                       */
+/* ============================================= */
+.no-goals-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 45vh; text-align: center; }
+.no-goals-message { padding: 3rem 1rem; }
+.no-goals-icon-wrapper i { font-size: 4rem; margin-bottom: 2rem; cursor: pointer; transition: transform 0.2s ease, color 0.2s ease; }
+.no-goals-icon-wrapper i:hover { transform: scale(1.08); }
+body.theme-dark .no-goals-icon-wrapper i { color: var(--dark-accent); }
+body.theme-dark .no-goals-icon-wrapper i:hover { color: var(--dark-accent-hover); }
+body.theme-light .no-goals-icon-wrapper i { color: var(--light-accent); }
+body.theme-light .no-goals-icon-wrapper i:hover { color: var(--light-accent-hover); }
+.no-goals-text-primary { font-size: var(--font-size-lg); font-weight: 500; margin-bottom: 0.6rem; }
+body.theme-dark .no-goals-text-primary { color: var(--dark-text-primary); }
+body.theme-light .no-goals-text-primary { color: var(--light-text-primary); }
+.no-goals-text-secondary { font-size: var(--font-size-base); opacity: 0.8; }
+body.theme-dark .no-goals-text-secondary { color: var(--dark-text-secondary); }
+body.theme-light .no-goals-text-secondary { color: var(--light-text-secondary); }
+
+/* ============================================= */
+/* 학습 목표 생성/수정 폼 (다크/라이트 스타일 개선) */
+/* ============================================= */
+.learningGoalFormContainer .card,
+.learning-goal-edit-form-wrapper .card { 
+    border-radius: 0.4rem; 
+    margin-bottom: 2.5rem !important; 
+}
+body.theme-dark .learningGoalFormContainer .card, 
+body.theme-dark .learning-goal-edit-form-wrapper .card { 
+    background-color: var(--dark-surface-card) !important;
+    border: 1px solid var(--dark-border); 
+}
+body.theme-light .learningGoalFormContainer .card, 
+body.theme-light .learning-goal-edit-form-wrapper .card { 
+    background-color: var(--light-surface-card); 
+    border: 1px solid var(--light-border); 
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04); 
+}
+
+.learningGoalFormContainer .card-header h4, 
+.learning-goal-edit-form-wrapper .card-header h4 { 
+    font-size: var(--font-size-lg); 
+    padding: 0.8rem 1.2rem; 
+    margin-bottom: 0; 
+    border-bottom: 1px solid; 
+    font-weight: 500; 
+}
+body.theme-dark .learningGoalFormContainer .card-header h4,
+body.theme-dark .learning-goal-edit-form-wrapper .card-header h4 { 
+    color: var(--dark-text-primary) !important;
+    border-bottom-color: var(--dark-border); 
+}
+body.theme-light .learningGoalFormContainer .card-header h4,
+body.theme-light .learning-goal-edit-form-wrapper .card-header h4 { 
+    color: var(--light-text-primary) !important;
+    border-bottom-color: var(--light-border); 
+}
+
+.learningGoalFormContainer .card-body, 
+.learning-goal-edit-form-wrapper .card-body { padding: 1.5rem; }
+.learningGoalFormContainer form, 
+.learning-goal-edit-form { max-width: 580px; margin: 0 auto; }
+
+body.theme-dark .learningGoalFormContainer .form-label, 
+body.theme-dark .learning-goal-edit-form-wrapper .form-label { 
+    font-weight: 500; 
+    margin-bottom: 0.4rem; 
+    font-size: var(--font-size-sm); 
+    color: var(--dark-text-primary) !important;
+}
+body.theme-light .learningGoalFormContainer .form-label, 
+body.theme-light .learning-goal-edit-form-wrapper .form-label { 
+    color: var(--light-text-label); 
+}
+
+body.theme-dark .learningGoalFormContainer .form-control,
+body.theme-dark .learningGoalFormContainer .form-select,
+body.theme-dark .learning-goal-edit-form-wrapper .form-control,
+body.theme-dark .learning-goal-edit-form-wrapper .form-select { 
+    border-radius: 0.25rem; 
+    padding: 0.6rem 0.8rem; 
+    font-size: 0.95rem; 
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    background-color: var(--dark-surface-input) !important;
+    border: 1px solid var(--dark-border) !important; 
+    color: var(--dark-text-primary) !important;
+}
+body.theme-dark .learningGoalFormContainer .form-control:focus,
+body.theme-dark .learningGoalFormContainer .form-select:focus,
+body.theme-dark .learning-goal-edit-form-wrapper .form-control:focus,
+body.theme-dark .learning-goal-edit-form-wrapper .form-select:focus { 
+    border-color: var(--dark-accent); 
+    box-shadow: 0 0 0 0.2rem rgba(102, 252, 241, 0.25); 
+}
+body.theme-dark .learningGoalFormContainer .form-control::placeholder,
+body.theme-dark .learning-goal-edit-form-wrapper .form-control::placeholder { 
+    color: var(--dark-text-placeholder) !important; 
+    opacity: 1 !important; 
+}
+
+body.theme-light .learningGoalFormContainer .form-control, 
+body.theme-light .learningGoalFormContainer .form-select, 
+body.theme-light .learning-goal-edit-form-wrapper .form-control, 
+body.theme-light .learning-goal-edit-form-wrapper .form-select { 
+    background-color: var(--light-surface-1); 
+    border: 1px solid var(--light-border); 
+    color: var(--light-text-primary); 
+}
+body.theme-light .learningGoalFormContainer .form-control:focus, 
+body.theme-light .learningGoalFormContainer .form-select:focus, 
+body.theme-light .learning-goal-edit-form-wrapper .form-control:focus, 
+body.theme-light .learning-goal-edit-form-wrapper .form-select:focus { 
+    border-color: var(--light-input-border-focus); 
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25); 
+}
+body.theme-light .learningGoalFormContainer .form-control::placeholder, 
+body.theme-light .learning-goal-edit-form-wrapper .form-control::placeholder { 
+    color: var(--light-text-placeholder); 
+}
+
+body.theme-dark .learningGoalFormContainer .form-check-input, 
+body.theme-dark .learning-goal-edit-form-wrapper .form-check-input { 
+    border-radius: 0.2rem; 
+    margin-top: 0.2em; 
+    background-color: var(--dark-surface-input); 
+    border-color: var(--dark-border); 
+}
+body.theme-dark .learningGoalFormContainer .form-check-input:checked, 
+body.theme-dark .learning-goal-edit-form-wrapper .form-check-input:checked { 
+    background-color: var(--dark-accent); 
+    border-color: var(--dark-accent); 
+}
+body.theme-light .learningGoalFormContainer .form-check-input, 
+body.theme-light .learning-goal-edit-form-wrapper .form-check-input { 
+    background-color: var(--light-surface-1); 
+    border-color: var(--light-border); 
+}
+body.theme-light .learningGoalFormContainer .form-check-input:checked, 
+body.theme-light .learning-goal-edit-form-wrapper .form-check-input:checked { 
+    background-color: var(--light-accent); 
+    border-color: var(--light-accent); 
+}
+
+body.theme-dark .learningGoalFormContainer .form-text.text-muted, 
+body.theme-dark .learning-goal-edit-form-wrapper .form-text.text-muted { 
+    font-size: var(--font-size-sm); 
+    opacity: 1; 
+    color: var(--dark-text-secondary) !important;
+}
+body.theme-light .learningGoalFormContainer .form-text.text-muted, 
+body.theme-light .learning-goal-edit-form-wrapper .form-text.text-muted { 
+    color: var(--light-text-secondary) !important; 
+}
+
+#id_target_repetition_count, #id_due_date { max-width: 220px; }
+
+body.theme-dark .learningGoalFormContainer .btn.learning-goal-submit, 
+body.theme-dark .learning-goal-edit-form-wrapper .btn.learning-goal-submit { 
+    font-weight: 500; 
+    padding: 0.5rem 1.2rem; 
+    font-size: var(--font-size-sm); 
+    background-color: #28A745;
+    border-color: #28A745; 
+    color: #FFFFFF !important;
+}
+body.theme-light .learningGoalFormContainer .btn.learning-goal-submit, 
+body.theme-light .learning-goal-edit-form-wrapper .btn.learning-goal-submit { 
+    background-color: var(--light-accent); 
+    border-color: var(--light-accent); 
+    color: var(--light-button-text-on-accent); 
+}
+body.theme-dark .learning-goal-edit-form .btn-secondary { 
+    padding: 0.5rem 1.2rem; 
+    font-size: var(--font-size-sm); 
+    background-color: var(--dark-surface-card); 
+    border-color: var(--dark-border); 
+    color: var(--dark-text-secondary); 
+}
+body.theme-light .learning-goal-edit-form .btn-secondary { 
+    background-color: #6c757d; 
+    border-color: #6c757d; 
+    color: #FFFFFF; 
+}
+
+/* ============================================= */
+/* "진행중인 학습 목표" 카드                       */
+/* ============================================= */
+.my-goals-list-or-message-section > h4 { font-size: var(--font-size-xl); margin-bottom: 1.25rem; font-weight: 500; }
+body.theme-dark .my-goals-list-or-message-section > h4 { color: var(--dark-text-primary); }
+body.theme-light .my-goals-list-or-message-section > h4 { color: var(--light-text-primary); }
+
+.learning-goal-card { border-radius: 0.4rem; transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out; }
+body.theme-dark .learning-goal-card { background-color: var(--dark-surface-card); border: 1px solid var(--dark-border); }
+body.theme-light .learning-goal-card { background-color: var(--light-surface-card); border: 1px solid var(--light-border); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.learning-goal-card:hover { transform: translateY(-2px); }
+body.theme-dark .learning-goal-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.2); }
+body.theme-light .learning-goal-card:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+
+.learning-goal-card .card-body { padding: 1.2rem; }
+.learning-goal-card .card-title { font-size: var(--font-size-card-title); font-weight: 500; margin-bottom: 0.5rem; line-height: 1.3; }
+body.theme-dark .learning-goal-card .card-title { color: var(--dark-text-primary); }
+body.theme-light .learning-goal-card .card-title { color: var(--light-text-primary); }
+
+.learning-goal-card .card-text.text-muted small { font-size: var(--font-size-sm); opacity: 0.9; }
+body.theme-dark .learning-goal-card .card-text.text-muted small { color: var(--dark-text-secondary); }
+body.theme-light .learning-goal-card .card-text.text-muted small { color: var(--light-text-secondary); }
+
+.learning-goal-card .progress { height: 8px !important; border-radius: 0.25rem; margin-top: 0.4rem; margin-bottom: 0.8rem !important; }
+body.theme-dark .learning-goal-card .progress { background-color: var(--dark-border); }
+body.theme-light .learning-goal-card .progress { background-color: #e9ecef; }
+
+.learning-goal-card .progress-bar { font-weight: 500; font-size: 0.65rem; line-height: 8px; }
+body.theme-dark .learning-goal-card .progress-bar { background-color: var(--dark-accent) !important; color: var(--dark-button-text-on-accent); }
+body.theme-light .learning-goal-card .progress-bar { background-color: var(--light-accent) !important; color: var(--light-button-text-on-accent); }
+
+.learning-goal-card .goal-actions a, .learning-goal-card .goal-actions button { padding: 0.1rem 0.3rem; }
+.learning-goal-card .goal-actions a i, .learning-goal-card .goal-actions button i { font-size: 0.95rem; }
+body.theme-dark .learning-goal-card .goal-actions a, body.theme-dark .learning-goal-card .goal-actions button { color: var(--dark-text-secondary); }
+body.theme-light .learning-goal-card .goal-actions a, body.theme-light .learning-goal-card .goal-actions button { color: var(--light-text-secondary); }
+body.theme-dark .learning-goal-card .goal-actions a:hover, body.theme-dark .learning-goal-card .goal-actions button:hover { color: var(--dark-accent); }
+body.theme-light .learning-goal-card .goal-actions a:hover, body.theme-light .learning-goal-card .goal-actions button:hover { color: var(--light-accent); }
+
+.learning-goal-card .btn { font-weight: 500; font-size: 0.8rem; padding: 0.4rem 0.7rem; border-radius: 0.25rem; }
+body.theme-dark .learning-goal-card .btn-primary { background-color: var(--dark-accent); border-color: var(--dark-accent); color: var(--dark-button-text-on-accent); }
+body.theme-light .learning-goal-card .btn-primary { background-color: var(--light-accent); border-color: var(--light-accent); color: var(--light-button-text-on-accent); }
+body.theme-dark .learning-goal-card .btn-warning { background-color: #FFC107; border-color: #FFC107; color: #212529; }
+body.theme-light .learning-goal-card .btn-warning { background-color: #FFC107; border-color: #FFC107; color: #212529; }
+
+/* ============================================= */
+/* 푸터                                        */
+/* ============================================= */
+.site-footer { padding-left: var(--sidebar-width); border-top: 1px solid; padding-top: 20px; padding-bottom: 20px; font-size: var(--font-size-sm); }
+body.theme-dark .site-footer { background-color: var(--dark-bg); border-top-color: var(--dark-border); color: var(--dark-text-secondary); }
+body.theme-light .site-footer { background-color: var(--light-bg); border-top-color: var(--light-border); color: var(--light-text-secondary); }
+.site-footer .footer-container { max-width: var(--main-content-max-width); margin: 0 auto; padding-left: 40px; padding-right: 40px; }
+body.theme-dark .site-footer a { color: var(--dark-text-secondary); }
+body.theme-dark .site-footer a:hover { color: var(--dark-accent); }
+body.theme-light .site-footer a { color: var(--light-text-secondary); }
+body.theme-light .site-footer a:hover { color: var(--light-accent); }
+
+/* =================================================================== */
+/* "나의 학습 목표" 목록 카드 하단 버튼 스타일 수정 (6/11 추가)       */
+/* =================================================================== */
+
+/* 카드 하단 버튼 공통 */
+.learning-goal-card .card-footer .btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
+}
+
+/* 라이트 모드 카드 버튼 */
+body.theme-light .learning-goal-card .card-footer .btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+body.theme-light .learning-goal-card .card-footer .btn-outline-secondary:hover {
+    color: #fff;
+    background-color: #6c757d;
+}
+body.theme-light .learning-goal-card .card-footer .btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+body.theme-light .learning-goal-card .card-footer .btn-outline-danger:hover {
+    color: #fff;
+    background-color: #dc3545;
+}
+
+/* 다크 모드 카드 버튼 */
+body.theme-dark .learning-goal-card .card-footer .btn-outline-secondary {
+    color: var(--dark-text-secondary);
+    border-color: var(--dark-text-secondary);
+}
+body.theme-dark .learning-goal-card .card-footer .btn-outline-secondary:hover {
+    color: var(--dark-bg);
+    background-color: var(--dark-text-secondary);
+}
+body.theme-dark .learning-goal-card .card-footer .btn-outline-danger {
+    color: #f87171;
+    border-color: #f87171;
+}
+body.theme-dark .learning-goal-card .card-footer .btn-outline-danger:hover {
+    color: var(--dark-text-primary);
+    background-color: #f87171;
+}
+
+/* =================================================================== */
+/* 학습 목표 카드 UI/UX 개선 (2025-06-11 최종 수정)                     */
+/* =================================================================== */
+
+/* 1. 중요도(별) 아이콘 오른쪽 끝으로 이동 */
+.learning-goal-card .card-title-wrapper {
+    display: flex;
+    justify-content: space-between; /* 제목과 별 아이콘을 양 끝으로 */
+    align-items: flex-start; /* 상단 정렬 */
+    gap: 1rem; /* 제목과 아이콘 사이 최소 간격 */
+}
+
+.learning-goal-card .card-title-wrapper a.learning-goal-title-link {
+    flex-grow: 1; /* 제목이 남는 공간을 모두 차지하도록 */
+}
+
+.learning-goal-card .card-title-wrapper .goal-importance-icon {
+    flex-shrink: 0; /* 아이콘이 찌그러지지 않도록 */
+    font-size: 1.25rem; /* 아이콘 크기 */
+    color: #ffc107; /* Bootstrap 'warning' 색상 */
+}
+
+/* 2. 카드 하단 버튼 영역 스타일 복구 및 다크 모드 색상 적용 */
+.learning-goal-card .card-footer {
+    background-color: transparent;
+    padding: 0.75rem 1.2rem;
+    border-top: 1px solid;
+    text-align: right; /* 버튼 오른쪽 정렬 */
+}
+body.theme-light .learning-goal-card .card-footer { border-top-color: #dee2e6; }
+body.theme-dark .learning-goal-card .card-footer { border-top-color: #4A5568; }
+
+.learning-goal-card .card-footer .btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
+}
+
+/* 라이트 모드 카드 버튼 */
+body.theme-light .learning-goal-card .card-footer .btn-outline-secondary { color: #6c757d; border-color: #6c757d; }
+body.theme-light .learning-goal-card .card-footer .btn-outline-secondary:hover { color: #fff; background-color: #6c757d; }
+body.theme-light .learning-goal-card .card-footer .btn-outline-danger { color: #dc3545; border-color: #dc3545; }
+body.theme-light .learning-goal-card .card-footer .btn-outline-danger:hover { color: #fff; background-color: #dc3545; }
+
+/* 다크 모드 카드 버튼 */
+body.theme-dark .learning-goal-card .card-footer .btn-outline-secondary { color: var(--dark-text-secondary); border-color: var(--dark-text-secondary); }
+body.theme-dark .learning-goal-card .card-footer .btn-outline-secondary:hover { color: var(--dark-bg); background-color: var(--dark-text-secondary); }
+body.theme-dark .learning-goal-card .card-footer .btn-outline-danger { color: #f87171; border-color: #f87171; }
+body.theme-dark .learning-goal-card .card-footer .btn-outline-danger:hover { color: var(--dark-text-primary); background-color: #f87171; }
+
+/* 3. 다크 모드에서 카드 내부 보조 텍스트(진행률, 마감일) 색상 문제 해결 */
+body.theme-dark .learning-goal-card .card-body .card-text {
+    color: var(--dark-text-secondary) !important;
+}
+
+/* =================================================================== */
+/* "새 학습 목표 만들기" 폼 제목 색상 문제 해결 (최종)              */
+/* =================================================================== */
+
+/* 
+  설명: 
+  base.css의 'body.theme-dark h4' 규칙이 모든 h4를 밝게 만듭니다.
+  아래 규칙은 그 중에서도 '.create-goal-section' 안에 있는 h4만
+  다시 검정색으로 덮어쓰기 위한 예외 처리입니다.
+*/
+
+body.theme-dark .create-goal-section .card-header h4 {
+    color: #212529 !important; /* Bootstrap의 기본 검정 텍스트 색상으로 강제 지정 */
+}
+
+/* =================================================================== */
+/* "새 목표 추가" 버튼 아이콘 색상 문제 해결 (최종)                     */
+/* =================================================================== */
+
+/* 
+  설명: 
+  라이트 모드에서 모든 아이콘(.bi)은 어두운 색으로 지정되어 있습니다.
+  아래 규칙은 그 중에서도 '새 목표 추가' 버튼(#toggleCreateGoalFormBtnHeader)
+  안에 있는 아이콘만 흰색으로 덮어쓰기 위한 예외 처리입니다.
+*/
+#toggleCreateGoalFormBtnHeader i.bi {
+    color: #FFFFFF !important; /* 라이트/다크 모드 상관없이 항상 흰색으로 강제 */
+}
+
+/* =================================================================== */
+/* 내용 없을 때 표시되는 UI 공통 스타일 (학습자료, 학습목표 등)      */
+/* =================================================================== */
+.no-content-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 45vh; /* 뷰포트 높이의 45% 만큼 최소 높이 확보 */
+    text-align: center;
+}
+
+.no-content-message {
+    padding: 3rem 1rem;
+}
+
+/* 아이콘을 감싸는 링크 스타일 */
+.no-content-icon-link {
+    display: inline-block;
+    color: inherit; /* 부모 색상 상속 */
+    text-decoration: none;
+}
+.no-content-icon-link:hover i {
+    transform: scale(1.08); /* 마우스 올리면 아이콘 커짐 */
+}
+
+/* 아이콘 스타일 */
+.no-content-icon-link i {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* 테마별 아이콘 색상 */
+body.theme-light .no-content-icon-link i {
+    color: var(--light-accent);
+}
+body.theme-dark .no-content-icon-link i {
+    color: var(--dark-accent);
+}

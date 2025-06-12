@@ -1,0 +1,32 @@
+{% extends "flo/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "문제 수 선택" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="max-width: 600px;">
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4">{% translate "시험 문제 수 선택" %}</h2>
+            <p><strong>{% translate "업로드된 파일" %}:</strong> {{ uploaded_pdf.filename }}</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <p>{% translate "생성할 문제 수를 선택해주세요:" %}</p>
+                {% for num_opt in num_options %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="num_questions" id="num_{{ num_opt }}" value="{{ num_opt }}" {% if forloop.first %}checked{% endif %}>
+                    <label class="form-check-label" for="num_{{ num_opt }}">
+                        {% blocktranslate %}{{ num_opt }}개 문제{% endblocktranslate %}
+                    </label>
+                </div>
+                {% endfor %}
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">{% translate "선택 완료 및 문제 생성" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

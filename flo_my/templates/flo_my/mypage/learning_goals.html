@@ -1,0 +1,179 @@
+{% extends "flo_my/mypage_base.html" %}
+{% load static i18n %}
+
+{# ====================================================================== #}
+{# 페이지 타이틀 블록                                                       #}
+{# ====================================================================== #}
+{% block title %}{% translate "나의 학습 목표" %} - {{ block.super }}{% endblock %}
+
+{# ====================================================================== #}
+{# 이 페이지 전용 추가 CSS 링크 블록                                        #}
+{# ====================================================================== #}
+{% block extra_css %} {# ★★★ mypage_base.html의 블록 이름과 일치시키세요 (예: extra_css) ★★★ #}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'flo/css/mypage_learning_goals.css' %}"> {# ★★★ CSS 파일 링크 추가 ★★★ #}
+{% endblock %}
+
+{# ====================================================================== #}
+{# 마이페이지 메인 콘텐츠 블록 시작                                         #}
+{# ====================================================================== #}
+{% block mypage_content %}
+<div class="learning-goals-page">
+
+    {# ---------------------------------------------------------------------- #}
+    {# 페이지 상단: 타이틀 및 조건부 "새 목표 추가" 버튼                      #}
+    {# ---------------------------------------------------------------------- #}
+    <div class="page-title-actions-header d-flex justify-content-between align-items-center mb-4">
+        <div class="page-title-container"> 
+            <i class="bi bi-bullseye page-title-icon"></i> 
+            <h3 class="page-main-title mb-0 d-inline">{% translate "나의 학습 목표" %}</h3>
+        </div>
+        {# ★★★ 조건 수정: 이제 learning_goals는 "진행중인 목표"만 있으므로 이 조건이 정확하게 작동합니다. ★★★ #}
+        {% if learning_goals %}
+            <button type="button" class="btn btn-primary btn-sm" id="toggleCreateGoalFormBtnHeader" title="{% translate '새 학습 목표 만들기' %}">
+                <i class="bi bi-plus-lg"></i> {% translate "새 목표 추가" %}
+            </button>
+        {% endif %}
+    </div>
+
+    {# ---------------------------------------------------------------------- #}
+    {# 새 학습 목표 만들기 폼 섹션 (CSS와 인라인 스타일로 초기에 숨겨짐)     #}
+    {# ---------------------------------------------------------------------- #}
+    {# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ #}
+    {# ★★★ 핵심 수정: 서버 사이드에서 조건부로 인라인 스타일을 직접 삽입! ★★★ #}
+    {# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ #}
+    <div class="card mb-5 create-goal-section" id="learningGoalFormContainer" 
+         style="{% if not learning_goals %}display: none;{% endif %}">
+        
+        <div class="card-header">
+            <h4>{% translate "새 학습 목표 만들기" %}</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" id="learningGoalForm" action="{% url 'flo_my:mypage_learning_goals' %}">
+                {% csrf_token %}
+                {# ... 폼 필드들은 그대로 ... #}
+                {% if form.non_field_errors %}<div class="alert alert-danger">{% for error in form.non_field_errors %}<p class="mb-0">{{ error }}</p>{% endfor %}</div>{% endif %}
+                <div class="mb-3"><label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>{{ form.title }}{% if form.title.help_text %}<small class="form-text text-muted">{{ form.title.help_text }}</small>{% endif %}{% for error in form.title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>
+                <div class="mb-3"><label for="{{ form.goal_type.id_for_label }}" class="form-label">{{ form.goal_type.label }}</label>{{ form.goal_type }}{% for error in form.goal_type.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>
+                <div class="mb-3" id="targetTestSetField" style="display:none;"><label for="{{ form.target_test_set.id_for_label }}" class="form-label">{{ form.target_test_set.label }}</label>{{ form.target_test_set }}{% for error in form.target_test_set.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>
+                <div class="mb-3" id="targetAttemptField" style="display:none;"><label for="{{ form.target_attempt_for_incorrect_notes.id_for_label }}" class="form-label">{{ form.target_attempt_for_incorrect_notes.label }}</label>{{ form.target_attempt_for_incorrect_notes }}{% for error in form.target_attempt_for_incorrect_notes.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>
+                <div class="mb-3"><label for="{{ form.target_repetition_count.id_for_label }}" class="form-label">{{ form.target_repetition_count.label }}</label>{{ form.target_repetition_count }}{% if form.target_repetition_count.help_text %}<small class="form-text text-muted">{{ form.target_repetition_count.help_text }}</small>{% endif %}{% for error in form.target_repetition_count.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>
+                <div class="mb-3"><label for="{{ form.due_date.id_for_label }}" class="form-label">{{ form.due_date.label }}</label>{{ form.due_date }}{% if form.due_date.help_text %}<small class="form-text text-muted">{{ form.due_date.help_text }}</small>{% endif %}{% for error in form.due_date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>
+                <div class="mb-3 form-check">{{ form.is_important }}<label for="{{ form.is_important.id_for_label }}" class="form-check-label">{{ form.is_important.label }}</label>{% for error in form.is_important.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>
+                <button type="submit" class="btn btn-success learning-goal-submit">{% translate "학습 목표 생성" %}</button>
+            </form>
+        </div>
+    </div>
+
+    {# ---------------------------------------------------------------------- #}
+    {# 학습 목표 목록 또는 "목표 없음" 메시지 표시 섹션                          #}
+    {# ---------------------------------------------------------------------- #}
+    <div class="my-goals-list-or-message-section mt-2">
+        {% if learning_goals %}
+            <h4>{% translate "진행중인 학습 목표" %}</h4> 
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for goal in learning_goals %}
+        <div class="col">
+            <div class="card h-100 learning-goal-card">
+                <div class="card-body">
+                    
+                    {# 1. 제목과 별 아이콘을 한 줄에 배치하기 위한 div 추가 #}
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <a href="{% if goal.goal_type == 'TEST_RETAKE' and goal.target_test_set %}{% url 'flo_my:take_test' goal.target_test_set.pk %}{% elif goal.goal_type == 'INCORRECT_ANSWERS_RETAKE' and goal.target_attempt_for_incorrect_notes %}{% url 'flo_my:retake_incorrect_answers' goal.target_attempt_for_incorrect_notes.pk %}{% else %}#{% endif %}" class="learning-goal-title-link flex-grow-1">
+                            <h5 class="card-title mb-0">{{ goal.title }}</h5>
+                        </a>
+                        {# 중요 목표일 때만 별 아이콘 표시 #}
+                        {% if goal.is_important %}
+                            <i class="bi bi-star-fill text-warning fs-5 ms-3" title="중요 목표"></i>
+                        {% endif %}
+                    </div>
+
+                    <p class="card-text">진행률: {{ goal.current_repetition_count }} / {{ goal.target_repetition_count }}</p>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: {{ goal.achievement_rate }}%;" aria-valuenow="{{ goal.achievement_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <p class="card-text text-muted"><small>마감일: {{ goal.due_date|date:"Y-m-d" }}</small></p>
+
+                </div>
+                
+                {# 2. 버튼들을 card-footer로 분리하여 배치 #}
+                <div class="card-footer text-end">
+                    <a href="{% url 'flo_my:learning_goal_edit' goal.pk %}" class="btn btn-sm btn-outline-secondary">{% translate "수정" %}</a>
+                    <form action="{% url 'flo_my:learning_goal_delete' goal.pk %}" method="post" class="d-inline ms-1">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말로 이 학습 목표를 삭제하시겠습니까?');">{% translate "삭제" %}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+            </div>
+        {% else %}
+            {# --- 학습 목표가 없을 때 표시되는 내용 --- #}
+            <div class="no-goals-container">
+                <div class="no-goals-message text-center">
+                    <div class="no-goals-icon-wrapper">
+                        <i class="bi bi-journal-plus" id="addGoalIconFromEmptyState"></i> 
+                    </div>
+                    <p class="lead no-goals-text-primary">{% translate "아직 설정된 학습 목표가 없어요." %}</p>
+                    <p class="no-goals-text-secondary">{% translate "지금 바로 새 목표를 만들어 학습을 시작해 보세요!" %}</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const learningGoalFormContainer = document.getElementById('learningGoalFormContainer');
+        const toggleCreateGoalFormBtnHeader = document.getElementById('toggleCreateGoalFormBtnHeader');
+        const addGoalIconEmpty = document.getElementById('addGoalIconFromEmptyState');
+
+        // 목표가 없을 때: 아이콘 클릭 시 폼을 보여줌
+        if (addGoalIconEmpty) {
+            addGoalIconEmpty.style.cursor = 'pointer';
+            addGoalIconEmpty.addEventListener('click', function() {
+                if (learningGoalFormContainer) {
+                    learningGoalFormContainer.style.display = 'block';
+                    document.querySelector('.no-goals-container').style.display = 'none'; // "목표 없음" 메시지 숨기기
+                    learningGoalFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        }
+        
+        // 목표가 있을 때: 헤더의 "새 목표 추가" 버튼 클릭 시 폼 보이기/숨기기 토글
+        if (toggleCreateGoalFormBtnHeader) {
+            toggleCreateGoalFormBtnHeader.addEventListener('click', function() {
+                if (learningGoalFormContainer) {
+                    const isFormHidden = window.getComputedStyle(learningGoalFormContainer).display === 'none';
+                    learningGoalFormContainer.style.display = isFormHidden ? 'block' : 'none';
+                    if (isFormHidden) {
+                        learningGoalFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            });
+        }
+
+        // --- "목표 유형" 선택에 따른 필드 토글 로직 (이 부분은 동일) ---
+        const goalTypeSelect = document.getElementById('{{ form.goal_type.id_for_label }}');
+        const targetTestSetField = document.getElementById('targetTestSetField');
+        const targetAttemptField = document.getElementById('targetAttemptField');
+
+        function toggleDependentGoalFields() {
+            if (!goalTypeSelect) return;
+            const selectedType = goalTypeSelect.value;
+            targetTestSetField.style.display = (selectedType === 'TEST_RETAKE') ? 'block' : 'none';
+            targetAttemptField.style.display = (selectedType === 'INCORRECT_ANSWERS_RETAKE') ? 'block' : 'none';
+        }
+        if (goalTypeSelect) {
+            goalTypeSelect.addEventListener('change', toggleDependentGoalFields);
+            toggleDependentGoalFields(); // 폼 내부 필드 초기화는 항상 실행
+        }
+    });
+    </script>
+{% endblock %}
+
