@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>[Flo] 아이디 안내 메일</title>
+  <style>
+    body {
+      background: #fff;
+      font-family: 'Arial', 'Malgun Gothic', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #181818;
+    }
+    .mail-wrap {
+      max-width: 470px;
+      margin: 32px auto 0 auto;
+      padding: 0 10px 32px 10px; 
+      background: #fff;
+    }
+    .logo {
+      display: block;
+      width: 100px;
+      margin: 16px 0 0 0;
+    }
+    .section {
+      background: #fff;
+      border-radius: 14px;
+      margin: 28px 0 0 0;
+      padding: 0;
+      text-align: left;
+    }
+    .mail-title {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 18px 0 0 0;
+      color: #111;
+      letter-spacing: -0.5px;
+    }
+    .desc {
+      font-size: 16px;
+      margin: 18px 0 20px 0;
+      color: #111;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+    .desc strong {
+      color: #111;
+    }
+    .id-row {
+      margin: 26px 0 22px 0;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+    }
+    .id-box {
+      background: #f7f7f7;
+      color: #181818;
+      padding: 4px 14px 4px 12px;
+      border-radius: 6px;
+      font-size: 17px;
+      font-weight: 700;
+      margin-left: 8px;
+      letter-spacing: 0.2px;
+    }
+    .info {
+      font-size: 15px;
+      color: #222;
+      margin: 14px 0 0 0;
+      line-height: 1.7;
+    }
+    .gray {
+      color: #555;
+      font-size: 14px;
+      margin-top: 32px;
+      padding-top: 14px;
+      border-top: 1.3px solid #bbb;
+      letter-spacing: -0.2px;
+    }
+    .login-btn {
+      display: block;
+      margin: 28px auto 0 auto;
+      padding: 0 24px;
+      width: 200px;
+      height: 40px;
+      background: #2a2a2a;
+      color: #fff !important;
+      font-size: 17px;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      letter-spacing: -0.5px;
+    }
+    @media (max-width: 540px) {
+      .mail-wrap { max-width: 98vw; }
+      .logo { width: 80px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="mail-wrap">
+    <img src="https://cdn.jsdelivr.net/gh/siwoo-zen/img-host/fl_logo_lite.png" alt="Flo 로고" class="logo">
+
+    <div class="section">
+      <div class="mail-title">
+        회원님의 아이디를 안내드립니다 ✨
+      </div>
+      <div class="desc">
+        안녕하세요! Flo를 이용해 주셔서 감사합니다
+      </div>
+      <div class="desc" style="margin-bottom:0;">
+        회원님의 아이디는 다음과 같습니다:
+      </div>
+      <div class="id-row">
+        📧 <span class="id-box">{{ user_id }}</span>
+      </div>
+      <div class="info">
+        해당 아이디로 로그인해 주세요.<br>
+        비밀번호를 잊으셨다면 '비밀번호 재설정'을 이용해 주세요.<br><br>
+        궁금하신 점이 있다면 언제든지 고객센터로 문의해 주세요.<br><br>
+        감사합니다.<br>
+        Flo 팀 드림 🌱
+      </div>
+      <div class="gray">
+        ※ 본 메일은 발신 전용입니다. 회신하지 말아 주세요.
+      </div>
+      <a href="{{ login_url }}" class="login-btn">로그인 하러가기</a>
+    </div>
+  </div>
+</body>
+</html>

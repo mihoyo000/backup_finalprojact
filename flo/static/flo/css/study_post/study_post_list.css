@@ -1,6 +1,4 @@
 /* static/flo/css/study_post/study_post_list.css */
-
-<<<<<<< HEAD
 /* --- 기본 변수 (study_post_form.css 와 유사하게 또는 필요한 부분만 가져오기) --- */
 :root {
     /* 기존 study_post_list.css에 있던 변수들 (생략 가능, base.css 등에서 관리될 수 있음) */
@@ -26,7 +24,7 @@
     --dark-active-parent-bg: #3e444a;
 
     /* 폼 요소에 사용될 수 있는 변수 (목록 페이지 검색창 등에 필요시 사용) */
-=======
+}
 /* --- 기본 변수 (study_post_form.css 및 상세 페이지 CSS 변수 참조) --- */
 :root {
     /* 페이지 전반 (기본값은 라이트모드) */
@@ -34,12 +32,10 @@
     --text-main-list: #212529;
     --line-sub-list: #dee2e6; 
     --title-underline-color: #000000;
->>>>>>> origin/ldy
     --form-input-bg: #FFFFFF;
     --form-input-text: #212529;
     --form-input-border: #ced4da;
     --form-input-placeholder: #6c757d;
-<<<<<<< HEAD
 }
 
 
@@ -167,7 +163,6 @@ body:not(.theme-light) #selected-category-display-list .selected-category-tag {
     cursor: pointer;
     font-weight: bold;
     opacity: 0.7;
-=======
     --btn-primary-bg: #6d28d9; 
     --btn-primary-text: #fff;
     --btn-search-bg: #6d28d9; 
@@ -325,14 +320,12 @@ body:not(.theme-light) #selected-category-display-list .selected-category-tag {
     font-weight: bold;
     opacity: 0.8;
     font-size: 1.1em;
->>>>>>> origin/ldy
 }
 #selected-category-display-list .remove-category-filter:hover,
 #selected-category-display-list .remove-category-visual:hover {
     opacity: 1;
 }
 
-<<<<<<< HEAD
 /* "선택된 카테고리로 검색" 버튼 (HTML <style> 블록에서 가져옴) */
 #applyCategoryFilterButton {
     background-color: #34D2E2; /* 기존 스타일 유지 또는 테마에 맞게 변경 */
@@ -820,7 +813,7 @@ body.theme-light .pagination .page-link:hover {
 /* body.theme-light .pagination .page-item.active .page-link 는 위에서 공통으로 처리 */
 body.theme-light .pagination .page-item.disabled .page-link {
     color: #D1D5DB;
-=======
+}
 #applyCategoryFilterButton {
     background-color: var(--btn-filter-apply-bg);
     color: var(--btn-filter-apply-text);
@@ -1564,5 +1557,4 @@ body:not(.theme-light) .pagination .page-item.disabled .page-link { color: #6c7d
         display: list-item;
     }
     */
->>>>>>> origin/ldy
 }

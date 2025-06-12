@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User # Django 기본 User 모델
+from django.conf import settings
 from django.utils import timezone # 시간 관련 기능
 
 # 1. 사용자가 업로드한 PDF 문서 및 요청 정보를 담는 모델
@@ -7,7 +7,7 @@ from django.utils import timezone # 시간 관련 기능
 class ExamDocument(models.Model):
     # 로그인 기능 구현 시 작성자를 연결합니다.
     author = models.ForeignKey(
-        User, 
+        settings.AUTH_USER_MODEL, 
         on_delete=models.SET_NULL, # 작성자 계정 삭제 시 이 필드를 NULL로 설정 (문서는 남김)
         null=True, 
         blank=True, # 관리자 페이지 등에서 빈 값 허용
@@ -156,7 +156,7 @@ class GeneratedQuestion(models.Model):
 # ==============================================================================
 class UserExamSession(models.Model):
     user = models.ForeignKey(
-        User, 
+        settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, # 사용자 삭제 시 관련 세션도 삭제
         null=True, blank=True, # 비로그인 사용자도 응시 가능하도록
         verbose_name="응시자"

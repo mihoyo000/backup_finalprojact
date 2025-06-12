@@ -1,0 +1,42 @@
+{% load static %}
+
+<div class="modal fade" id="terms-outsourcing" tabindex="-1" aria-labelledby="terms-outsourcing-label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content terms-modal-content">
+
+      <div class="terms-modal-header">
+        <h5 class="modal-title" id="terms-outsourcing-label">개인정보 처리위탁 동의</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+      </div>
+
+      <div class="terms-modal-body">
+        <p>
+          회사는 flo 서비스의 원활한 운영 및 이용자 지원을 위해 아래와 같이 개인정보 처리 업무를 외부 전문 업체에 위탁하고 있습니다.
+          이 위탁은 서비스 제공에 필수적인 절차이며, 이에 대한 동의가 필요합니다.
+        </p>
+
+        <p><strong>1. 수탁 업체 및 위탁 업무 내용</strong><br>
+        - Amazon Web Services Inc. (AWS): 데이터 보관 및 인프라 운영<br>
+        - ㈜ABC커뮤니케이션: 문자 메시지(SMS) 발송 대행<br>
+        - ㈜XYZ헬프센터: 고객 상담 및 문의 응대</p>
+
+        <p><strong>2. 위탁 목적</strong><br>
+        - 안정적인 서비스 제공<br>
+        - 고객 문의 대응 및 알림 발송 등 사용자 지원</p>
+
+        <p><strong>3. 보유 및 이용 기간</strong><br>
+        - 위탁 계약 종료 시 또는 회원 탈퇴 및 동의 철회 시까지</p>
+
+        <p><strong>4. 동의 거부 시 불이익</strong><br>
+        - 본 동의는 flo 서비스의 제공에 필수적이며, 동의하지 않을 경우 회원가입이 제한될 수 있습니다.</p>
+      </div>
+
+      <div class="terms-modal-footer">
+        <button type="button" class="terms-confirm-btn" data-bs-dismiss="modal">확인</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{% static 'flo/css/trems.css' %}">

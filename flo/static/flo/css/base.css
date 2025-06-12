@@ -315,17 +315,36 @@ body.theme-dark #btn-login:hover {
 }
 
 .profile-image-wrapper {
-    width: 32px; height: 32px; border-radius: 50%;
-    border-width: 2px; border-style: solid;
-    border-color: var(--profile-image-border-light);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--profile-image-border-light);
     background-color: var(--profile-image-bg);
     margin-right: 8px;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden; box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-sizing: border-box;
 }
-body.theme-dark .profile-image-wrapper { border-color: var(--profile-image-border-dark); }
-.profile-image-wrapper img {
-    display: block; width: 70%; height: 70%; object-fit: contain;
+
+/* 기본 프로필 이미지 스타일 */
+.profile-image-wrapper img.default-avatar {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+}
+
+/* 사용자 추가 이미지 스타일 */
+.profile-image-wrapper img:not(.default-avatar) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+body.theme-dark .profile-image-wrapper {
+    border-color: var(--profile-image-border-dark);
 }
 .user-dropdown-toggle {
     display: flex; align-items: center; text-decoration: none; color: inherit;
@@ -947,3 +966,4 @@ body.theme-dark .loading-text {
     .site-footer { font-size: 0.8rem; }
     .footer-container { padding: 0 25px; }
 }
+

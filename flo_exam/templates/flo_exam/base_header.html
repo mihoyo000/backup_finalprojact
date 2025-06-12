@@ -92,7 +92,7 @@
                                 <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form id="logoutForm" method="post" action="{% url 'flo_exam:temp_logout' %}">
+                                    <form id="logoutForm" method="post" action="{% url 'flo:logout' %}">
                                         {% csrf_token %}
                                         <button type="submit" class="dropdown-item">{% translate "로그아웃" %}</button>
                                     </form>
@@ -101,7 +101,7 @@
                         </div>
                     {% else %}
                         {# 로그인 버튼의 id="btn-login"은 JS와 연동될 수 있으므로 유지하거나, 단순 링크로 변경 #}
-                        <a href="{% url 'flo_exam:temp_login' %}" id="btn-login" class="btn btn-outline-light">{% translate "로그인" %}</a>
+                        <a href="{% include 'flo/auth/login.html' %}" id="btn-login" class="btn btn-outline-light">{% translate "로그인" %}</a>
                     {% endif %}
                 </div>
 

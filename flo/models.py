@@ -32,10 +32,8 @@ class Profile(models.Model):
 
     @property
     def has_custom_profile_image(self):
-        # 사용자가 직접 프로필 이미지를 업로드했는지 여부를 반환
         return bool(self.profile_image and self.profile_image.name)
 
-# User 모델이 저장될 때 (특히 생성될 때) Profile 모델도 함께 생성/업데이트
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
@@ -232,6 +230,7 @@ class Post(models.Model):
         verbose_name_plural = "학습 게시글 목록"
         ordering = ['-is_notice', '-created_at']
             
+
 class Attachment(models.Model):
     post = models.ForeignKey(Post, related_name='post_attachments', on_delete=models.CASCADE, verbose_name="게시글")
     file = models.FileField(upload_to='post_attachments/%Y/%m/%d/', verbose_name="첨부파일")

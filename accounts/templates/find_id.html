@@ -1,0 +1,34 @@
+{% extends 'flo/base.html' %}
+{% load static %}
+
+{% block title %}아이디 찾기 - 이메일 입력{% endblock %}
+
+{% block content %}
+<div class="find-container">
+  <div class="find-logo-box">
+    <img src="{% static 'flo/images/light/header/light-logo.png' %}" alt="FL0 로고">
+  </div>
+
+  <h2 class="find-title">가입 시 입력한 이메일을 입력해 주세요.</h2>
+
+  <form method="post" class="email-box">
+    {% csrf_token %}
+    <input type="email" name="email" placeholder="fxxxxx@exxxxx.com" class="find-input" required>
+    <button type="submit" class="find-sub-btn">아이디 찾기</button>
+  </form>
+
+  <div>
+    <a href="{% url 'accounts:find_password' %}" class="find-button">
+      <span>비밀번호가 기억나지 않는다면?</span>
+      <span class="link-blue-indk">비밀번호 찾기</span>
+    </a>
+    <p class="sub-text">FLO 개인정보 고객센터</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'flo/css/find_page.css' %}">
+{% endblock %}
+
+

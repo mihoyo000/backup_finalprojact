@@ -1,7 +1,7 @@
 #flo/forms.py
 from django import forms
 from .models import Post, Attachment, Comment, Category
-from tinymce.widgets import TinyMCE # TinyMCE 위젯
+from tinymce.widgets import TinyMCE
 
 class AttachmentForm(forms.ModelForm):
     class Meta:
@@ -19,12 +19,12 @@ class AttachmentForm(forms.ModelForm):
         instance_pk = None
         instance_type = None
         if self.instance:
-            instance_pk = getattr(self.instance, 'pk', 'No PK Attr') # pk 속성이 없을 수도 있으므로 getattr 사용
+            instance_pk = getattr(self.instance, 'pk', 'No PK Attr')
             instance_type = type(self.instance)
 
         print(f"AttachmentForm __init__ called. Instance: {self.instance}, Instance Type: {instance_type}, Instance PK: {instance_pk}")
 
-        if self.instance and hasattr(self.instance, 'pk') and self.instance.pk: # pk 존재 여부 명시적 확인
+        if self.instance and hasattr(self.instance, 'pk') and self.instance.pk:
             self.fields['file'].required = False
             print(f"  Set file.required to False for instance PK: {self.instance.pk}")
         else:
@@ -33,12 +33,10 @@ class AttachmentForm(forms.ModelForm):
 class PostForm(forms.ModelForm):
     categories = forms.ModelMultipleChoiceField(
         queryset=Category.objects.all().order_by('name'),
-        # ★★★ 위젯을 MultipleHiddenInput으로 변경 ★★★
-        widget=forms.MultipleHiddenInput(attrs={'class': 'categories-hidden-inputs'}), 
+        widget=forms.MultipleHiddenInput(attrs={'class': 'categories-hidden-inputs'}),
         required=True,
         label="카테고리 선택 (최소 1개, 최대 5개)",
         help_text="게시글과 관련된 카테고리를 최소 1개, 최대 5개까지 선택해주세요."
-        # error_messages는 JS alert로 대체하므로 제거된 상태 유지
     )
 
     class Meta:

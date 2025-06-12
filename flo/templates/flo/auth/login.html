@@ -1,68 +1,121 @@
-{% extends "flo/base.html" %}
 {% load static %}
-{% load i18n %}
 
-{% block title %}{% translate "로그인" %}{% endblock %}
-
-{% block content %}
-<div class="container mt-5 mb-5" style="max-width: 500px;"> {# 상하 마진 추가 #}
-    <div class="card">
-        <div class="card-body">
-            <h2 class="card-title text-center mb-4">{% translate "로그인" %}</h2>
-            {# messages 프레임워크가 base.html에서 처리하므로 여기서 별도 에러 표시는 중복될 수 있음 #}
-            {% if form.errors and not messages %}
-                <div class="alert alert-danger">
-                    {% translate "아이디 또는 비밀번호가 올바르지 않습니다. 다시 시도해주세요." %}
-                </div>
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content login-box">
+      <div class="modal-header border-0 d-flex justify-content-between">
+        <h2 class="modal-title" id="loginModalLabel">Login</h2>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{% url 'flo:login' %}" id="loginForm">
+          {% csrf_token %}
+          <div class="input-box">
+            <input type="text" id="username" name="username" required>
+            <label for="username">ID</label>
+            <i class="bi bi-envelope icon"></i>
+          </div>
+          <div class="input-box">
+            <input type="password" id="password" name="password" required>
+            <label for="password">Password</label>
+            <i class="bi bi-lock icon"></i>
+          </div>
+          <div class="remember-forgot">
+            <label>
+              <input type="checkbox" name="remember"> Remember me
+            </label>
+            <a href="{% url 'accounts:find_password' %}">Forgot password?</a>
+          </div>
+          <div id="loginAlert">
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'info' %}
+                        <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
             {% endif %}
-            <form method="post" action="{% url 'flo:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}"> {# next 파라미터 추가 및 urlencode #}
-                {% csrf_token %}
-                {# {{ form.as_p }} #} {# 기본 폼 렌더링 #}
-
-                {# Bootstrap 폼 스타일 적용 예시 #}
-                <div class="mb-3">
-                    <label for="{{ form.username.id_for_label }}" class="form-label">{% translate "사용자 이름" %}</label>
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.username.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.password.id_for_label }}" class="form-label">{% translate "비밀번호" %}</label>
-                    {{ form.password }}
-                    {% if form.password.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.password.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg">{% translate "로그인" %}</button>
-                </div>
-            </form>
-            <hr class="my-4">
-            <div class="text-center">
-                <p>{% translate "계정이 없으신가요?" %} <a href="#">{% translate "회원가입" %}</a></p>
-                {# <p><a href="#">{% translate "비밀번호를 잊으셨나요?" %}</a></p> #} {# 비밀번호 찾기 기능은 별도 구현 필요 #}
+          </div>
+          <button type="submit">Login</button>
+        </form>
+        {% comment %}
+        <div class="google-login-form">
+          <button class="gsi-material-button" id="googleLoginBtn" data-url="{% url 'social:begin' 'google-oauth2' %}">
+            <div class="gsi-material-button-state"></div>
+            <div class="gsi-material-button-content-wrapper">
+              <div class="gsi-material-button-icon">
+                <!-- Google SVG icon code -->
+              </div>
+              <span class="gsi-material-button-contents">Sign in with Google</span>
             </div>
+          </button>
         </div>
+        {% endcomment %}
+        <div class="register-link">
+          <p>Don't have an account?<a href="{% url 'accounts:signup' %}">Sign up</a></p>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
-{# Django 기본 폼 위젯에 Bootstrap 클래스 추가 (선택 사항, forms.py에서 위젯 수정이 더 좋음) #}
+<link rel="stylesheet" href="{% static 'flo/css/login.css' %}">
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const usernameInput = document.getElementById('{{ form.username.id_for_label }}');
-        if (usernameInput) usernameInput.classList.add('form-control');
-        const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
-        if (passwordInput) passwordInput.classList.add('form-control');
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const loginAlert = document.getElementById('loginAlert');
+    
+    // 로그아웃 메시지 자동 제거
+    const logoutAlert = loginAlert.querySelector('.alert-info');
+    if (logoutAlert) {
+        setTimeout(() => {
+            logoutAlert.remove();
+        }, 30000);
+    }
+    
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: new FormData(this),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 로그인 성공 시 얼럿 표시
+                alert(data.message);
+                // 1초 후 페이지 새로고침
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                // 로그인 실패 시 알림 메시지
+                loginAlert.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // 오류 발생 시 알림 메시지
+            loginAlert.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    로그인 처리 중 오류가 발생했습니다.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        });
     });
+});
 </script>
-{% endblock %}

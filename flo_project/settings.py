@@ -23,6 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_PATH = os.path.join(BASE_DIR, '.env')
 load_dotenv(dotenv_path=ENV_PATH) # .env 파일 로드 명시적 경로 지정
 
+AUTH_USER_MODEL = 'accounts.User'  # accounts 앱의 User 모델 사용
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -35,6 +36,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Application definition
 
@@ -46,13 +50,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'modeltranslation',  # 추가한 부분
-    # 'multilang.apps.MultilangConfig',  # 추가된 부분
     'tinymce',  # 추가된 부분
     'flo.apps.FloConfig',  # 추가된 부분
+    'accounts.apps.AccountsConfig',  # accounts 앱 추가
     'flo_exam.apps.FloExamConfig' # 추가된 부분 / flo프로그램 페이지
 ]
 
 MIDDLEWARE = [
+    'django.middleware.locale.LocaleMiddleware',  # 다국어 지원을 위한 미들웨어 추가
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,10 +72,12 @@ ROOT_URLCONF = 'flo_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'DIRS': [],
         'DIRS': [
+            BASE_DIR / 'templates',
             os.path.join(BASE_DIR, 'flo_project', 'templates'),
-            # os.path.join(BASE_DIR, 'careerhub', 'accounts', 'templates'),  # careerhub 앱의 templates 폴더 경로 추가
+            os.path.join(BASE_DIR, 'flo', 'templates'),
+            os.path.join(BASE_DIR, 'accounts', 'templates'),
+            os.path.join(BASE_DIR, 'flo_exam', 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -116,12 +123,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-# LANGUAGE_CODE = 'en-us'
-# LANGUAGE_CODE = 'ko-kr'  # 한국어로 변경
 LANGUAGE_CODE = 'ko'
 
 LANGUAGES = [
@@ -137,11 +141,8 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR / 'locale'),
 ]
 
-# TIME_ZONE = 'UTC'
-TIME_ZONE = 'Asia/Seoul'  # 한국 표준시로 변경
-
-# USE_TZ = True
-USE_TZ = False  # 타임존 사용 안함
+TIME_ZONE = 'Asia/Seoul'
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -151,28 +152,45 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]  # 추가된 부분
 
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Vectorstore Root
+VECTORSTORE_ROOT = os.path.join(BASE_DIR, 'vectorstores')
+if not os.path.exists(VECTORSTORE_ROOT):
+    os.makedirs(VECTORSTORE_ROOT)
+if not os.path.exists(os.path.join(VECTORSTORE_ROOT, 'document_specific_vs')):
+    os.makedirs(os.path.join(VECTORSTORE_ROOT, 'document_specific_vs'))
+
+# Email settings
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'purpleluna56756@gmail.com'
+# EMAIL_HOST_PASSWORD = 'alde sjpl ftrq xiqx'
+# DEFAULT_FROM_EMAIL = 'webmaster@localhost'
+
+#테스트용 시우계정 이메일
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'thfdl136@gmail.com'
+EMAIL_HOST_PASSWORD = 'bmlkucwuntnivhlf' 
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# OpenAI API Key
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    print("경고: .env 파일에서 OPENAI_API_KEY를 로드하지 못했습니다. settings.py와 .env 파일 설정을 확인하세요.")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = '/media/'  # 웹에서 미디어 파일에 접근할 때 사용될 URL 접두사
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media') # 실제 파일이 서버 파일 시스템에 저장될 루트 디렉토리
-
-# Vectorstore Root 정의
-VECTORSTORE_ROOT = os.path.join(BASE_DIR, 'vectorstores') # 프로젝트 루트 아래 'vectorstores' 폴더
-# 해당 디렉토리가 없으면 생성하는 코드 (선택 사항, 뷰에서 처리할 수도 있음)
-if not os.path.exists(VECTORSTORE_ROOT):
-    os.makedirs(VECTORSTORE_ROOT)
-if not os.path.exists(os.path.join(VECTORSTORE_ROOT, 'document_specific_vs')):
-     os.makedirs(os.path.join(VECTORSTORE_ROOT, 'document_specific_vs'))
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'purpleluna56756@gmail.com' # 본인 Gmail 주소
-EMAIL_HOST_PASSWORD = 'alde sjpl ftrq xiqx' # Gmail 앱 비밀번호
 
 # 로그인 성공 후 리디렉션될 URL (예: 홈페이지 또는 게시판 목록)
 LOGIN_REDIRECT_URL = 'flo:home' # 또는 '/' 등 원하는 경로
@@ -192,11 +210,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
             # 위 링크에서 http://127.0.0.1:8000/accounts/activate/MTE/comdnf-50575b9549f83384b77e42c119d7709d/를 들어가면 마치 이메일 인증을 받은 것 같은 효과를 줌.
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-
-# API 키가 로드되었는지 확인하는 print 문 (개발 중에만 사용하고 배포 시 제거)
-if not OPENAI_API_KEY:
-   print("경고: .env 파일에서 OPENAI_API_KEY를 로드하지 못했습니다. settings.py와 .env 파일 설정을 확인하세요.")
     
 TINYMCE_JS_URL = "https://cdn.tiny.cloud/1/xqn37s38iyj7twa9wlozw51dfmv2mqxbxsr6le9amrbajhlc/tinymce/6/tinymce.min.js"
 # Replace YOUR_API_KEY with your actual free API key from tiny.cloud
@@ -219,3 +232,5 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 TINYMCE_SPELLCHECKER = False
 TINYMCE_COMPRESSOR = False # Usually not needed with minified CDN versions
+
+THEME_MODE = 'light' #맥에서는 안깨지는데 윈도우에서 자꾸 이미지때문에 깨지는 이유로 하드코딩딩

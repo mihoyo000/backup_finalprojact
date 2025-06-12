@@ -11,9 +11,5 @@ urlpatterns = [
     path('ajax/score-exam/<int:generated_exam_id>/', views.ajax_process_scoring_view, name='ajax_process_scoring'),
     path('download/questions/<int:generated_exam_id>/pdf/', views.download_questions_pdf_view, name='download_questions_pdf'),
     path('download/answers/<int:generated_exam_id>/pdf/', views.download_answers_pdf_view, name='download_answers_pdf'),
-    # --- 임시 로그인/로그아웃 URL -------------------------------------------------------
-    path('temp-login/', views.temp_login_view, name='temp_login'),
-    path('temp-logout/', views.temp_logout_view, name='temp_logout'),
-    # ---------------------------------------------------------------------------------
 
 ]

@@ -1,0 +1,255 @@
+{% extends 'flo/base.html' %}
+{% load static %}
+{% now "YmdHis" as timestamp %}
+
+{% block title %}설정{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<div class="nf-page-wrapper">
+    <h1 class="nf-page-main-title">계정관리</h1>
+
+    <div class="nf-settings-container">
+        <nav class="nf-settings-tabs">
+            <ul>
+                <li class="active"><a href="#info" class="nf-tab-item">INFO</a></li>
+                <li><a href="#setting" class="nf-tab-item">Setting</a></li>
+                <li><a href="#billing" class="nf-tab-item">Billing</a></li>
+            </ul>
+        </nav>
+
+        <div class="nf-settings-content-area">
+            <!-- 프로필 섹션 (개별 폼) -->
+            <form method="POST" action="{% url 'accounts:update_profile' %}" class="nf-profile-section" enctype="multipart/form-data" id="profileForm">
+                {% csrf_token %}
+                <h2 class="nf-section-title">Profile</h2>
+                <div class="nf-form-group">
+                    <div class="nf-profile-image-placeholder" id="profileImagePreview" data-image-url="{{ user.user_profile.get_profile_image_url }}">
+                        <div class="nf-loading-spinner"></div>
+                        <label for="profile_image" class="nf-upload-icon">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                        <input type="file" id="profile_image" name="profile_image" class="nf-input" accept="image/*" hidden>
+                    </div>
+                    <div class="reset-image-wrap">
+                        <button type="button" id="resetProfileImage" class="reset-image-button">기본이미지로 변경</button>
+                    </div>
+                </div>
+                <div class="nf-error-message" id="profileImageError"></div>
+                <div class="nf-form-group">
+                    <label for="nickname" class="nf-label">닉네임</label>
+                    <input type="text" id="nickname" name="nickname" class="nf-input" value="{{ user.nickname }}">
+                </div>
+                <div class="nf-form-group">
+                    <label for="name" class="nf-label">이름</label>
+                    <input type="text" id="name" name="name" class="nf-input" value="{{ user.name }}">
+                </div>
+                <div class="nf-form-group">
+                    <label for="email" class="nf-label">Email</label>
+                    <input type="email" id="email" name="email" class="nf-input" value="{{ user.email }}" readonly>
+                </div>
+                <div class="nf-form-group">
+                    <label for="profile_bio" class="nf-label">자기소개</label>
+                    <textarea id="profile_bio" name="profile_bio" class="nf-input" rows="4" placeholder="자기소개를 입력하세요">{{ user.user_profile.profile_bio }}</textarea>
+                </div>
+                <div class="nf-form-actions">
+                    <button type="submit" class="nf-btn nf-btn-save-profile">변경사항 저장</button>
+                </div>
+            </form>
+
+            <div class="nf-right-section">
+                <!-- INFO 탭 (개별 폼) -->
+                <form method="POST" action="{% url 'accounts:update_info' %}" id="info" class="nf-tab-content" style="display: block;">
+                    {% csrf_token %}
+                    <div class="nf-info-section">
+                        <h2 class="nf-section-title">기본 정보</h2>
+                        <div class="nf-form-group">
+                            <label for="nickname_info" class="nf-label">닉네임</label>
+                            <input type="text" id="nickname_info" name="nickname" class="nf-input" value="{{ user.nickname }}">
+                        </div>
+                        <div class="nf-form-group">
+                            <label for="name" class="nf-label">이름</label>
+                            <input type="text" id="name" name="name" class="nf-input" value="{{ user.name }}">
+                        </div>
+                        <div class="nf-form-group">
+                            <label for="phone" class="nf-label">전화번호</label>
+                            <input type="tel" id="phone" name="phone" class="nf-input" value="{{ user.user_profile.phone }}">
+                        </div>
+                        <div class="nf-form-group">
+                            <label for="birthday" class="nf-label">생년월일</label>
+                            <input type="date" id="birthday" name="birthday" class="nf-input" value="{{ user.user_profile.birthday|date:'Y-m-d' }}">
+                        </div>
+                        <div class="nf-form-group">
+                            <label class="nf-label">성별</label>
+                            <div class="radio">
+                                <div class="radio__1">
+                                    <input type="radio" id="gender-male" name="gender" value="male" {% if user.user_profile.gender == 'male' %}checked{% endif %}>
+                                    <label for="gender-male"></label>
+                                    <span class="radio-text">남성</span>
+                                </div>
+                                <div class="radio__2">
+                                    <input type="radio" id="gender-female" name="gender" value="female" {% if user.user_profile.gender == 'female' %}checked{% endif %}>
+                                    <label for="gender-female"></label>
+                                    <span class="radio-text">여성</span>
+                                </div>
+                                <div class="radio__2">
+                                    <input type="radio" id="gender-other" name="gender" value="other" {% if user.user_profile.gender == 'other' %}checked{% endif %}>
+                                    <label for="gender-other"></label>
+                                    <span class="radio-text">기타</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="nf-form-group">
+                            <label for="job" class="nf-label">직업</label>
+                            <select id="job" name="job" class="nf-input">
+                                <option value="">선택하세요</option>
+                                {% for value, label in job_choices %}
+                                    <option value="{{ value }}" {% if user.user_profile.job == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="nf-form-group">
+                            <label for="address" class="nf-label">주소</label>
+                            <input type="text" id="address" name="address" class="nf-input" value="{{ user.user_profile.address }}">
+                        </div>
+                        <div class="nf-form-actions">
+                            <button type="submit" class="nf-btn nf-btn-save-profile">변경사항 저장</button>
+                        </div>
+                    </div>
+                </form>
+                <!-- Setting 탭 내용 -->
+                <div id="setting" class="nf-tab-content" style="display: none;">
+                    <div class="nf-account-section">
+                        <div class="nf-form-group nf-form-group-with-button">
+                            <label for="user_id" class="nf-label">ID</label>
+                            <div class="nf-input-button-wrapper">
+                                <input type="text" id="user_id" name="user_id" class="nf-input" value="{{ user.username }}" readonly>
+                            </div>
+                        </div>
+                        <div class="nf-form-group nf-form-group-with-button">
+                            <label for="email" class="nf-label">Email</label>
+                            <div class="nf-input-button-wrapper">
+                                <input type="email" id="email" name="email" class="nf-input" value="{{ user.email }}" readonly>
+                                <button type="button" class="nf-btn nf-btn-email-change" id="changeEmailBtn">이메일 변경하기</button>
+                            </div>
+                            <!-- 새 이메일 입력란 + 인증 버튼 (초기에는 hidden) -->
+                            <div class="nf-input-button-wrapper" id="emailChangeArea" style="display: none; margin-top:10px;">
+                                <input type="email" id="new_email" name="new_email" class="nf-input" placeholder="새 이메일을 입력하세요">
+                                <button type="button" class="nf-btn nf-btn-email-verify" id="verifyEmailBtn">인증하기</button>
+                            </div>
+                        </div>
+                        <div class="nf-form-group">
+                            <label class="nf-label">비밀번호</label>
+                            <a href="{% url 'accounts:password_change' %}" class="nf-btn-change-password">비밀번호 변경</a>
+                        </div>
+                        <hr class="nf-divider">
+                        <!-- 알림 설정 섹션 -->
+                        <form method="POST" action="{% url 'accounts:update_marketing' %}">
+                            {% csrf_token %}
+                            <div class="nf-notification-section">
+                                <h2 class="nf-section-title">알림 설정</h2>
+                                <!-- 이메일 수신 설정 -->
+                                <div class="nf-form-group nf-toggle-group">
+                                    <div class="nf-toggle-header">
+                                        <label for="email_notifications" class="nf-label">이메일 수신 설정</label>
+                                        <label class="nf-switch">
+                                            <input type="checkbox" id="email_notifications" name="email_notifications"
+                                                    {% if user.terms.agree_marketing %}checked{% endif %}>
+                                            <span class="nf-slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="nf-toggle-desc">서비스 이용 안내 및 주요 공지를 이메일로 받아볼 수 있어요.</p>
+                                </div>
+                                <!-- 마케팅 알림 설정 -->
+                                <div class="nf-form-group nf-toggle-group">
+                                    <div class="nf-toggle-header">
+                                        <label for="marketing_notifications" class="nf-label">마케팅 알림 설정</label>
+                                        <label class="nf-switch">
+                                            <input type="checkbox" id="marketing_notifications" name="agree_marketing"
+                                                    {% if user.terms.agree_marketing %}checked{% endif %}>
+                                            <span class="nf-slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="nf-toggle-desc">이벤트, 할인 혜택 등 마케팅 정보를 받아볼 수 있어요.</p>
+                                </div>
+                                <!-- 사용자 활동 알림 -->
+                                <div class="nf-form-group nf-toggle-group">
+                                    <div class="nf-toggle-header">
+                                        <label for="activity_notifications" class="nf-label">사용자 활동 알림</label>
+                                        <label class="nf-switch">
+                                            <input type="checkbox" id="activity_notifications" name="activity_notifications"
+                                                    {% if user.activity_notifications %}checked{% endif %}>
+                                            <span class="nf-slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="nf-toggle-desc">댓글, 좋아요, 멘션 등 내 활동에 대한 알림을 받아볼 수 있어요.</p>
+                                </div>
+                                <!-- 푸시 알림 설정 -->
+                                <div class="nf-form-group nf-toggle-group">
+                                    <div class="nf-toggle-header">
+                                        <label for="push_notifications" class="nf-label">푸시 알림 설정</label>
+                                        <label class="nf-switch">
+                                            <input type="checkbox" id="push_notifications" name="push_notifications"
+                                                    {% if user.push_notifications %}checked{% endif %}>
+                                            <span class="nf-slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="nf-toggle-desc">실시간 알림을 모바일 또는 데스크탑 푸시로 받아볼 수 있어요.</p>
+                                </div>
+                                <div class="nf-form-actions">
+                                    <button type="submit" class="nf-btn nf-btn-save-profile">변경사항 저장</button>
+                                </div>
+                            </div>
+                        </form>
+                        <hr class="nf-divider">
+                        <!-- 최근 로그인 기록 필드 -->
+                        <div class="nf-login-history-section">
+                            <h2 class="nf-section-title">최근 로그인 기록</h2>
+                            <div class="nf-login-history-box">
+                                <p>2025-06-03 15:42 · macOS Safari</p>
+                                <!-- 필요 시 서버 연동으로 동적 생성 가능 -->
+                            </div>
+                        </div>
+                        <!-- 탈퇴 버튼 -->
+                        <div class="nf-account-delete-section">
+                            <!-- 실제 URL은 추후 연결 예정 -->
+                            {% comment %}
+                            <a href="{% url 'accounts:delete_account' %}" class="nf-btn-delete-account">회원 탈퇴하기</a>
+                            {% endcomment %}
+                            <a href="javascript:void(0);" class="nf-btn-delete-account">회원 탈퇴하기</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing 탭 내용 -->
+                <div id="billing" class="nf-tab-content" style="display: none;">
+                    <div class="nf-billing-section">
+                        <h2 class="nf-section-title">결제 정보</h2>
+                        <div class="nf-form-group">
+                            <label for="card_number" class="nf-label">카드 번호</label>
+                            <input type="text" id="card_number" name="card_number" class="nf-input" placeholder="카드 번호를 입력하세요">
+                        </div>
+                        <div class="nf-form-group">
+                            <label for="expiry_date" class="nf-label">만료일</label>
+                            <input type="text" id="expiry_date" name="expiry_date" class="nf-input" placeholder="MM/YY">
+                        </div>
+                        <div class="nf-form-group">
+                            <label for="cvv" class="nf-label">CVV</label>
+                            <input type="text" id="cvv" name="cvv" class="nf-input" placeholder="CVV">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'flo/css/user_setting.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'flo/js/user_setting.js' %}"></script>
+{% endblock %}

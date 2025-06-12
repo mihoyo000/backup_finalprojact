@@ -25,6 +25,7 @@ from django.conf.urls.i18n import i18n_patterns
 
 def home(request):
     return render(request, 'flo/index.html')
+    #return render(request, 'mysite/index.html')
     # return HttpResponse("환영합니다. Django Web 입니다.")
     
 urlpatterns = [
@@ -34,20 +35,12 @@ urlpatterns = [
 urlpatterns += [  # + 꼭 붙이기
     path('', home, name='home'),  # http://localhost:8000/ -> home
     path('admin/', admin.site.urls),
-    # path('accounts/', include('django.contrib.auth.urls')), # ★★★ Django 기본 인증 URL 추가 ★★★
-    # path('multilang/', include('multilang.urls')),
-    # path('tinymce/', include('tinymce.urls')), # django-tinymce 관리자 페이지용 URL
+    path('accounts/', include('accounts.urls')),  # accounts 앱의 URL 추가
+    path('tinymce/', include('tinymce.urls')),  # django-tinymce 관리자 페이지용 URL
     path('flo/', include('flo.urls')),
     path('flo_exam/', include('flo_exam.urls', namespace='flo_exam')), # 플로 프로그램 페이지 URL
 ]
 
 # 이미지는 web 경로를 쓰는데, 이를 허용하겠다.(요청 URL에 이미지를 요청하면 그 이미지를 보여주겠다.)
-# urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# urlpatterns += i18n_patterns(
-#     path('multilang/', include('multilang.urls')),
-# )
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-#urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

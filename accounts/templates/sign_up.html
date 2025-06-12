@@ -1,0 +1,169 @@
+{% extends 'flo/base.html' %}
+{% load static %}
+
+{% block title %}회원가입{% endblock %}
+
+{% block content %}
+<div class="signup-container">
+  <div class="signup-logo-box">
+    <img src="{% static 'flo/images/light/header/light-logo.png' %}" alt="FL0 로고">
+  </div>
+  <div class="right-box">
+    <div class="form-box">
+      <h1 class="signup-title">회원가입</h1>
+      <form method="post" action="{% url 'accounts:signup' %}">
+        {% csrf_token %}
+
+        <!-- ID -->
+        <div class="form-group">
+          <label for="username">ID</label>
+          <div class="input-btn-wrap">
+            <input type="text" id="username" name="username" placeholder="Enter your ID" required value="{{ form.username.value|default_if_none:'' }}">
+            <button type="button" class="small-btn" onclick="checkDuplicate('username')">중복확인</button>
+          </div>
+          {% if form.username.errors %}
+            <div class="error-message">{{ form.username.errors }}</div>
+          {% else %}
+            <div class="error-message"></div>
+          {% endif %}
+        </div>
+
+        <!-- 이름 -->
+        <div class="form-group">
+          <label for="name">이름</label>
+          <div class="input-btn-wrap">
+            <input type="text" id="name" name="name" placeholder="Enter your name" required value="{{ form.name.value|default_if_none:'' }}">
+          </div>
+          {% if form.name.errors %}
+            <div class="error-message">
+              {% for error in form.name.errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="error-message"></div>
+          {% endif %}
+        </div>
+
+        <!-- 닉네임 -->
+        <div class="form-group">
+          <label for="nickname">닉네임</label>
+          <div class="input-btn-wrap">
+            <input type="text" id="nickname" name="nickname" placeholder="Enter your nickname" required value="{{ form.nickname.value|default_if_none:'' }}">
+            <button type="button" class="small-btn" onclick="checkDuplicate('nickname')">중복확인</button>
+          </div>
+          {% if form.nickname.errors %}
+            <div class="error-message">{{ form.nickname.errors }}</div>
+          {% else %}
+            <div class="error-message"></div>
+          {% endif %}
+        </div>
+
+        <!-- 비밀번호 -->
+        <div class="form-group">
+          <label for="password1">비밀번호</label>
+          <div class="input-btn-wrap">
+            <input type="password" id="password1" name="password1" placeholder="Enter your password" required>
+            <div class="repw-strength weak">강도: 약함</div>
+          </div>
+          {% if form.password1.errors %}
+            <div class="error-message">{{ form.password1.errors }}</div>
+          {% else %}
+            <div class="error-message"></div>
+          {% endif %}
+        </div>
+
+        <!-- 비밀번호 확인 -->
+        <div class="form-group">
+          <label for="password2">비밀번호 확인</label>
+          <div class="input-btn-wrap">
+            <input type="password" id="password2" name="password2" placeholder="Confirm your password" required>
+          </div>
+          <div class="password-match-message"></div>
+          {% if form.password2.errors %}
+            <div class="error-message">{{ form.password2.errors }}</div>
+          {% else %}
+            <div class="error-message"></div>
+          {% endif %}
+        </div>
+
+        <!-- 이메일 -->
+        <div class="form-group">
+          <label for="email_id">Email</label>
+          <div class="email-wrap">
+              {{ form.email_id }}  <!-- 텍스트 필드 -->
+              <span>@</span>
+              {{ form.email_domain }}  <!-- 드롭다운 -->
+          </div>
+          {% if form.email_id.errors %}
+            <div class="error-message">{{ form.email_id.errors }}</div>
+          {% else %}
+            <div class="error-message"></div>
+          {% endif %}
+        </div>
+
+        <!-- 약관 -->
+        <div class="all-agree">
+          <input type="checkbox" id="all-agree" class="agree-checkbox">
+          <label for="all-agree">모두 확인했으며 동의합니다</label>
+        </div>
+        <!-- {SIWOO} 필수 선택 내용 섞은 이유 = 마케팅 동의 자연스럽게 선택처리 유도하려고 필수/선택 내용 섞어두었습니다! -->
+        <div class="agreement">
+          <ul>
+            <li class="agreement-item" id="item-age-confirm">
+              <input type="checkbox" id="agree1" name="agree_age_confirm" class="agree-checkbox" required>
+              <label for="agree1">[필수] 만 14세 이상 여부 확인</label>
+              <button type="button" class="more-view-button" data-bs-toggle="modal" data-bs-target="#terms-age-confirm" aria-label="상세보기"></button>
+            </li>
+            <li class="agreement-item" id="item-service">
+              <input type="checkbox" id="agree2" name="agree_service" class="agree-checkbox" required>
+              <label for="agree2">[필수] 서비스 이용약관 동의</label>
+              <button type="button" class="more-view-button" data-bs-toggle="modal" data-bs-target="#terms-service" aria-label="상세보기"></button>
+            </li>
+            <li class="agreement-item" id="item-privacy">
+              <input type="checkbox" id="agree3" name="agree_privacy" class="agree-checkbox" required>
+              <label for="agree3">[필수] 개인정보 수집 및 이용 동의</label>
+              <button type="button" class="more-view-button" data-bs-toggle="modal" data-bs-target="#terms-privacy" aria-label="상세보기"></button>
+            </li>
+            <li class="agreement-item" id="item-ai-data">
+              <input type="checkbox" id="agree4" name="agree_ai_data" class="agree-checkbox" required>
+              <label for="agree4">[필수] AI 학습용 데이터 수집 및 활용 동의</label>
+              <button type="button" class="more-view-button" data-bs-toggle="modal" data-bs-target="#terms-ai-data" aria-label="상세보기"></button>
+            </li>
+            <li class="agreement-item" id="item-marketing">
+              <input type="checkbox" id="agree5" name="agree_marketing" class="agree-checkbox">
+              <label for="agree5">[선택] 마케팅 정보 수신 동의 (이메일/SMS/푸시 등)</label>
+              <button type="button" class="more-view-button" data-bs-toggle="modal" data-bs-target="#terms-marketing" aria-label="상세보기"></button>
+            </li>
+            <li class="agreement-item" id="item-outsourcing">
+              <input type="checkbox" id="agree6" name="agree_outsourcing" class="agree-checkbox" required>
+              <label for="agree6">[필수] 개인정보 처리위탁 동의</label>
+              <button type="button" class="more-view-button" data-bs-toggle="modal" data-bs-target="#terms-outsourcing" aria-label="상세보기"></button>
+            </li>
+          </ul>
+        </div>
+        <button type="submit" class="submit-btn">가입하기</button>
+        <button type="button" class="google-btn" aria-label="Google 로그인">
+          <span class="google-icon"></span>
+          <span>Sign in with Google</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% include 'terms/age_confirm.html' %}
+{% include 'terms/service.html' %}
+{% include 'terms/privacy.html' %}
+{% include 'terms/ai_data.html' %}
+{% include 'terms/marketing.html' %}
+{% include 'terms/outsourcing.html' %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'flo/css/signup.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'flo/js/signup.js' %}"></script>
+{% endblock %}

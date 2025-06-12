@@ -3,10 +3,10 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 from .models import (
-    Category, MajorCategory, MediumCategory, MinorCategory, # 프록시 모델 임포트
-    Post, Attachment ,Comment, FAQCategory, FAQItem
+    Category, MajorCategory, MediumCategory, MinorCategory,
+    Post, Attachment, Comment, FAQCategory, FAQItem
 )
-from .forms import AttachmentForm # ★★★ AttachmentForm 임포트 ★★★
+from .forms import AttachmentForm
 
 # --- 대분류 관리자 ---
 @admin.register(MajorCategory)
@@ -68,7 +68,6 @@ class MediumCategoryAdmin(admin.ModelAdmin):
         except Category.DoesNotExist:
             return 0
 
-
 # --- 소분류 관리자 ---
 @admin.register(MinorCategory)
 class MinorCategoryAdmin(admin.ModelAdmin):
@@ -113,7 +112,6 @@ class OriginalCategoryAdmin(admin.ModelAdmin):
     
     @admin.display(description='레벨')
     def get_level_display(self, obj):
-        # Category 모델에 get_level() 메서드가 정의되어 있어야 함
         if hasattr(obj, 'get_level'):
             return obj.get_level()
         return '-'
@@ -127,13 +125,12 @@ class AttachmentAdmin(admin.ModelAdmin):
 
     def post_link(self, obj):
         if obj.post:
-            link = reverse("admin:flo_post_change", args=[obj.post.id]) # 앱 이름과 모델 이름 확인
+            link = reverse("admin:flo_post_change", args=[obj.post.id])
             return format_html('<a href="{}">{}</a>', link, obj.post.title)
         return "-"
     post_link.short_description = "게시글"
     post_link.admin_order_field = 'post__title'
 
-# PostAdmin에서 Attachment를 인라인으로 관리할 때
 class AttachmentInline(admin.TabularInline):
     model = Attachment
     form = AttachmentForm
@@ -148,36 +145,27 @@ class AttachmentInline(admin.TabularInline):
         return obj.filename if obj.pk else "-"
     filename_display.short_description = "파일명"
 
-# --- PostAdmin 수정 ---
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'get_category_display_names_admin', 'author', 'created_at', 'is_notice')
-    # ManyToManyField는 list_filter에 직접적인 경로로 필터링하기 복잡합니다.
-    # 'categories' 필드 자체로 필터링하거나 (선택 위젯 제공), 커스텀 필터 구현 필요.
-    list_filter = ('is_notice', 'categories', 'created_at', 'author') # 'categories'로 변경
-    search_fields = ('title', 'content', 'author__username', 'categories__name') # 'categories__name'으로 변경
-    # autocomplete_fields에서 'category' 제거. ManyToManyField에는 filter_horizontal/vertical 사용
-    autocomplete_fields = ['author'] # 'category' 제거
-    filter_horizontal = ('categories', 'likes') # 'categories'를 filter_horizontal로 관리
-    inlines = [AttachmentInline] # Post 수정/추가 페이지에 Attachment 폼을 인라인으로 추가
+    list_filter = ('is_notice', 'categories', 'created_at', 'author')
+    search_fields = ('title', 'content', 'author__username', 'categories__name')
+    autocomplete_fields = ['author']
+    filter_horizontal = ('categories', 'likes')
+    inlines = [AttachmentInline]
 
     @admin.display(description='카테고리(들)')
     def get_category_display_names_admin(self, obj):
-        # Post 모델에 get_category_display_names 메서드가 있어야 함
         if hasattr(obj, 'get_category_display_names'):
             return obj.get_category_display_names()
         return "-"
-    # get_category_display_names_admin.short_description = '카테고리(들)' # @admin.display로 대체
 
-
-# --- CommentAdmin 수정 ---
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('post_title_link', 'author_username_display', 'content_excerpt', 'created_at_formatted')
     readonly_fields = ('post_title_link', 'author_link')
-    # 'post__category' 대신 'post__categories'로 필터링 (또는 Post 자체로 필터링)
-    list_filter = ('created_at', 'author', 'post') # 'post'로 변경 (Post 객체 선택)
-    search_fields = ('content', 'author__username', 'post__title', 'post__categories__name') # 'post__categories__name' 추가
+    list_filter = ('created_at', 'author', 'post')
+    search_fields = ('content', 'author__username', 'post__title', 'post__categories__name')
     autocomplete_fields = ['author', 'post']
 
     def post_title_link(self, obj):
@@ -221,3 +209,5 @@ class FAQItemAdmin(admin.ModelAdmin):
     list_filter = ('category',)
     search_fields = ('question', 'answer')
     list_editable = ('order',)
+
+

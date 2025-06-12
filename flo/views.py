@@ -1,6 +1,6 @@
 # flo/views.py
 import os
-from django.conf import settings # settings.STATIC_URL 사용을 위해 추가
+from django.conf import settings
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -8,18 +8,17 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count, Prefetch
-from django.db.models.functions import Lower, Coalesce # ★★★ Lower, Coalesce 임포트 확인/추가 ★★★
-from django.db.models import Value                     # ★★★ Value 임포트 확인/추가 (Coalesce와 함께 사용 시) ★★★
+from django.db.models.functions import Lower, Coalesce
+from django.db.models import Value
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.contrib import messages
 from .models import Post, Attachment, Comment, Category, FAQCategory, FAQItem, Profile
 from .forms import PostForm, AttachmentForm, CommentForm
 from django.forms import inlineformset_factory
-
-from django.core.serializers.json import DjangoJSONEncoder # 추가
-import json # 추가
+from django.core.serializers.json import DjangoJSONEncoder
+import json
 from django.template.loader import render_to_string
-from itertools import groupby # Python 표준 라이브러리
+from itertools import groupby
 
 def home(request):
     # 인기 게시글 Top 3 가져오기
@@ -29,7 +28,7 @@ def home(request):
     # 2. (좋아요 수 같을 시) 조회수 많은 순
     # 3. (좋아요 수, 조회수 같을 시) 최신순
     top_posts = Post.objects.filter(
-        is_notice=False  # 공지사항 제외
+        is_notice=False
     ).annotate(
         num_likes=Count('likes', distinct=True),
         num_comments=Count('comments', distinct=True)
@@ -52,32 +51,38 @@ def home(request):
 
 # --- 로그인 뷰 ---
 def login_view(request):
-    if request.user.is_authenticated: # 이미 로그인한 사용자는 로그인 페이지 접근 불가
-        return redirect('flo:home') # 또는 'flo:study_post_list'
+    if request.user.is_authenticated:
+        return redirect('flo:home')
 
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f'{user.username}님, 로그인되었습니다.'
+                })
             messages.success(request, f'{user.username}님, 로그인되었습니다.')
             next_url = request.GET.get('next')
             return redirect(next_url or 'flo:home')
         else:
-            # 폼 에러 (아이디/비번 틀림 등)는 AuthenticationForm이 처리
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': '아이디 또는 비밀번호가 올바르지 않습니다.'
+                })
             messages.error(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
     else:
         form = AuthenticationForm()
-    # next 파라미터를 템플릿으로 전달하여 로그인 후 원래 가려던 페이지로 이동할 수 있도록 form action에 포함
     return render(request, 'flo/auth/login.html', {'form': form, 'next': request.GET.get('next', '')})
 
-
 # --- 로그아웃 뷰 ---
-@login_required # 로그아웃은 로그인된 사용자만
+@login_required
 def logout_view(request):
-    # POST 요청으로만 로그아웃을 처리하여 CSRF 공격 방지
     if request.method == 'POST':
-        username = request.user.username # 로그아웃 전에 사용자 이름 저장 (메시지용)
+        username = request.user.username
         auth_logout(request)
         messages.info(request, f'{username}님, 성공적으로 로그아웃되었습니다.')
         return redirect('flo:home')

@@ -18,79 +18,9 @@ import random
 import re
 
 
-#-----------삭제 예정 임시 로그인 뷰-----------------------------------------------------------------------------------------------------------------
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from django.contrib.auth import logout as django_logout # Django의 기본 로그아웃 함수
-from django.contrib.auth.models import User # User 모델 사용
-from .forms import TempLoginForm # 방금 만든 임시 로그인 폼
-
-
-def temp_login_view(request):
-    if request.method == 'POST':
-        form = TempLoginForm(request.POST)
-        if form.is_valid():
-            user_id = form.cleaned_data['user_id']
-            try:
-                # 실제 User 모델에서 해당 ID의 사용자를 찾습니다.
-                # 만약 이 사용자가 DB에 미리 생성되어 있어야 합니다.
-                user = User.objects.get(pk=user_id)
-                # 세션에 사용자 ID 저장 (실제 로그인 메커니즘과는 다름)
-                request.session['temp_user_id'] = user.id 
-                messages.success(request, f"사용자 ID {user.id} ({user.username})로 임시 로그인되었습니다.")
-                # 로그인 후 이동할 페이지 (예: PDF 업로드 페이지 또는 홈페이지)
-                return redirect(reverse('flo_exam:upload_page')) 
-            except User.DoesNotExist:
-                messages.error(request, f"사용자 ID {user_id}를 찾을 수 없습니다.")
-            except Exception as e:
-                messages.error(request, f"임시 로그인 중 오류 발생: {e}")
-    else:
-        form = TempLoginForm()
-    
-    # 현재 임시 로그인된 사용자 정보 표시 (선택 사항)
-    temp_user_info = None
-    if 'temp_user_id' in request.session:
-        try:
-            logged_in_user = User.objects.get(pk=request.session['temp_user_id'])
-            temp_user_info = f"현재 임시 로그인: {logged_in_user.username} (ID: {logged_in_user.id})"
-        except User.DoesNotExist:
-            del request.session['temp_user_id'] # 유효하지 않은 ID면 세션에서 제거
-
-    return render(request, 'flo_exam/temp_login.html', {'form': form, 'temp_user_info': temp_user_info})
-
-def temp_logout_view(request):
-    # Django의 기본 세션 데이터를 건드리지 않고, 우리 임시 세션만 제거
-    if 'temp_user_id' in request.session:
-        del request.session['temp_user_id']
-        messages.success(request, "임시 로그아웃되었습니다.")
-    else:
-        messages.info(request, "현재 임시 로그인 상태가 아닙니다.")
-    # 로그아웃 후 이동할 페이지
-    return redirect(reverse('flo_exam:temp_login')) 
-    # 또는 return redirect('/')
-# --------------------------------
-
-# --- 기존 뷰 함수들에서 request.user 대신 임시 사용자 사용하도록 수정 (예시) ---
-# 이 부분은 나중에 실제 request.user로 쉽게 바꿀 수 있도록 준비합니다.
-def get_current_temp_user(request):
-    """세션에서 임시 사용자 ID를 가져와 User 객체를 반환하거나 None을 반환합니다."""
-    if 'temp_user_id' in request.session:
-        try:
-            return User.objects.get(pk=request.session['temp_user_id'])
-        except User.DoesNotExist:
-            del request.session['temp_user_id'] # 잘못된 ID면 세션에서 제거
-    return None # Django의 request.user가 익명 사용자일 때 User 객체가 아닌 AnonymousUser를 반환하는 것과 유사하게
-
-
-
-
-
-
-#----------------여기까지 삭제예정 로그인 뷰------------------------------------------------------------------------------------------------------------
-
 # 1. 초기 PDF 업로드 페이지 뷰
 # ==============================================================================
-'''
+
 def upload_page_view(request):
     """
     사용자가 PDF 파일을 업로드하고 시험 생성 옵션을 선택하는 페이지를 담당합니다.
@@ -122,53 +52,6 @@ def upload_page_view(request):
         # 템플릿에서 사용할 다른 변수들 (예: 페이지 제목, 초기 로봇 이미지 등) 추가 가능
     }
     return render(request, 'flo_exam/upload_page.html', context)
-'''
-#--------------------------------------------------------------------------------------------------------------삭제 예정 코드
-def upload_page_view(request):
-    current_user = get_current_temp_user(request) # 임시 사용자 가져오기
-    # form = PDFUploadForm(user=current_user) # 폼 초기화 시 전달 (기존 로직 활용)
-    # ... (나머지 로직에서 request.user 대신 current_user 사용) ...
-    # if request.method == 'POST':
-    #     form = PDFUploadForm(request.POST, request.FILES, user=current_user)
-    #     if form.is_valid():
-    #         exam_doc_instance = form.save(commit=False)
-    #         if current_user: # 임시 사용자가 있다면 author로 설정
-    #             exam_doc_instance.author = current_user
-    #         # ...
-    # else:
-    #     form = PDFUploadForm(user=current_user)
-    # context = {'form': form, 'current_user_for_template': current_user} # 템플릿 전달용
-    # ...
-    # (이전 답변의 upload_page_view를 참고하여 current_user를 사용하도록 수정)
-    # 가장 간단하게는, 이전에 request.user.is_authenticated 를 사용하던 곳을
-    # if current_user: 로, request.user를 사용하던 곳을 current_user로 바꿉니다.
-    
-    # 일단은 이전 upload_page_view 코드를 유지하고,
-    # author, user 필드 할당 부분만 아래와 같이 수정한다고 가정합니다.
-    # 실제로는 form 초기화 시에도 user를 넘겨주는 것이 좋습니다.
-    if request.method == 'POST':
-        form = PDFUploadForm(request.POST, request.FILES, user=current_user) # 폼에도 전달
-        if form.is_valid():
-            exam_doc_instance = form.save(commit=False)
-            if current_user: # 임시 사용자가 있다면 author로 설정
-                exam_doc_instance.author = current_user
-            exam_doc_instance.processing_status = 'PENDING'
-            exam_doc_instance.save()
-            messages.info(request, f"'{exam_doc_instance.title}'에 대한 문제 생성을 시작합니다.")
-            return redirect(reverse('flo_exam:loading_page_entry', args=[exam_doc_instance.id]))
-        else:
-            messages.error(request, "입력 내용을 다시 확인해주세요.")
-    else:
-        form = PDFUploadForm(user=current_user) # 폼에도 전달
-    
-    context = {'form': form, 'current_user_for_template': current_user}
-    return render(request, 'flo_exam/upload_page.html', context)                            # 삭제예정코드
-#----------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
 
 # 2. SPA(단일 페이지 애플리케이션) 진입점 및 컨테이너 페이지 뷰
 # ==============================================================================
@@ -322,13 +205,6 @@ def ajax_process_pdf_view(request, exam_document_id):
 @require_POST
 @transaction.atomic
 def ajax_process_scoring_view(request, generated_exam_id):
-    current_user = get_current_temp_user(request) # 임시 사용자 가져오기------------------------------삭제예정코드
-    generated_exam = get_object_or_404(GeneratedExam, pk=generated_exam_id)
-    
-    current_user_session = UserExamSession.objects.create(
-        generated_exam=generated_exam,
-        user=current_user
-    ) #----------------------------------------------------------------------------------------------여기까지 삭제예정 코드
     """
     JavaScript(AJAX)로부터 사용자의 답안을 받아 채점하고 결과를 JSON으로 반환합니다.
     """

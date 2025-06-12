@@ -1,0 +1,272 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+
+
+.modal-content.login-box {
+  position: relative;
+  width: 500px;
+  background: transparent;
+  border-radius: 20px;
+  border: 2px solid rgb(255, 255, 255);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 10 rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content.login-box .modal-header {
+  position: relative;
+  border-bottom: none;
+  padding: 2rem 1.5rem 1rem;
+}
+
+.modal-content.login-box .modal-title {
+  font-size: 2em;
+  color: #ffffff;
+  text-align: center;
+  width: 100%;
+  margin: 0;
+}
+
+.modal-content.login-box .btn-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  margin: 10px;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  opacity: 1;
+  z-index: 1;
+}
+
+.modal-content.login-box .modal-body {
+  padding: 1.5rem 2.5rem 1.5rem;
+  flex: 1;
+}
+
+
+/* 인풋 박스 크기 수정 하세용 ~ */
+.input-box {   
+  position: relative;
+  width: 100%;
+  margin: 35px 0;
+  border-bottom: 1px solid #ffffff;
+}
+.input-box label {
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  transform: translateY(-50%);
+  font-size: 1.3em;
+  color: #ffffff;
+  pointer-events: none;
+  transition: .5s;
+}
+.input-box input:focus  ~ label,
+.input-box input:valid  ~ label {
+  top:-5px;
+}
+.input-box input {
+  width: 100%;
+  height: 50px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1em;
+  color: #ffffff;
+  padding: 0 35px 0 5px;
+  box-sizing: border-box;
+}
+.input-box .icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  color: #ffffff;
+  transform: translateY(-50%);
+}
+.remember-forgot {
+  margin: -15px 0 15px;
+  font-size: .9em;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+}
+.remember-forgot label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.remember-forgot label input {
+  margin: 0;
+}
+.remember-forgot a {
+  color: #ffffff;
+  text-decoration: none;
+}
+.remember-forgot a:hover {
+  text-decoration: underline;
+}
+.modal-content.login-box button[type="submit"] {
+  width: 100%;
+  height: 40px;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 1em;
+  color: #000000;
+  font-weight: 500;
+  margin-top: 20px;
+}
+.register-link {
+  font-size: .9em;
+  color: #ffffff;
+  text-align: center;
+  margin: 25px 0 15px;
+}
+.register-link p a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.register-link a {
+  margin-left: 15px;
+}
+.register-link p a:hover {
+  text-decoration: underline;
+}
+@media (max-width:600px) {
+  .login-box {
+    width:100%;
+    height:100vh;
+    border:none;
+    border-radius:0;
+  }
+  .input-box {
+    width:290px;
+  }
+}
+
+.google-login-form {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.google-btn {
+  padding: 10px 20px;
+  background-color: white;
+  color: #444;
+  border: none;
+  border-radius: 40px;
+  font-size: 0.95em;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.google-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.gsi-material-button {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: WHITE;
+  background-image: none;
+  border: 1px solid #747775;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: #1f1f1f;
+  cursor: pointer;
+  font-family: 'Roboto', arial, sans-serif;
+  font-size: 14px;
+  height: 40px;
+  letter-spacing: 0.25px;
+  outline: none;
+  overflow: hidden;
+  padding: 0 12px;
+  position: relative;
+  text-align: center;
+  -webkit-transition: background-color .218s, border-color .218s, box-shadow .218s;
+  transition: background-color .218s, border-color .218s, box-shadow .218s;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 400px;
+  min-width: min-content;
+}
+
+.gsi-material-button .gsi-material-button-icon {
+  height: 20px;
+  margin-right: 12px;
+  min-width: 20px;
+  width: 20px;
+}
+
+.gsi-material-button .gsi-material-button-content-wrapper {
+  -webkit-align-items: center;
+  align-items: center;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  height: 100%;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.gsi-material-button .gsi-material-button-contents {
+  flex-grow: 1;
+  font-family: 'Roboto', arial, sans-serif;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.gsi-material-button .gsi-material-button-state {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.gsi-material-button:disabled {
+  cursor: default;
+  background-color: #ffffff61;
+  border-color: #1f1f1f1f;
+}
+
+.gsi-material-button:disabled .gsi-material-button-contents {
+  opacity: 38%;
+}
+
+.gsi-material-button:disabled .gsi-material-button-icon {
+  opacity: 38%;
+}
+
+.gsi-material-button:not(:disabled):active .gsi-material-button-state, 
+.gsi-material-button:not(:disabled):focus .gsi-material-button-state {
+  background-color: #303030;
+  opacity: 12%;
+}
+
+.gsi-material-button:not(:disabled):hover {
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
+}
+
+.gsi-material-button:not(:disabled):hover .gsi-material-button-state {
+  background-color: #303030;
+  opacity: 8%;
+}
