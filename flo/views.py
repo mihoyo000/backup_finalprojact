@@ -217,7 +217,7 @@ def ajax_get_comments(request, post_pk):
 # 기존 study_post_detail 뷰는 초기 로드 시 댓글 정렬을 적용하도록 수정
 def study_post_detail(request, pk):
     post = get_object_or_404(
-        Post.objects.select_related('author').prefetch_related('likes', 'categories'), # comments는 아래에서 정렬
+        Post.objects.select_related('author__profile').prefetch_related('likes', 'categories'),
         pk=pk
     )
     comment_form = CommentForm()
@@ -226,25 +226,38 @@ def study_post_detail(request, pk):
     post.views += 1
     post.save(update_fields=['views'])
 
-    # 초기 댓글 정렬 (기본: 등록순)
-    # URL 파라미터로 sort를 받을 수도 있지만, AJAX로 처리하므로 초기엔 고정하거나 세션/쿠키로 기억
-    initial_sort_order = request.GET.get('sort', 'created_at') # 또는 'created_at' 고정
+    # --- 댓글/답글 조회 로직 (핵심 수정 부분) ---
+    # 1. 최상위 댓글만 가져옵니다 (parent가 없는 댓글).
+    top_level_comments_qs = post.comments.filter(parent__isnull=True).select_related(
+        'author__profile'
+    )
+
+    # 2. prefetch_related를 사용하여 각 댓글에 달린 답글(replies)들을 미리 가져와 N+1 문제를 방지합니다.
+    #    답글들도 작성자와 프로필 정보를 포함하도록 prefetch 내부에서 select_related를 사용합니다.
+    top_level_comments_qs = top_level_comments_qs.prefetch_related(
+        Prefetch(
+            'replies', # models.py의 related_name='replies'
+            queryset=Comment.objects.select_related('author__profile').order_by('created_at'),
+            to_attr='prefetched_replies' # 템플릿에서 사용할 속성 이름
+        )
+    )
+    
+    # 3. 최상위 댓글 정렬
+    initial_sort_order = request.GET.get('sort', 'created_at')
     if initial_sort_order == '-created_at':
-        comments = post.comments.order_by('-created_at').select_related('author__profile')
+        comments = top_level_comments_qs.order_by('-created_at')
     else:
-        comments = post.comments.order_by('created_at').select_related('author__profile')
+        comments = top_level_comments_qs.order_by('created_at')
+    # --- 여기까지 댓글/답글 조회 로직 수정 ---
 
-
-    is_liked = False
-    if request.user.is_authenticated and post.likes.filter(pk=request.user.pk).exists():
-        is_liked = True
+    is_liked = request.user.is_authenticated and post.likes.filter(pk=request.user.pk).exists()
 
     context = {
         'post': post,
-        'comments': comments, # 정렬된 댓글 전달
+        'comments': comments, # 이제 prefetch된 답글을 포함한 댓글 목록이 전달됩니다.
         'comment_form': comment_form,
         'is_liked': is_liked,
-        'current_sort_order': initial_sort_order, # 현재 정렬 상태 전달 (JS에서 초기 active 클래스 설정용)
+        'current_sort_order': initial_sort_order,
     }
     return render(request, 'flo/study_post/study_post_detail.html', context)
 
@@ -746,7 +759,7 @@ def study_post_comment_delete(request, pk):
             return JsonResponse({
                 'status': 'success',
                 'deleted_comment_id': comment_id, # 삭제된 댓글 ID 전달
-                'comment_count': post.comment_count # 최신 댓글 수 전달
+                'comment_count': post.comment_count,  # 최신 댓글 수 전달
             })
         
         messages.success(request, '댓글이 삭제되었습니다.')
@@ -754,6 +767,61 @@ def study_post_comment_delete(request, pk):
     
     # POST 요청이 아닐 경우 (AJAX는 POST로 보내므로 이 경우는 드묾)
     return HttpResponseBadRequest("잘못된 요청입니다. POST 요청만 허용됩니다.")
+
+# ▼▼▼ 답글 관련 뷰 (새로 추가하거나 아래 내용으로 교체) ▼▼▼
+
+@login_required
+def study_post_reply_create(request, pk): # pk는 부모 댓글의 ID
+    parent_comment = get_object_or_404(Comment, pk=pk)
+    post = parent_comment.post
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            reply = form.save(commit=False)
+            reply.post = post
+            reply.author = request.user
+            reply.parent = parent_comment # ★ 부모 댓글 설정 ★
+            reply.save()
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                # 프로필 정보 가져오기
+                author_display_name = "Unknown"
+                author_profile_image_url = None
+                has_custom_profile_image = False
+                try:
+                    profile = reply.author.profile
+                    author_display_name = profile.get_display_name
+                    has_custom_profile_image = profile.has_custom_profile_image
+                    if has_custom_profile_image:
+                        author_profile_image_url = profile.get_profile_image_url
+                except Profile.DoesNotExist:
+                    author_display_name = reply.author.username
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'reply_id': reply.id,
+                    'parent_id': parent_comment.id,
+                    'author_display_name': author_display_name,
+                    'author_profile_image_url': author_profile_image_url,
+                    'has_custom_profile_image': has_custom_profile_image,
+                    'content': reply.content,
+                    'created_at': reply.created_at.strftime('%Y-%m-%d %H:%M'),
+                    'comment_count': post.comment_count,
+                    # 답글에 대한 수정/삭제 URL도 전달
+                    'edit_url': reverse('flo:study_post_comment_edit', args=[reply.pk]),
+                    'delete_url': reverse('flo:study_post_comment_delete', args=[reply.pk]),
+                })
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+    
+    return redirect(post.get_absolute_url())
+
+# 답글의 수정과 삭제는 기존 댓글의 뷰/URL을 공유하는 것이 효율적입니다.
+# 따라서 별도의 reply_edit, reply_delete 뷰는 만들 필요가 없습니다.
+# urls.py에서도 답글 수정/삭제 URL을 지우고, 템플릿에서 
+# 댓글과 답글 모두 study_post_comment_edit/delete를 사용하도록 하면 됩니다.
+# (이전 답변의 템플릿 코드는 이미 그렇게 되어 있습니다.)
 
 
 # FAQ 목록 (faq.html)

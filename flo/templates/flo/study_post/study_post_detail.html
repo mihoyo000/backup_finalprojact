@@ -185,8 +185,13 @@
                     <p class="comment-content-text" id="comment-text-{{comment.id}}">{{ comment.content|linebreaksbr }}</p>
                     {% if request.user.is_authenticated and request.user == comment.author %}
                     <div class="comment-item-actions">
-                        <button class="btn-link-style edit-comment" data-comment-id="{{ comment.id }}">수정</button>
-                        <button class="btn-link-style delete-comment" data-comment-id="{{ comment.id }}" data-delete-url="{% url 'flo:study_post_comment_delete' comment.pk %}">삭제</button>
+                        {% if request.user.is_authenticated and request.user == comment.author %}
+                            <button class="btn-link-style edit-comment" data-comment-id="{{ comment.id }}">수정</button>
+                            <button class="btn-link-style delete-comment" data-comment-id="{{ comment.id }}" data-delete-url="{% url 'flo:study_post_comment_delete' comment.pk %}">삭제</button>
+                        {% endif %}
+                        {% if user.is_authenticated %}
+                            <button class="btn-link-style reply-comment-btn" data-comment-id="{{ comment.id }}">답글</button>
+                        {% endif %}
                     </div>
                     <form id="edit-comment-form-{{comment.id}}" class="edit-comment-form" style="display:none;" data-edit-url="{% url 'flo:study_post_comment_edit' comment.pk %}">
                         {% csrf_token %}
@@ -197,6 +202,61 @@
                         </div>
                     </form>
                     {% endif %}
+
+                    {# --- ▼▼▼ 답글 목록 및 답글 폼 추가 ▼▼▼ --- #}
+                    <div class="replies-container">
+                        {# 답글 목록을 담을 ul #}
+                        <ul class="reply-list" id="reply-list-for-comment-{{ comment.id }}">
+                            {# view에서 prefetch한 답글들을 순회 #}
+                            {% for reply in comment.prefetched_replies %}
+                            <li id="comment-{{ reply.id }}" class="reply-item-wrapper"> {# ID는 comment-X 형식 유지 #}
+                                <div class="comment-author-meta">
+                                    <span class="reply-arrow">ㄴ</span> {# 답글임을 나타내는 화살표 #}
+                                    <div class="avatar-wrapper commenter-avatar-wrapper">
+                                        {% if reply.author.profile.has_custom_profile_image %}
+                                            <img src="{{ reply.author.profile.get_profile_image_url }}" alt="..." class="avatar-img">
+                                        {% else %}
+                                            <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="..." class="avatar-img default-avatar">
+                                        {% endif %}
+                                    </div>
+                                    <div class="comment-author-details">
+                                        <strong class="commenter-name">{{ reply.author.profile.get_display_name }}</strong>
+                                        <span class="comment-date">{{ reply.created_at|date:"Y-m-d H:i" }}</span>
+                                    </div>
+                                </div>
+                                <p class="comment-content-text" id="comment-text-{{reply.id}}">{{ reply.content|linebreaksbr }}</p>
+                                {% if request.user.is_authenticated and request.user == reply.author %}
+                                <div class="comment-item-actions">
+                                    {# 답글의 수정/삭제는 기존 Comment 수정/삭제 뷰를 사용 #}
+                                    <button class="btn-link-style edit-comment" data-comment-id="{{ reply.id }}">수정</button>
+                                    <button class="btn-link-style delete-comment" data-comment-id="{{ reply.id }}" data-delete-url="{% url 'flo:study_post_comment_delete' reply.pk %}">삭제</button>
+                                </div>
+                                <form id="edit-comment-form-{{reply.id}}" class="edit-comment-form" style="display:none;" data-edit-url="{% url 'flo:study_post_comment_edit' reply.pk %}">
+                                    {% csrf_token %}
+                                    <textarea name="content" class="form-control" rows="2">{{ reply.content }}</textarea>
+                                    <div class="edit-form-actions">
+                                        <button type="submit" class="btn btn-primary btn-sm">수정 완료</button>
+                                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">취소</button>
+                                    </div>
+                                </form>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+
+                        {# 각 댓글 아래에 숨겨진 답글 작성 폼 #}
+                        {% if user.is_authenticated %}
+                        <form id="reply-form-for-comment-{{ comment.id }}" method="post" action="{% url 'flo:study_post_reply_create' comment.pk %}" class="reply-form" style="display:none;">
+                            {% csrf_token %}
+                            <div class="comment-form-input-area">
+                                <textarea name="content" class="form-control" rows="2" placeholder="답글을 입력하세요..."></textarea>
+                                <button type="submit" class="btn btn-primary btn-sm">답글 등록</button>
+                                <button type="button" class="btn btn-secondary btn-sm cancel-reply">취소</button>
+                            </div>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {# --- ▲▲▲ 여기까지 추가 ▲▲▲ --- #}
                 </li>
                 {% empty %}
                 <li id="no-comments" class="no-comments-message">아직 댓글이 없습니다.</li>
@@ -321,6 +381,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (commentForm) {
         commentForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            // ★★★ [추가] 1. 등록 확인창 ★★★
+            if (!confirm('댓글을 등록하시겠습니까?')) {
+                return; // 사용자가 '취소'하면 함수 종료
+            }
+
             const formData = new FormData(this);
             const currentUserAvatarElement = document.querySelector('.new-comment-form .current-user-avatar');
             const defaultProfileImageUrl = "{% static 'flo/images/icons/profile/default_profile_light.png' %}"; // 기본 이미지 경로
@@ -331,9 +396,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData,
                 headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(response => response.json())
+            .then(response => { // 에러 처리를 위해 이 부분을 좀 더 견고하게 만듭니다.
+                if (!response.ok) throw new Error('서버 응답 오류');
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'success') {
+                    // ★★★ [추가] 2. 성공 알림창 ★★★
+                    alert('댓글이 성공적으로 등록되었습니다.');
+
                     const commentList = document.getElementById('comment-list');
                     const noCommentsLi = document.getElementById('no-comments');
                     if (noCommentsLi) noCommentsLi.remove();
@@ -381,12 +452,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                 } else {
-                    alert(data.errors || data.message || '댓글 작성에 실패했습니다.');
+                    // ★★★ [수정] 3. 실패 알림창 ★★★
+                    alert('댓글 등록에 실패했습니다: ' + (data.errors || data.message || '알 수 없는 오류.'));
                 }
             })
             .catch(error => {
                 console.error('Comment submit error:', error); // 이 부분에서 해당 오류가 출력되었을 것입니다.
-                alert('댓글 작성 중 오류가 발생했습니다.');
+                // ★★★ [수정] 4. 예외 발생 시 알림창 ★★★
+                alert('댓글 등록 중 오류가 발생했습니다. 네트워크나 서버 상태를 확인해주세요.');
             });
         });
     }
@@ -415,6 +488,17 @@ document.addEventListener('DOMContentLoaded', function() {
             button.removeEventListener('click', handleDeleteCommentClick); // 기존 리스너 제거
             button.addEventListener('click', handleDeleteCommentClick);
         });
+
+        // ▼▼▼ 답글 관련 버튼 이벤트 바인딩 추가 ▼▼▼
+        commentItemElement.querySelectorAll('.reply-comment-btn').forEach(button => {
+            button.addEventListener('click', handleReplyButtonClick);
+        });
+        commentItemElement.querySelectorAll('.reply-form').forEach(form => {
+            form.addEventListener('submit', handleReplyFormSubmit);
+        });
+        commentItemElement.querySelectorAll('.cancel-reply').forEach(button => {
+            button.addEventListener('click', handleCancelReplyClick);
+        });
     }
 
     // 이벤트 핸들러 함수들 (중복 바인딩 방지 위해 외부로 분리)
@@ -428,6 +512,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleEditFormSubmit(e) {
         e.preventDefault();
+        // ★★★ [추가] 1. 수정 확인창 ★★★
+        if (!confirm('댓글을 수정하시겠습니까?')) {
+            return;
+        }
+
         const commentId = this.id.split('-').pop();
         const formData = new FormData(this);
         fetch(this.dataset.editUrl, {
@@ -438,6 +527,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
+                // ★★★ [추가] 2. 성공 알림창 ★★★
+                alert('댓글이 성공적으로 수정되었습니다.');
+
                 document.getElementById(`comment-text-${commentId}`).innerHTML = data.content.replace(/\n/g, '<br>');
                 document.getElementById(`comment-text-${commentId}`).style.display = 'block';
                 this.style.display = 'none';
@@ -445,10 +537,89 @@ document.addEventListener('DOMContentLoaded', function() {
                 actionsDiv.querySelector('.edit-comment').style.display = 'inline-block';
                 actionsDiv.querySelector('.delete-comment').style.display = 'inline-block';
             } else {
-                alert(data.message || '댓글 수정에 실패했습니다.');
+                // ★★★ [수정] 3. 실패 알림창 ★★★
+                alert('댓글 수정에 실패했습니다: ' + (data.message || '입력 내용을 확인해주세요.'));
             }
         })
-        .catch(error => console.error('Comment edit error:', error));
+        .catch(error => {
+            console.error('Comment edit error:', error);
+            // ★★★ [수정] 4. 예외 발생 시 알림창 ★★★
+            alert('댓글 수정 중 오류가 발생했습니다.');
+        });
+    }
+
+    // ▼▼▼ 답글 버튼 클릭 핸들러 (새로 추가) ▼▼▼
+    function handleReplyButtonClick() {
+        const commentId = this.dataset.commentId;
+        const replyForm = document.getElementById(`reply-form-for-comment-${commentId}`);
+        if (replyForm) {
+            replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    // ▼▼▼ 답글 폼 취소 핸들러 (새로 추가) ▼▼▼
+    function handleCancelReplyClick() {
+        this.closest('.reply-form').style.display = 'none';
+    }
+
+    // ▼▼▼ 답글 폼 제출 핸들러 (새로 추가) ▼▼▼
+    function handleReplyFormSubmit(e) {
+        e.preventDefault();
+
+        if (!confirm('답글을 등록하시겠습니까?')) return;
+
+        const form = this;
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('답글이 성공적으로 등록되었습니다.');
+                
+                const replyList = document.getElementById(`reply-list-for-comment-${data.parent_id}`);
+                const authorProfileImageUrl = data.author_profile_image_url || "{% static 'flo/images/icons/profile/default_profile_light.png' %}";
+                
+                // 새 답글 HTML 생성
+                const newReplyHtml = `
+                <li id="comment-${data.reply_id}" class="reply-item-wrapper">
+                    <div class="comment-author-meta">
+                        <span class="reply-arrow">ㄴ</span>
+                        <img src="${authorProfileImageUrl}" alt="${data.author_display_name}" class="avatar-img ${!data.author_profile_image_url ? 'default-avatar' : ''}">
+                        ... (답글 템플릿 구조와 동일하게 채우기) ...
+                    </div>
+                    <p class="comment-content-text" id="comment-text-${data.reply_id}">${data.content.replace(/\n/g, '<br>')}</p>
+                    <div class="comment-item-actions">
+                        <button class="btn-link-style edit-comment" data-comment-id="${data.reply_id}">수정</button>
+                        <button class="btn-link-style delete-comment" data-comment-id="${data.reply_id}" data-delete-url="/flo/study_post/comment/${data.reply_id}/delete/">삭제</button>
+                    </div>
+                </li>`;
+                
+                replyList.insertAdjacentHTML('beforeend', newReplyHtml);
+                
+                // 새로 추가된 답글에 이벤트 리스너 바인딩
+                const newReplyElement = document.getElementById(`comment-${data.reply_id}`);
+                if (newReplyElement) {
+                    bindCommentActionButtons(newReplyElement); // 답글도 수정/삭제 가능해야 하므로
+                    setDefaultThemeAssets();
+                }
+                
+                form.reset();
+                form.style.display = 'none';
+                document.getElementById('comment-total-count').textContent = data.comment_count;
+
+            } else {
+                alert('답글 등록에 실패했습니다: ' + (data.errors || data.message || ''));
+            }
+        })
+        .catch(error => {
+            console.error('Reply submit error:', error);
+            alert('답글 등록 중 오류가 발생했습니다.');
+        });
     }
 
     function handleCancelEditClick() {
@@ -485,6 +656,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log('Delete response data:', data); // ★★★ 서버로부터 받은 데이터 확인 ★★★
             if (data.status === 'success') {
+                // ★★★ [추가] 2. 성공 알림창 ★★★
+                alert('댓글이 성공적으로 삭제되었습니다.');
+
                 const commentElement = document.getElementById(`comment-${data.deleted_comment_id}`);
                 if (commentElement) {
                     commentElement.remove();
@@ -496,12 +670,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('comment-list').innerHTML = '<li id="no-comments" class="no-comments-message">아직 댓글이 없습니다.</li>';
                 }
             } else {
-                alert(data.message || '댓글 삭제에 실패했습니다.');
+                // ★★★ [수정] 3. 실패 알림창 ★★★
+                alert('댓글 삭제에 실패했습니다: ' + (data.message || '다시 시도해주세요.'));
             }
         })
         .catch(error => {
             console.error('Comment delete error:', error);
-            alert('댓글 삭제 처리 중 오류가 발생했습니다. 페이지를 새로고침하거나 다시 시도해주세요.');
+            // ★★★ [수정] 4. 예외 발생 시 알림창 ★★★
+            alert('댓글 삭제 처리 중 오류가 발생했습니다.');
         });
     }
 

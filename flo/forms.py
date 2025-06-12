@@ -50,7 +50,7 @@ class PostForm(forms.ModelForm):
                 'placeholder': '제목을 입력해 주세요.'
             }),
             'content': TinyMCE(attrs={
-                'rows': 15,
+                'rows': 20,
             }),
         }
         labels = {
