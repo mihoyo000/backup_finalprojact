@@ -3,6 +3,7 @@
 :root {
   --signup-bg-light: #fafafa;
   --signup-strong-text-light: #1a1a1a;
+  --signup-submit-btn-light: #fafafa;
   --signup-border-hover-light: #888888;
   --signup-agreement-bg-light: #f9f9f9;
   --signup-btn-hover-bg-light: #333333;
@@ -10,12 +11,14 @@
 }
 
 body.theme-dark {
-  --signup-bg-light: #1a1a1a;
-  --signup-strong-text-light: #eeeeee;
-  --signup-border-hover-light: #dddddd;
-  --signup-agreement-bg-light: #3a3a3a;
-  --signup-btn-hover-bg-light: #cccccc;
-  --signup-btn-hover-bg-light: #3294e4;
+  --signup-bg-dark: #eeeeee;
+  --signup-strong-text-dark: #fafafa;
+  --signup-submit-btn-dark: #1a1a1a;
+  --signup-border-hover-dark: #dddddd;
+  --signup-agreement-bg-dark: #3a3a3a;
+  --signup-btn-hover-bg-dark: #cccccc;
+  --signup-btn-hover-bg-dark: #3294e4;
+  --text-color-agree-contents-dark: #333333;
 }
 
 body {
@@ -75,7 +78,7 @@ body.theme-dark {
 }
 
 body.theme-dark .signup-title {
-  color: var(--signup-strong-text-light);
+  color: var(--signup-strong-text-dark);
 }
 
 .form-box {
@@ -108,6 +111,12 @@ body.theme-dark .form-box {
 .form-group label {
   font-size: 14px;
   color: var(--signup-strong-text-light);
+  font-weight: 500;
+}
+
+body.theme-dark .form-group label {
+  font-size: 14px;
+  color: var(--signup-strong-text-dark);
   font-weight: 500;
 }
 
@@ -227,6 +236,7 @@ body.theme-dark .email-wrap input,
 body.theme-dark .email-wrap select {
   background: var(--bg-color-body-dark);
   border-color: var(--border-color-default-dark);
+  color: var(--signup-strong-text-dark);
 }
 
 .email-wrap input:focus,
@@ -237,6 +247,11 @@ body.theme-dark .email-wrap select {
 
 .email-wrap span {
   color: var(--signup-strong-text-light);
+  font-size: 16px;
+}
+
+body.theme-dark .email-wrap span {
+  color: var(--signup-strong-text-dark);
   font-size: 16px;
 }
 
@@ -256,9 +271,12 @@ body.theme-dark .email-wrap select {
   cursor: pointer;
 }
 
-body.theme-dark .all-agree label,
-body.theme-dark .agreement label {
+body.theme-dark .all-agree label {
   color: var(--text-color-default-dark);
+}
+
+body.theme-dark .agreement label {
+  color: var(--text-color-agree-contents-dark);
 }
 
 .agreement {
@@ -335,7 +353,7 @@ body.theme-dark .agreement {
   height: 42px;
   margin-top: 12px;
   background: var(--signup-strong-text-light);
-  color: var(--signup-bg-light);
+  color: var(--signup-submit-btn-light);
   border: none;
   border-radius: 8px;
   font-size: 16px;
@@ -371,12 +389,12 @@ body.theme-dark .agreement {
 }
 
 body.theme-dark .submit-btn {
-  background: var(--signup-bg-light);
-  color: var(--signup-strong-text-light);
+  background: var(--signup-bg-dark);
+  color: var(--signup-submit-btn-dark);
 }
 
 body.theme-dark .submit-btn:hover {
-  color: var(--signup-strong-text-light);
+  color: var(--signup-submit-btn-dark);
 }
 
 .google-btn {
