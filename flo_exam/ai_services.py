@@ -1,198 +1,87 @@
-# flo_project/flo_exam/ai_services.py
-
-# ----------------- [1. 모든 Import 문] -----------------
 import os
-import json
-import uuid
-import fitz  # PyMuPDF
-import openai
-from dotenv import load_dotenv
-import logging
-import traceback
-
+import openai # OpenAI 라이브러리
+import fitz  # PyMuPDF 라이브러리 (PDF 텍스트 추출용)
+import json  # JSON 데이터 처리용
+from dotenv import load_dotenv # .env 파일 로드용
 from django.conf import settings
+import uuid
 
-# LangChain 및 Hugging Face 관련
-import torch
-import faiss
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS as LangChainFAISS
-from langchain_huggingface import HuggingFaceEmbeddings
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, AutoModelForCausalLM
-
-# 로거 설정
-logger = logging.getLogger(__name__)
-
-# ----------------- [2. OpenAI 클라이언트 초기화] -----------------
+# 1. 환경 변수 로드 및 OpenAI 클라이언트 초기화
+# --------------------------------------------------------------------------
+# .env 파일에서 환경 변수를 로드합니다. (프로젝트 루트에 .env 파일이 있어야 함)
+# 이 코드는 이 파일이 처음 임포트될 때 실행됩니다.
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# OpenAI API 클라이언트 객체를 저장할 변수
+# 이 변수는 모듈 레벨에 있어서 이 파일 내의 다른 함수들이 접근할 수 있습니다.
 client = None
-if OPENAI_API_KEY and OPENAI_API_KEY.startswith("sk-"):
+
+if OPENAI_API_KEY and OPENAI_API_KEY.startswith("sk-"): # API 키가 존재하고 'sk-'로 시작하는지 (기본적인 유효성 검사)
     try:
         client = openai.OpenAI(api_key=OPENAI_API_KEY)
-        logger.info("ai_services.py: OpenAI API 클라이언트가 성공적으로 초기화되었습니다.")
+        print("ai_services.py: OpenAI API 클라이언트가 성공적으로 초기화되었습니다.")
     except Exception as e:
-        logger.error(f"ai_services.py: OpenAI API 클라이언트 초기화 중 오류 발생: {e}")
+        print(f"ai_services.py: OpenAI API 클라이언트 초기화 중 오류 발생: {e}")
+        client = None # 초기화 실패 시 None으로 설정
 else:
-    logger.warning("="*60)
-    logger.warning("경고 (ai_services.py): .env 파일 또는 환경 변수에서 유효한 OPENAI_API_KEY를 찾을 수 없습니다.")
-    logger.warning("AI 문제 생성은 목업(테스트용) 데이터로 대체됩니다.")
-    logger.warning("="*60)
+    print("="*60)
+    print("경고 (ai_services.py): .env 파일 또는 환경 변수에서 유효한 OPENAI_API_KEY를 찾을 수 없습니다.")
+    print("                       AI 문제 생성은 목업(테스트용) 데이터로 대체됩니다.")
+    print("                       프로젝트 루트에 .env 파일을 만들고 OPENAI_API_KEY='sk-실제API키' 형식으로 입력해주세요.")
+    print("="*60)
+    client = None # 명시적으로 None 할당
 
+# 2. 이미지 생성 함수
+# ---------------------------------------------------------------------------
 
-# ----------------- [3. Hugging Face RAG 챗봇 싱글턴 클래스] -----------------
-class HuggingFaceRAGChatbot:
-    _instance = None
+def generate_image_with_dalle(prompt_for_image, n=1, size="256x256"): # DALL-E 2는 256x256, 512x512, 1024x1024 지원
+    """DALL-E API를 사용하여 이미지를 생성하고 이미지 URL을 반환합니다."""
+    if not client:
+        print("ai_services.py: DALL-E 이미지 생성 실패 - OpenAI 클라이언트 없음.")
+        return None
 
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(HuggingFaceRAGChatbot, cls).__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
-
-    def __init__(self):
-        if self._initialized:
-            return
-        
-        logger.info("\n--- [HuggingFaceRAGChatbot] 초기화 시작 ---")
-        
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        logger.info(f"[HuggingFaceRAGChatbot] 현재 실행 장치: {self.device}")
-
-        self.gpu_res = None
-        if self.device.type == 'cuda':
-            try:
-                self.gpu_res = faiss.StandardGpuResources()
-                logger.info("[HuggingFaceRAGChatbot] FAISS GPU 리소스를 성공적으로 할당했습니다.")
-            except Exception as e:
-                logger.error(f"[HuggingFaceRAGChatbot] FAISS GPU 리소스 할당 실패: {e}. CPU로 계속 진행합니다.")
-                self.device = torch.device("cpu")
-
-        self.embedding_model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-        logger.info(f"[HuggingFaceRAGChatbot] 임베딩 모델 로드 중: {self.embedding_model_name}")
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name=self.embedding_model_name,
-            model_kwargs={'device': self.device.type}
+    try:
+        print(f"ai_services.py: DALL-E 이미지 생성 요청 시작 - 프롬프트: {prompt_for_image[:50]}...")
+        response = client.images.generate( # ★★★ DALL-E API 호출 (v1.x 방식) ★★★
+            model="dall-e-2",  # 또는 "dall-e-3" (사용 가능 여부 및 비용 확인)
+            prompt=prompt_for_image,
+            n=n, # 생성할 이미지 개수
+            size=size, # 이미지 크기
+            response_format="url" # 생성된 이미지의 URL을 받음 (또는 "b64_json"으로 이미지 데이터 직접 받기)
         )
-        logger.info("[HuggingFaceRAGChatbot] 임베딩 모델 로드 완료.")
-
-        self.llm_model_name = "google/gemma-1.1-2b-it"
-        logger.info(f"[HuggingFaceRAGChatbot] LLM 모델 로드 중: {self.llm_model_name}")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.llm_model_name)
         
-        # ★★★ 핵심 수정: Gemma 모델에 맞는 AutoModelForCausalLM 클래스 사용 ★★★
-        self.model = AutoModelForCausalLM.from_pretrained(
-            self.llm_model_name,
-            device_map=self.device.type,
-            torch_dtype=torch.bfloat16
-        )
-        logger.info("[HuggingFaceRAGChatbot] LLM 모델 로드 완료.")
-
-        self.vector_stores = {}
-        self._initialized = True
-        logger.info("--- [HuggingFaceRAGChatbot] 초기화 완료 ---\n")
-
-    def _load_vector_store(self, exam_document_id: int):
-        if exam_document_id in self.vector_stores:
-            return self.vector_stores[exam_document_id]
-
-        vectorstore_path = os.path.join(settings.MEDIA_ROOT, 'vectorstores', str(exam_document_id))
-        if not os.path.exists(vectorstore_path):
-            logger.error(f"[HuggingFaceRAGChatbot] Vector Store 경로를 찾을 수 없습니다: {vectorstore_path}")
-            return None
-
-        try:
-            logger.info(f"[HuggingFaceRAGChatbot] '{vectorstore_path}'에서 FAISS 인덱스(CPU) 로드 중...")
-            vector_store = LangChainFAISS.load_local(
-                vectorstore_path, 
-                self.embeddings,
-                allow_dangerous_deserialization=True
-            )
-            
-            if self.device.type == 'cuda' and self.gpu_res:
-                logger.info("[HuggingFaceRAGChatbot] FAISS 인덱스를 GPU로 이동 중...")
-                vector_store.index = faiss.index_cpu_to_gpu(self.gpu_res, 0, vector_store.index)
-            
-            self.vector_stores[exam_document_id] = vector_store
-            logger.info(f"[HuggingFaceRAGChatbot] Vector Store ID {exam_document_id} 로드 및 캐싱 완료.")
-            return vector_store
-        except Exception as e:
-            logger.error(f"[HuggingFaceRAGChatbot] Vector Store ID {exam_document_id} 로드 실패: {e}")
-            logger.error(traceback.format_exc())
-            return None
-
-    def ask(self, query: str, exam_document_id: int):
-        logger.info(f"RAG `ask` 호출: (Query: '{query}', Doc ID: {exam_document_id})")
-        vector_store = self._load_vector_store(exam_document_id)
-        if not vector_store:
-            return "현재 시험 자료에 대한 지식 베이스를 찾을 수 없습니다. PDF 업로드부터 다시 시도해주세요."
-
-        docs = vector_store.similarity_search(query, k=5)
-
-        # ★★★ 안정성 강화: 검색 결과 유무에 따라 retrieved_text 정의 ★★★
-        if docs:
-            retrieved_text = "\n\n".join([doc.page_content for doc in docs])
-            retrieved_text = retrieved_text[:2500]
-            logger.info("="*50)
-            logger.info(f"질문 '{query}'에 대해 검색된 상위 문서 조각:")
-            for i, doc in enumerate(docs):
-                logger.info(f"  - 조각 {i+1}: {doc.page_content[:200]}...")
-            logger.info("="*50)
+        if response.data and len(response.data) > 0:
+            image_url = response.data[0].url
+            print(f"ai_services.py: DALL-E 이미지 생성 성공 - URL: {image_url}")
+            return image_url
         else:
-            retrieved_text = "관련 정보를 찾을 수 없습니다."
-            logger.warning("유사한 문서를 찾지 못했습니다.")
-        
-        messages = [
-            {"role": "user", "content": f"""당신은 주어진 '참고 문서'의 내용만을 사용하여 사용자의 '질문'에 대해 답변하는 AI 튜터입니다.
-- 답변은 반드시 '참고 문서' 안에 있는 내용에 근거해야 합니다.
-- '참고 문서'에 질문과 관련된 내용이 없다면, "제공된 문서에서는 해당 정보를 찾을 수 없습니다."라고만 답변해야 합니다.
-- 답변은 완전한 한국어 문장 형태로 친절하게 설명해주세요.
-
-### 참고 문서:
-{retrieved_text}
-
-### 질문:
-{query}
-"""}
-        ]
-        
-        prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-
-        try:
-            input_ids = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+            print("ai_services.py: DALL-E API가 이미지를 반환하지 않았습니다.")
+            return None
             
-            outputs = self.model.generate(
-                **input_ids,
-                max_new_tokens=256,
-            )
-            
-            response = self.tokenizer.decode(outputs[0][input_ids['input_ids'].shape[1]:], skip_special_tokens=True).strip()
-
-            logger.info(f"LLM 생성 답변: {response}")
-            return response if response else "죄송합니다. 질문에 대한 답변을 생성할 수 없습니다."
-        except Exception as e:
-            logger.error(f"[HuggingFaceRAGChatbot] 답변 생성 중 오류 발생: {e}")
-            logger.error(traceback.format_exc())
-            return "답변을 생성하는 중에 오류가 발생했습니다. 서버 로그를 확인해주세요."
-
-RAG_CHATBOT_INSTANCE = None
-
-def get_rag_chatbot_instance():
-    global RAG_CHATBOT_INSTANCE
-    if RAG_CHATBOT_INSTANCE is None:
-        logger.warning("RAG_CHATBOT_INSTANCE가 None입니다. 즉시 초기화를 시도합니다.")
-        RAG_CHATBOT_INSTANCE = HuggingFaceRAGChatbot()
-    return RAG_CHATBOT_INSTANCE
+    except openai.APIError as e:
+        print(f"ai_services.py: DALL-E API 오류: {e.status_code if hasattr(e, 'status_code') else 'N/A'} - {e.message if hasattr(e, 'message') else str(e)}")
+        return None
+    except Exception as e:
+        import traceback
+        print(f"ai_services.py: DALL-E 이미지 생성 중 예측하지 못한 예외: {type(e).__name__} - {e}")
+        print(traceback.format_exc())
+        return None
 
 
-# ----------------- [4. PDF 처리 및 Vector Store 생성 함수] -----------------
+# 2. PDF 텍스트 추출 함수
+# --------------------------------------------------------------------------
 def extract_text_and_images_from_pdf(pdf_file_path, exam_document_id):
+    """
+    PDF 파일에서 텍스트와 이미지들을 추출합니다.
+    텍스트에는 페이지 번호 정보를 포함시키고,
+    이미지는 서버의 MEDIA_ROOT에 저장하고, 이미지 정보(URL, 페이지 번호, 임시 설명) 리스트를 반환합니다.
+    """
     full_text = ""
-    # 이미지 처리는 일단 생략하여 로직을 단순화합니다.
-    # extracted_images_info = [] 
+    extracted_images_info = [] 
     
-    # image_save_dir = os.path.join(settings.MEDIA_ROOT, 'pdf_images', str(exam_document_id))
-    # os.makedirs(image_save_dir, exist_ok=True)
+    image_save_dir = os.path.join(settings.MEDIA_ROOT, 'pdf_images', str(exam_document_id))
+    os.makedirs(image_save_dir, exist_ok=True)
 
     try:
         doc = fitz.open(pdf_file_path)
@@ -202,85 +91,44 @@ def extract_text_and_images_from_pdf(pdf_file_path, exam_document_id):
             full_text += f"\n--- Page {page_idx} Content Start ---\n"
             full_text += page.get_text("text")
             full_text += f"\n--- Page {page_idx} Content End ---\n"
+            
+            image_list = page.get_images(full=True)
+            for img_index, img_info in enumerate(image_list):
+                xref = img_info[0]
+                base_image = doc.extract_image(xref)
+                image_bytes = base_image["image"]
+                image_ext = base_image["ext"]
+                
+                image_filename = f"page{page_idx}_img{img_index+1}_{uuid.uuid4().hex[:8]}.{image_ext}"
+                image_server_path = os.path.join(image_save_dir, image_filename)
+                
+                try:
+                    with open(image_server_path, "wb") as img_file:
+                        img_file.write(image_bytes)
+                    
+                    image_web_url = os.path.join(settings.MEDIA_URL, 'pdf_images', str(exam_document_id), image_filename).replace("\\", "/")
+                    # 이미지에 대한 간단한 설명 (AI가 힌트 생성 시 참고할 수 있도록)
+                    # 실제로는 이미지 주변 텍스트나 OCR 등을 통해 더 나은 설명을 생성할 수 있음
+                    img_desc_placeholder = f"Image {img_index+1} on page {page_idx} of the PDF."
+                    extracted_images_info.append({
+                        'page_number': page_idx,
+                        'url': image_web_url,
+                        'description': img_desc_placeholder 
+                    })
+                    # print(f"ai_services.py: 이미지 추출 - {image_web_url} (Page: {page_idx})") # 로그는 필요시 활성화
+                except Exception as e_save:
+                    print(f"ai_services.py: 이미지 파일 저장 실패 ({image_filename}): {e_save}")
         doc.close()
-
-        if not full_text.strip():
-            logger.warning(f"PDF '{pdf_file_path}'에서 텍스트를 추출하지 못했습니다.")
+        if not full_text.strip() and not extracted_images_info: # 텍스트도 이미지도 없으면
+            print(f"ai_services.py: PDF '{pdf_file_path}'에서 텍스트와 이미지를 모두 추출하지 못했습니다.")
             return None, []
-        return full_text, [] # 이미지 정보는 빈 리스트 반환
+        return full_text, extracted_images_info
     except Exception as e:
-        logger.error(f"PDF 처리 중 오류 ({pdf_file_path}): {e}")
+        print(f"ai_services.py: PDF 처리 중 오류 ({pdf_file_path}): {e}")
         return None, []
-    
-    
-def preprocess_korean_history_pdf_text(text: str) -> str:
-    """
-    한국사 요약본 PDF처럼 "주제 : 내용" 형식의 텍스트를
-    RAG 검색에 더 유리한 완전한 문장 형태로 변환합니다.
-    """
-    processed_lines = []
-    # 텍스트를 줄 단위로 나눕니다.
-    for line in text.split('\n'):
-        line = line.strip()
-        if not line:
-            continue
 
-        # "주제 : 내용" 또는 "주제: 내용" 형식을 찾습니다.
-        if ' : ' in line or ':' in line:
-            # 콜론(:)을 기준으로 처음 한 번만 나눕니다.
-            parts = [p.strip() for p in line.split(':', 1)]
-            if len(parts) == 2 and parts[0] and parts[1]:
-                subject, content = parts
-                # 완전한 문장으로 재구성합니다.
-                # 예: "고구려 : 5부족 연맹..." -> "고구려의 주요 내용은 5부족 연맹... 입니다."
-                new_sentence = f"{subject}의 주요 내용은 '{content}'입니다."
-                processed_lines.append(new_sentence)
-            else:
-                # 콜론이 있지만 형식이 맞지 않으면 원래 줄을 사용합니다.
-                processed_lines.append(line)
-        else:
-            # 콜론이 없는 줄은 그대로 사용합니다.
-            processed_lines.append(line)
-            
-    # 재구성된 문장들을 다시 하나의 텍스트로 합칩니다.
-    new_text = "\n".join(processed_lines)
-    logger.info("PDF 텍스트 전처리 완료. 원본 길이: %d, 처리 후 길이: %d", len(text), len(new_text))
-    return new_text
-    
-
-def create_and_save_vectorstore(text_from_pdf, exam_document_id):
-    if not text_from_pdf:
-        logger.error("Vector Store 생성을 위한 텍스트가 없습니다.")
-        return None
-    try:
-        logger.info(f"Vector Store 생성 시작 (Doc ID: {exam_document_id}).")
-        # <<-- 변경점: chunk_size를 줄이고, overlap 비율을 조정합니다 -->>
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,  # 청크 크기를 1000 -> 500으로 줄임
-            chunk_overlap=50   # 오버랩도 적절히 조정
-        )
-        docs = text_splitter.split_text(text_from_pdf)
-        
-        chatbot_instance = get_rag_chatbot_instance()
-        embeddings = chatbot_instance.embeddings
-        
-        logger.info("FAISS Vector Store 생성 중 (from_texts)...")
-        vectorstore = LangChainFAISS.from_texts(docs, embedding=embeddings)
-        
-        vectorstore_dir = os.path.join(settings.MEDIA_ROOT, 'vectorstores', str(exam_document_id))
-        os.makedirs(vectorstore_dir, exist_ok=True)
-            
-        vectorstore.save_local(vectorstore_dir)
-        logger.info(f"Vector Store를 '{vectorstore_dir}' 경로에 성공적으로 저장했습니다.")
-        return vectorstore_dir
-    except Exception as e:
-        logger.error(f"Vector Store 생성 또는 저장 중 오류 발생: {e}")
-        logger.error(traceback.format_exc())
-        return None
-
-
-# ----------------- [5. OpenAI 문제 생성 관련 함수들] -----------------
-# (기존에 잘 작동하던 코드를 그대로 사용)
+# 3. OpenAI API를 이용한 문제 생성 함수
+# --------------------------------------------------------------------------
 def generate_questions_via_openai(text_from_pdf, num_questions_to_generate, requested_question_type, subject_topic):
     """
     OpenAI API (gpt-4o-mini)를 사용하여 문제를 생성합니다.
@@ -288,12 +136,11 @@ def generate_questions_via_openai(text_from_pdf, num_questions_to_generate, requ
     """
     global client
     if not client:
-        logger.warning("ai_services.py: OpenAI 클라이언트 없음. 목업 문제 생성.")
+        print("ai_services.py: OpenAI 클라이언트 없음. 목업 문제 생성.")
         return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
 
     ai_question_type_description = "4지선다 객관식" if requested_question_type == "객관식" else "단답형"
 
-    # 기존의 강력한 프롬프트를 그대로 사용합니다.
     prompt_instructions = f"""
     당신은 제공된 PDF 텍스트 내용을 바탕으로 **학습용 연습 문제를 한국어(Korean)로 생성**하는 전문 AI 어시스턴트입니다.
     PDF 텍스트에는 각 페이지 내용 시작과 끝에 "--- Page X Content Start ---" 와 "--- Page X Content End ---" 형식이 포함되어 페이지를 구분합니다.
@@ -307,69 +154,82 @@ def generate_questions_via_openai(text_from_pdf, num_questions_to_generate, requ
     응답은 "quiz" 키를 가진 JSON 객체여야 하며, 값은 문제 객체들의 리스트입니다.
     각 문제 객체는 다음 키를 포함해야 합니다 (모든 텍스트 값은 한국어를 기본으로 하되, 필요한 경우 원문 외국어 포함):
     - "question_number": (Integer) 문제 번호 (1부터 시작).
-    - "question_text": (String) 문제 내용 (한국어, 필요시 원문 외국어 포함).
+    - "question_text": (String) 문제 내용 (한국어, 필요시 원문 외국어 포함). 수학 수식은 MathML을 사용하여 표현해주세요. 텍스트 스타일링이 필요하면 ReportLab Paragraph가 지원하는 다음 태그만 사용하세요: <b></b>, <i></i>, <sup></sup>, <sub></sub>, <font color="..."></font>, <a href="..."></a>. & < > 문자를 내용으로 표시하려면 & < > 로 작성해주세요. 줄바꿈은 \\n 사용.
     - "question_type": (String) "multiple_choice" 또는 "short_answer".
-    - "options": (Array of Strings) 객관식일 경우 4개의 한국어 순수 텍스트 선택지. 단답형은 null.
-    - "correct_answer": (String) 정답 텍스트.
-    - "explanation": (String) 정답에 대한 상세한 해설.
-    - "pdf_image_reference_hint": (Object, Optional) 관련 이미지가 없다면 반드시 null 제공.
-    
+    - "options": (Array of Strings) 객관식일 경우 4개의 한국어 순수 텍스트 선택지 (필요시 원문 외국어 포함). 단답형은 null. HTML 태그/주석 금지. 각 선택지 텍스트도 수학 수식 포함 시 MathML 사용. 각 선택지 텍스트도 위와 동일한 규칙 적용.
+    - "correct_answer": (String) 정답 텍스트 (한국어, 필요시 원문 외국어 포함). 위와 동일한 규칙 적용.
+    - "explanation": (String) 해설 (한국어, 필요시 원문 외국어 포함). 위와 동일한 규칙 적용.
+    - "pdf_image_reference_hint": (Object, Optional) 
+        만약 이 문제가 제공된 PDF 텍스트 내의 특정 이미지와 직접적으로 관련되어야 한다면, 다음 정보를 포함하는 JSON 객체를 여기에 제공해주세요:
+        {{"page_number": (Integer) 해당 이미지가 위치한 PDF 페이지 번호, "image_description": (String) 해당 이미지를 식별할 수 있는 간결하고 핵심적인 **영어(English)** 설명.}}
+        이 필드는 전체 문제 중 이미지를 활용하는 것이 교육적으로 매우 효과적이라고 판단되는 약 1~2개의 문제에 대해서만 제공해주세요. 관련 이미지가 없다면 이 필드 값으로 반드시 null을 제공해주세요.
+
     제공된 PDF 텍스트 내용 (페이지 정보 포함 가능):
     ---
     {text_from_pdf[:4000]} 
     ---
-    위 내용을 참고하여 문제를 출제해주세요.
-    오직 지정된 JSON 형식으로만 응답하고, 다른 설명은 절대 추가하지 마세요.
+    위 내용을 참고하여 문제를 출제해주세요. **모든 생성되는 텍스트(문제, 선택지, 정답, 해설)는 한국어를 기본으로 하되, PDF 원문의 고유명사나 기술 용어 등은 번역하지 않고 그대로 사용해야 합니다.**
+    오직 지정된 JSON 형식으로만 응답하고, 다른 설명은 절대 추가하지 마세요. 모든 텍스트 필드(question_text, options, correct_answer, explanation)에서 스타일 표현이 필요할 경우, ReportLab Paragraph가 지원하는 태그(<b>, <i>, <sup>, <sub>, <font>, <a href>)만을 사용하고, 그 외의 HTML 태그나 주석은 절대 사용하지 마세요. & < > 문자는 반드시 & < > 형태로 인코딩해주세요.
     """
 
     try:
-        logger.info(f"ai_services.py: OpenAI API ('gpt-4o-mini') 요청 시작...")
+        print(f"ai_services.py: OpenAI API ('gpt-4o-mini') 요청 시작...")
         api_response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are an AI assistant that generates educational quizzes in Korean, based on provided text and instructions. Respond strictly in the specified JSON format."},
+                {"role": "system", "content": "You are an AI assistant that generates educational quizzes primarily in Korean, based on provided text and instructions. Preserve original foreign terms or proper nouns from the text if necessary. Respond strictly in the specified JSON format..."},
                 {"role": "user", "content": prompt_instructions}
             ],
             temperature=0.7,
             response_format={"type": "json_object"}
         )
         raw_content = api_response.choices[0].message.content
-        logger.info("ai_services.py: OpenAI API 응답 수신 완료.")
-        
-        # 강력한 JSON 파싱 로직
+        print("ai_services.py: OpenAI API 응답 수신 완료.")
+        # ... (JSON 클리닝 및 파싱, 문제 리스트 추출, 유효성 검사는 이전 답변과 동일) ...
         cleaned_content = raw_content.strip()
+
         if cleaned_content.startswith("```json"): cleaned_content = cleaned_content[7:]
         if cleaned_content.endswith("```"): cleaned_content = cleaned_content[:-3]
-        
-        parsed_api_response = json.loads(cleaned_content.strip())
+        cleaned_content = cleaned_content.strip()
+        if cleaned_content.startswith("```"): cleaned_content = cleaned_content[3:] # ``` 만 있는 경우
+        if cleaned_content.endswith("```"): cleaned_content = cleaned_content[:-3]
+        cleaned_content = cleaned_content.strip()
+
+        parsed_api_response = json.loads(cleaned_content)
         
         questions_data = []
 
         if isinstance(parsed_api_response, dict) and "quiz" in parsed_api_response and isinstance(parsed_api_response["quiz"], list):
             questions_data = parsed_api_response["quiz"]
-            logger.info(f"ai_services.py: 'quiz' 키에서 {len(questions_data)}개 문제 데이터 추출 성공.")
+            print(f"ai_services.py: 'quiz' 키에서 {len(questions_data)}개 문제 데이터 추출 성공.")
         elif isinstance(parsed_api_response, list):
              questions_data = parsed_api_response
-             logger.info(f"ai_services.py: API가 직접 리스트 형식으로 {len(questions_data)}개 문제 데이터 반환.")
+             print(f"ai_services.py: API가 직접 리스트 형식으로 {len(questions_data)}개 문제 데이터 반환.")
         else:
-            logger.error(f"ai_services.py: OpenAI 응답이 예상한 형식이 아님. (타입: {type(parsed_api_response)})")
+            print("ai_services.py: OpenAI 응답이 예상한 형식이 아님. (parsed_api_response 타입:", type(parsed_api_response), ")")
+            # 이 경우 questions_data는 빈 리스트로 유지됩니다.
+
+        if not questions_data or not all(isinstance(q, dict) for q in questions_data): # questions_data가 비었거나, 내부 항목이 딕셔너리가 아니면
+            print("ai_services.py: 유효한 문제 리스트를 얻지 못함. 목업 데이터 사용.")
             return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
 
-        if not questions_data or not all(isinstance(q, dict) for q in questions_data):
-            logger.error("ai_services.py: 유효한 문제 리스트를 얻지 못함. 목업 데이터 사용.")
-            return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
-
-        logger.info(f"ai_services.py: {len(questions_data)}개 문제 데이터 최종 파싱 성공.")
+        print(f"ai_services.py: {len(questions_data)}개 문제 데이터 최종 파싱 성공.")
         return questions_data
 
-    except Exception as e:
-        logger.error(f"ai_services.py: generate_questions_via_openai 함수 내 예외 발생: {type(e).__name__} - {e}")
-        logger.error(traceback.format_exc())
+    except Exception as e: # 모든 예외를 더 구체적으로 잡거나, 마지막에 포괄적으로 처리
+        import traceback
+        print(f"ai_services.py: generate_questions_via_openai 함수 내 예외 발생: {type(e).__name__} - {e}")
+        print(traceback.format_exc())
         return generate_mock_problem_data(num_questions_to_generate, requested_question_type, subject_topic)
 
+
+# 4. 목업(테스트용) 문제 생성 함수
+# --------------------------------------------------------------------------
 def generate_mock_problem_data(num_questions, question_type, subject_topic="N/A"):
-    # (기존 코드와 동일)
-    logger.info(f"ai_services.py: 목업 문제 생성 시작 - 문항수: {num_questions}, 유형: {question_type}, 주제: {subject_topic}")
+    """
+    API 호출 실패 또는 테스트 목적으로 사용할 가짜 문제 데이터를 생성합니다.
+    """
+    print(f"ai_services.py: 목업 문제 생성 시작 - 문항수: {num_questions}, 유형: {question_type}, 주제: {subject_topic}")
     mock_problems = []
     api_question_type = "multiple_choice" if question_type == "객관식" else "short_answer"
     

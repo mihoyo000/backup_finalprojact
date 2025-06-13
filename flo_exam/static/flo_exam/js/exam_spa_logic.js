@@ -55,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderProblemSolvingUI(questionsData, examTitle) {
         console.log("exam_spa_logic.js: renderProblemSolvingUI 호출됨. 받은 questionsData:", questionsData);
-        // currentQuestionsDataForSolving = questionsData; // 필요시 저장
 
         if (solveExamUITemplateHTML && questionsData && Array.isArray(questionsData) && dynamicContentArea && robotImageElement) {
             dynamicContentArea.innerHTML = solveExamUITemplateHTML;
@@ -64,15 +63,32 @@ document.addEventListener('DOMContentLoaded', function() {
             questionsContainer.innerHTML = ''; 
 
             questionsData.forEach(q => {
-                // console.log(`JS 처리 중인 문제 (ID: ${q.id}, 번호: ${q.question_number}, 타입: ${q.question_type}, 옵션:`, q.options, `)`);
                 
+                // <<-- ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ -->>
+                // <<-- ★★★        이 부분이 핵심 수정 사항입니다        ★★★ -->>
+                // <<-- ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ -->>
+                
+                // 1. 원본 문제 텍스트를 가져옵니다.
+                let questionTextOnly = q.question_text ? q.question_text : '문제 내용 없음';
+
+                // 2. 정규표현식을 사용하여, 문제 텍스트에 포함된 숫자 목록 형식의 선택지를 제거합니다.
+                // 예: "1. 농경 시작\n2. 간석기 사용..." 부분을 찾아서 지웁니다.
+                // ^\d+\.\s.* : 줄의 시작(^)이 숫자(\d+), 점(.), 공백(\s)으로 시작하는 모든 줄(.*)을 의미합니다.
+                // 'gm' 플래그: g(전체에서 찾기), m(여러 줄 모드에서 ^가 각 줄의 시작을 의미하도록 함)
+                questionTextOnly = questionTextOnly.replace(/^\d+\.\s.*$/gm, '').trim();
+                
+                // 3. 이제 순수한 질문 내용만 card-text에 넣습니다.
                 let questionHtml = `
                     <div class="card mb-3 q-item" data-question-id="${q.id}">
                         <div class="card-header"><strong>문제 ${q.question_number}.</strong></div>
                         <div class="card-body">
-                            <p class="card-text">${q.question_text ? q.question_text.replace(/\n/g, '<br>') : '문제 내용 없음'}</p>`;
+                            <p class="card-text">${questionTextOnly.replace(/\n/g, '<br>')}</p>`;
 
-                 if (q.image_url) { // 문제 데이터에 image_url이 있다면
+                // <<-- ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ -->>
+                // <<-- ★★★        수정 완료. 이하 로직은 거의 동일       ★★★ -->>
+                // <<-- ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ -->>
+
+                 if (q.image_url) {
                     console.log(`문제 ${q.question_number}: 이미지 URL 발견 - ${q.image_url}`);
                     questionHtml += `
                         <div class="problem-image-container my-3 text-center">
@@ -86,10 +102,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const isMultipleChoice = q.question_type === "multiple_choice";
                 const hasOptions = q.options && Array.isArray(q.options) && q.options.length > 0;
                 
+                // 4. options 배열을 기반으로 라디오 버튼을 생성하는 부분은 그대로 유지합니다.
                 if (isMultipleChoice && hasOptions) {
                     q.options.forEach((opt, index) => {
                         const optionTextForDisplay = (opt === null || typeof opt === 'undefined' || String(opt).trim() === "") ? "(선택지 내용 없음)" : escapeHtml(opt);
-                        const optionValueForInput = (opt === null || typeof opt === 'undefined') ? "" : escapeHtml(opt); // 값은 원본 또는 빈 문자열
+                        const optionValueForInput = (opt === null || typeof opt === 'undefined') ? "" : escapeHtml(opt);
                         const optionId = `q${q.id}_opt${index}`;
                         questionHtml += `
                             <div class="form-check">
@@ -100,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (q.question_type === "short_answer") {
                     questionHtml += `<input type="text" name="answer_q_${q.id}" class="form-control" placeholder="답을 입력하세요">`;
                 } else {
-                    if (isMultipleChoice) { // 객관식인데 옵션이 없는 경우
+                    if (isMultipleChoice) {
                          questionHtml += `<p class="text-muted"><em>이 문제의 선택지를 불러올 수 없습니다.</em></p>`;
                     }
                     console.warn(`문제 ${q.question_number}: 선택지 없음 또는 question_type(${q.question_type})이 올바르지 않음. options:`, q.options);

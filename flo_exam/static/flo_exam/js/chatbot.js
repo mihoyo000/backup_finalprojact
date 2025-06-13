@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatbotBoard = document.getElementById('chatbot-board');
     const chatbotThemeWrapper = document.getElementById('chatbot-wrapper');
 
+    // ★★★ 로딩 애니메이션을 제어하기 위한 전역 변수 추가 ★★★
+    let loadingInterval = null;
+
     // 요소가 없으면 스크립트 실행 중단
     if (!chatbotToggleButton || !chatbotWindow || !chatbotCloseButton || !chatbotForm) {
         return;
@@ -35,7 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
         chatbotInput.value = ''; // 입력창 초기화
 
         // '생각 중...' 메시지 표시
-        const thinkingMessageElement = appendMessage('...', 'bot', true);
+        // ★★★ 수정: 'isThinking' 대신 초기 텍스트를 전달하고, 텍스트가 담긴 <span> 요소를 받아옴 ★★★
+        const loadingSpanElement = appendMessage('답변을 생성 중입니다', 'bot');
+        
+        // ★★★ 추가: 로딩 애니메이션 시작 ★★★
+        startLoadingAnimation(loadingSpanElement);
 
         try {
             // 서버로 메시지 전송
@@ -47,22 +54,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({ question: userMessage }),
             });
-
-            // '생각 중...' 메시지 제거
-            thinkingMessageElement.remove();
+            
+            // ★★★ 추가: 응답을 받으면 애니메이션 중지 ★★★
+            stopLoadingAnimation();
 
             if (!response.ok) {
                 const errorData = await response.json();
+                // ★★★ 수정: '생각 중...' 메시지를 제거하는 대신 내용을 오류 메시지로 교체 ★★★
+                loadingSpanElement.innerHTML = (errorData.answer || '서버 응답 오류').replace(/\n/g, '<br>');
                 throw new Error(errorData.answer || '서버 응답 오류');
             }
 
             const data = await response.json();
-            // 봇의 응답을 화면에 표시
-            appendMessage(data.answer, 'bot');
+            // ★★★ 수정: 봇의 응답으로 '생각 중...' 메시지의 내용을 교체 ★★★
+            loadingSpanElement.innerHTML = data.answer.replace(/\n/g, '<br>');
 
         } catch (error) {
             console.error('Chatbot error:', error);
-            appendMessage('죄송합니다. 오류가 발생했어요. 다시 시도해주세요.', 'bot');
+            // ★★★ 추가: 에러 발생 시에도 애니메이션을 멈춰야 함 ★★★
+            stopLoadingAnimation();
+            // ★★★ 수정: 오류 발생 시에도 '생각 중...' 메시지를 교체 (새 메시지 추가 대신) ★★★
+            loadingSpanElement.innerHTML = '죄송합니다. 오류가 발생했어요. 다시 시도해주세요.';
         }
     });
 
@@ -70,10 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
      * 메시지를 챗봇 보드에 추가하는 함수
      * @param {string} message - 표시할 메시지 텍스트
      * @param {string} type - 'me'(사용자) 또는 'bot'(챗봇)
-     * @param {boolean} isThinking - '생각 중' 상태인지 여부
-     * @returns {HTMLElement} - 생성된 메시지 컨테이너 엘리먼트
+     * @returns {HTMLElement} - 생성된 메시지의 텍스트가 담긴 <span> 엘리먼트
      */
-    function appendMessage(message, type, isThinking = false) {
+    function appendMessage(message, type) { // isThinking 파라미터 제거
         const messageContainer = document.createElement('div');
         messageContainer.className = 'chat__conversation-board__message-container';
         if (type === 'me') {
@@ -98,12 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const bubbleDiv = document.createElement('div');
         bubbleDiv.className = 'chat__conversation-board__message__bubble';
-        if (isThinking) {
-            bubbleDiv.classList.add('thinking');
-        }
         
         const span = document.createElement('span');
-        span.innerHTML = message.replace(/\n/g, '<br>'); // 줄바꿈 문자를 <br>로 변환
+        span.innerHTML = message.replace(/\n/g, '<br>');
         
         bubbleDiv.appendChild(span);
         contextDiv.appendChild(bubbleDiv);
@@ -113,15 +121,42 @@ document.addEventListener('DOMContentLoaded', () => {
         
         chatbotBoard.appendChild(messageContainer);
 
-        // 새 메시지가 추가되면 스크롤을 맨 아래로 이동
         chatbotBoard.scrollTop = chatbotBoard.scrollHeight;
         
-        return messageContainer;
+        // ★★★ 수정: 메시지 컨테이너 대신 텍스트가 담긴 span 요소를 반환 ★★★
+        return span;
     }
 
-    // 4. 테마 변경 감지 및 적용
-    // 이 부분은 프로젝트의 실제 테마 변경 로직과 연동해야 합니다.
-    // 여기서는 예시로 `html` 태그의 `data-bs-theme` 속성을 감지합니다.
+    // ★★★ 추가: 로딩 애니메이션을 시작하고 중지하는 함수들 ★★★
+    /**
+     * 로딩 애니메이션을 시작하는 함수
+     * @param {HTMLElement} element - 애니메이션을 적용할 텍스트 <span> 요소
+     */
+    function startLoadingAnimation(element) {
+        let dotCount = 1;
+        const baseText = "답변을 생성 중입니다";
+        
+        stopLoadingAnimation(); // 혹시 모를 이전 인터벌 제거
+
+        loadingInterval = setInterval(() => {
+            let dots = '.'.repeat(dotCount);
+            element.textContent = baseText + dots;
+            dotCount = (dotCount % 3) + 1; // 1, 2, 3을 반복
+        }, 400); // 0.4초마다 점 개수 변경
+    }
+
+    /**
+     * 로딩 애니메이션을 중지하는 함수
+     */
+    function stopLoadingAnimation() {
+        if (loadingInterval) {
+            clearInterval(loadingInterval);
+            loadingInterval = null;
+        }
+    }
+
+
+    // 4. 테마 변경 감지 및 적용 (기존 코드 유지)
     const observeThemeChanges = () => {
         const htmlElement = document.documentElement;
         
@@ -136,13 +171,147 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         observer.observe(htmlElement, {
-            attributes: true // 속성 변경 감지
+            attributes: true
         });
 
-        // 초기 테마 설정
         const initialTheme = htmlElement.getAttribute('data-bs-theme') || 'light';
         chatbotThemeWrapper.setAttribute('data-theme', initialTheme);
     };
+
+    // ★★★★★★★★★★★ 드래그 이동 및 리사이즈 기능 (업그레이드 버전) ★★★★★★★★★★★
+
+    const draggableHeader = document.querySelector('#chatbot-window .chat__header');
+    
+    // 1. 드래그로 창 이동시키는 기능
+    const makeDraggable = (element, handle) => {
+        let offsetX = 0, offsetY = 0;
+
+        handle.addEventListener('mousedown', (e) => {
+            // 입력창이나 버튼 클릭 시에는 드래그 방지
+            if (e.target.closest('button, input, a')) return;
+            
+            e.preventDefault();
+            
+            const rect = element.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        });
+
+        function drag(e) {
+            element.style.left = (e.clientX - offsetX) + 'px';
+            element.style.top = (e.clientY - offsetY) + 'px';
+            // right, bottom 속성은 드래그 중에는 방해가 되므로 제거
+            element.style.right = 'auto';
+            element.style.bottom = 'auto';
+        }
+
+        function stopDrag() {
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+    };
+
+    // 2. 모든 방향에서 리사이즈하는 기능
+    const makeResizable = (element) => {
+        const resizers = element.querySelectorAll('.resizer');
+        const minWidth = 320;
+        const minHeight = 450;
+        let originalWidth, originalHeight, originalX, originalY, originalMouseX, originalMouseY;
+
+        resizers.forEach(resizer => {
+            resizer.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation(); // 드래그 이벤트 전파 방지
+
+                const rect = element.getBoundingClientRect();
+                originalWidth = rect.width;
+                originalHeight = rect.height;
+                originalX = rect.left;
+                originalY = rect.top;
+                originalMouseX = e.pageX;
+                originalMouseY = e.pageY;
+                
+                // right, bottom 속성은 리사이즈 중 방해가 될 수 있으므로 제거하고 left, top을 사용
+                element.style.right = 'auto';
+                element.style.bottom = 'auto';
+                element.style.left = originalX + 'px';
+                element.style.top = originalY + 'px';
+
+                window.addEventListener('mousemove', resize);
+                window.addEventListener('mouseup', stopResize);
+            });
+
+            function resize(e) {
+                if (resizer.classList.contains('resizer-bottom-right')) {
+                    const width = originalWidth + (e.pageX - originalMouseX);
+                    const height = originalHeight + (e.pageY - originalMouseY);
+                    if (width > minWidth) element.style.width = width + 'px';
+                    if (height > minHeight) element.style.height = height + 'px';
+                } else if (resizer.classList.contains('resizer-bottom-left')) {
+                    const width = originalWidth - (e.pageX - originalMouseX);
+                    const height = originalHeight + (e.pageY - originalMouseY);
+                    if (width > minWidth) {
+                        element.style.width = width + 'px';
+                        element.style.left = originalX + (e.pageX - originalMouseX) + 'px';
+                    }
+                    if (height > minHeight) element.style.height = height + 'px';
+                } else if (resizer.classList.contains('resizer-top-right')) {
+                    const width = originalWidth + (e.pageX - originalMouseX);
+                    const height = originalHeight - (e.pageY - originalMouseY);
+                    if (width > minWidth) element.style.width = width + 'px';
+                    if (height > minHeight) {
+                        element.style.height = height + 'px';
+                        element.style.top = originalY + (e.pageY - originalMouseY) + 'px';
+                    }
+                } else if (resizer.classList.contains('resizer-top-left')) {
+                    const width = originalWidth - (e.pageX - originalMouseX);
+                    const height = originalHeight - (e.pageY - originalMouseY);
+                    if (width > minWidth) {
+                        element.style.width = width + 'px';
+                        element.style.left = originalX + (e.pageX - originalMouseX) + 'px';
+                    }
+                    if (height > minHeight) {
+                        element.style.height = height + 'px';
+                        element.style.top = originalY + (e.pageY - originalMouseY) + 'px';
+                    }
+                } else if (resizer.classList.contains('resizer-right')) {
+                    const width = originalWidth + (e.pageX - originalMouseX);
+                    if (width > minWidth) element.style.width = width + 'px';
+                } else if (resizer.classList.contains('resizer-left')) {
+                    const width = originalWidth - (e.pageX - originalMouseX);
+                    if (width > minWidth) {
+                        element.style.width = width + 'px';
+                        element.style.left = originalX + (e.pageX - originalMouseX) + 'px';
+                    }
+                } else if (resizer.classList.contains('resizer-bottom')) {
+                    const height = originalHeight + (e.pageY - originalMouseY);
+                    if (height > minHeight) element.style.height = height + 'px';
+                } else { // Top
+                    const height = originalHeight - (e.pageY - originalMouseY);
+                    if (height > minHeight) {
+                        element.style.height = height + 'px';
+                        element.style.top = originalY + (e.pageY - originalMouseY) + 'px';
+                    }
+                }
+            }
+
+            function stopResize() {
+                window.removeEventListener('mousemove', resize);
+                window.removeEventListener('mouseup', stopResize);
+            }
+        });
+    };
+
+    // 챗봇 창에 기능 적용
+    if (chatbotWindow && draggableHeader) {
+        makeDraggable(chatbotWindow, draggableHeader);
+        makeResizable(chatbotWindow);
+    }
+
+    // ★★★★★★★★★★★ 기능 추가 끝 ★★★★★★★★★★★
 
     observeThemeChanges();
 });

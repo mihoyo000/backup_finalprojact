@@ -27,23 +27,97 @@
 
 /* 챗봇 컨테이너 (토글러 근처에 위치) */
 .chatbot-container {
-    position: fixed;
+    /* --- 기존 스타일 유지 --- */
+    position: fixed; /* ★★★ 이 한 줄만 남깁니다. (relative 삭제) ★★★ */
     bottom: 100px;
     right: 30px;
     width: 370px;
-    max-width: 90vw;
     height: 600px;
-    max-height: 75vh;
     border-radius: 15px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    overflow: hidden;
+    overflow: hidden; /* ★★★ 리사이즈를 위해 hidden으로 유지하는 것이 좋습니다 ★★★ */
     display: flex;
     flex-direction: column;
     transition: opacity 0.3s ease, transform 0.3s ease;
     z-index: 1051;
     opacity: 1;
     transform: translateY(0);
+
+    /* --- 리사이즈를 위한 최소 크기 설정 추가 --- */
+    min-width: 320px;
+    min-height: 450px;
 }
+/* 리사이즈 핸들 스타일 (업그레이드 버전) */
+.resizer {
+    position: absolute;
+    background: transparent; /* 디버깅 시에는 'rgba(255, 0, 0, 0.2)' 등으로 색상을 주면 위치 확인이 편합니다. */
+    z-index: 10; /* 챗봇 창 내부 다른 요소들보다 위에 오도록 z-index 부여 */
+}
+
+/* --- 면(edge) 핸들 스타일 --- */
+/* ★★★ 너비/높이를 5px -> 10px로 늘려 마우스가 인식할 영역을 넓힙니다. ★★★ */
+.resizer.resizer-top {
+    top: -5px; /* 중앙을 기준으로 위로 5px */
+    left: 10px; /* 모서리 핸들과 겹치지 않도록 약간 안쪽에서 시작 */
+    right: 10px; /* 모서리 핸들과 겹치지 않도록 약간 안쪽에서 끝 */
+    height: 10px; /* 인식 영역 높이 */
+    cursor: ns-resize; /* 남북(상하) 방향 커서 */
+}
+.resizer.resizer-bottom {
+    bottom: -5px;
+    left: 10px;
+    right: 10px;
+    height: 10px;
+    cursor: ns-resize;
+}
+.resizer.resizer-left {
+    left: -5px;
+    top: 10px;
+    bottom: 10px;
+    width: 10px; /* 인식 영역 너비 */
+    cursor: ew-resize; /* 동서(좌우) 방향 커서 */
+}
+.resizer.resizer-right {
+    right: -5px;
+    top: 10px;
+    bottom: 10px;
+    width: 10px;
+    cursor: ew-resize;
+}
+
+
+/* --- 모서리(corner) 핸들 스타일 --- */
+/* ★★★ 모서리 핸들은 10px -> 12px or 14px로 더 크게 만들어 확실히 잡히게 합니다. ★★★ */
+.resizer.resizer-top-left {
+    top: -6px;
+    left: -6px;
+    width: 12px;
+    height: 12px;
+    cursor: nwse-resize;
+}
+.resizer.resizer-top-right {
+    top: -6px;
+    right: -6px;
+    width: 12px;
+    height: 12px;
+    cursor: nesw-resize;
+}
+.resizer.resizer-bottom-left {
+    bottom: -6px;
+    left: -6px;
+    width: 12px;
+    height: 12px;
+    cursor: nesw-resize;
+}
+.resizer.resizer-bottom-right {
+    bottom: -6px;
+    right: -6px;
+    width: 12px;
+    height: 12px;
+    cursor: nwse-resize;
+}
+
+
 .chatbot-container.is-hidden {
     opacity: 0;
     transform: translateY(20px);
@@ -82,7 +156,7 @@
     --chat-text-color: #f8f9fa;
     --chat-text-me-color: #f8f9fa;
     --chat-header-background: #343a40;
-    --chat-header-text-color: #f8f9fa;
+    --chat-header-text-color: #212529;
     --chat-input-background: #495057;
     --chat-input-text-color: #f8f9fa;
     --chat-border-color: #495057;
@@ -103,7 +177,7 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
-    color: var(--chat-header-text-color);
+    color: var(--chat-header-text-color) !important;
 }
 .chat__header .btn-icon {
     background: transparent;
