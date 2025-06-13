@@ -18,7 +18,7 @@ from .models import ExamDocument, GeneratedExam, GeneratedQuestion, UserExamSess
 from .pdf_utils import render_to_pdf_reportlab
 
 # --- 수정된 import 문: 각 파일에서 필요한 함수만 명확하게 가져옵니다 ---
-from .ai_services import extract_text_from_pdf, generate_questions_via_openai
+from .ai_services import extract_text_and_images_from_pdf, generate_questions_via_openai
 from .rag_chatbot import get_rag_service_instance
 
 logger = logging.getLogger(__name__)
@@ -68,12 +68,17 @@ def ajax_process_pdf_view(request, exam_document_id):
     logger.info(f"views.py (ajax_process_pdf_view): ExamDocument ID {exam_doc.id} 처리 시작")
     
     try:
-        # 1. ai_services.py에서 텍스트 추출
-        pdf_text = extract_text_from_pdf(exam_doc.pdf_file.path)
+        # ★★★ 수정: 바뀐 함수 이름으로 호출하고, 두 개의 반환값을 받습니다 ★★★
+        # 1. ai_services.py에서 텍스트와 이미지 정보 추출
+        pdf_text, extracted_images = extract_text_and_images_from_pdf(
+            exam_doc.pdf_file.path, 
+            exam_doc.id
+        )
         
         # 2. rag_chatbot.py에 Vector Store 생성을 요청
         if pdf_text:
             rag_service = get_rag_service_instance()
+            # 이미지 정보는 RAG 챗봇에 직접 전달하지 않으므로 pdf_text만 사용합니다.
             success = rag_service.create_and_cache_vector_store(pdf_text, exam_doc.id)
             if not success:
                 logger.error(f"Vector Store 생성에 실패했지만, 문제 생성은 계속합니다 (Doc ID: {exam_doc.id}).")
@@ -81,6 +86,8 @@ def ajax_process_pdf_view(request, exam_document_id):
             return JsonResponse({'status': 'error', 'message': 'PDF에서 텍스트를 추출할 수 없습니다.'}, status=400)
 
         # 3. ai_services.py에서 OpenAI로 문제 생성
+        # extracted_images 정보를 문제 생성 시 넘겨줄 수 있지만, 현재 프롬프트에는
+        # 이미지 정보를 직접 활용하는 부분이 없으므로 pdf_text만 사용합니다.
         questions_data_list_from_ai = generate_questions_via_openai(
             pdf_text,
             exam_doc.num_questions_requested,
@@ -92,13 +99,12 @@ def ajax_process_pdf_view(request, exam_document_id):
             logger.error("AI가 유효한 문제 데이터를 반환하지 않았습니다.")
             return JsonResponse({'status': 'error', 'message': 'AI 문제 생성에 실패했습니다.'}, status=500)
 
-        # 4. 생성된 문제를 DB에 저장
+        # 4. 생성된 문제를 DB에 저장 (이 부분은 기존과 동일하게 유지)
         js_questions_data = []
         with transaction.atomic():
             GeneratedExam.objects.filter(exam_document=exam_doc).delete()
             generated_exam_instance = GeneratedExam.objects.create(exam_document=exam_doc)
             for q_data in questions_data_list_from_ai:
-                # 안전한 options 접근을 위한 로직
                 options = q_data.get('options') or []
                 question = GeneratedQuestion.objects.create(
                     exam=generated_exam_instance,
