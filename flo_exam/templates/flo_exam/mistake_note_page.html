@@ -1,0 +1,91 @@
+{# flo_exam/templates/flo_exam/mistake_note_page.html #}
+{% extends 'flo_exam/base_header.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+    {# 기본 헤더 CSS와 새로운 챗봇 CSS를 포함합니다. #}
+    <link rel="stylesheet" href="{% static 'flo/css/base_header.css' %}">
+    <link rel="stylesheet" href="{% static 'flo_exam/css/chatbot.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ page_title }}</h1>
+    <p>이 페이지는 오답노트 페이지입니다. 틀린 문제들을 검토하고, 우측 하단의 챗봇에게 관련 내용을 질문해보세요.</p>
+    <p>이 시험의 ID는 <strong>{{ exam_document_id }}</strong> 이며, 이 시험의 PDF 내용을 기반으로 답변합니다.</p>
+    
+    {# 이 페이지의 실제 컨텐츠가 들어갈 자리 #}
+    <div class="alert alert-info" role="alert">
+      팀원이 오답노트 페이지를 완성하면 이곳에 실제 내용이 채워질 예정입니다.
+    </div>
+</div>
+
+{# ========================================================== #}
+{# ================ 오답노트 챗봇 UI 시작 =================== #}
+{# ========================================================== #}
+
+<!-- 챗봇 열기 버튼 -->
+<div id="chatbot-toggle-button" class="chatbot-toggler">
+    <img src="{% static 'flo_exam/images/robot.png' %}" alt="Chatbot Toggle">
+</div>
+
+<!-- 챗봇 창 (처음에는 숨겨져 있음) -->
+<div id="chatbot-window" class="chatbot-container is-hidden">
+    <!-- 챗봇 테마 적용을 위한 래퍼. JS가 이 엘리먼트의 data-theme 속성을 변경합니다. -->
+    <div id="chatbot-wrapper" class="chat-theme-wrapper" data-theme="light">
+        
+        <div class="chat__header">
+            <h3>Flo 오답노트 튜터</h3>
+            <button id="chatbot-close-button" class="btn-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <!-- 메시지들이 표시될 보드 -->
+        <div id="chatbot-board" class="chat__conversation-board">
+            <!-- 초기 환영 메시지 (JS로도 추가 가능) -->
+            <div class="chat__conversation-board__message-container">
+                <div class="chat__conversation-board__message__person">
+                    <div class="chat__conversation-board__message__person__avatar">
+                        <img src="{% static 'flo_exam/images/robot.png' %}" alt="Flo">
+                    </div>
+                </div>
+                <div class="chat__conversation-board__message__context">
+                    <div class="chat__conversation-board__message__bubble">
+                        <span>안녕하세요! 이 시험 내용에 대해 궁금한 점이 있다면 무엇이든 물어보세요.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메시지 입력 패널 -->
+        <div class="chat__conversation-panel">
+            <form id="chatbot-form" class="chat__conversation-panel__container">
+                <input id="chatbot-input" class="chat__conversation-panel__input panel-item" placeholder="여기에 질문을 입력하세요..." autocomplete="off">
+                <button type="submit" class="chat__conversation-panel__button panel-item btn-icon send-message-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    // Django 템플릿 변수를 JavaScript에서 사용하기 위함
+    const CHATBOT_AJAX_URL = "{{ chatbot_ajax_url|escapejs }}";
+    const CSRF_TOKEN = "{{ csrf_token }}";
+    const STATIC_URL_ROBOT_AVATAR = "{% static 'flo_exam/images/robot.png' %}";
+    const STATIC_URL_USER_AVATAR = "{% static 'flo_exam/images/user_avatar.png' %}"; // 사용자 아바타 이미지 예시
+</script>
+<script src="{% static 'flo_exam/js/chatbot.js' %}"></script>
+{% endblock %}

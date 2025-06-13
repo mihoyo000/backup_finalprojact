@@ -1,0 +1,217 @@
+/* flo_exam/static/flo_exam/css/chatbot.css */
+
+/* 챗봇 토글 버튼 (우측 하단 고정) */
+.chatbot-toggler {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background-color: #0d6efd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease-in-out;
+    z-index: 1050;
+}
+.chatbot-toggler:hover {
+    transform: scale(1.1);
+}
+.chatbot-toggler img {
+    width: 36px;
+    height: 36px;
+}
+
+/* 챗봇 컨테이너 (토글러 근처에 위치) */
+.chatbot-container {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 370px;
+    max-width: 90vw;
+    height: 600px;
+    max-height: 75vh;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1051;
+    opacity: 1;
+    transform: translateY(0);
+}
+.chatbot-container.is-hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+
+/* --- 제공된 디자인 기반 CSS --- */
+.chat-theme-wrapper {
+    --chat-background: #ffffff;
+    --chat-panel-background: #f8f9fa;
+    --chat-bubble-background: #e9ecef;
+    --chat-bubble-me-background: #0d6efd;
+    --chat-text-color: #212529;
+    --chat-text-me-color: #ffffff;
+    --chat-header-background: #f8f9fa;
+    --chat-header-text-color: #212529;
+    --chat-input-background: #ffffff;
+    --chat-input-text-color: #212529;
+    --chat-border-color: #dee2e6;
+    --chat-send-button-background: #0d6efd;
+    --chat-send-button-icon-color: #ffffff;
+
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background-color: var(--chat-background);
+}
+
+.chat-theme-wrapper[data-theme='dark'] {
+    --chat-background: #212529;
+    --chat-panel-background: #343a40;
+    --chat-bubble-background: #495057;
+    --chat-bubble-me-background: #6f42c1; /* 다크모드용 다른 색 */
+    --chat-text-color: #f8f9fa;
+    --chat-text-me-color: #f8f9fa;
+    --chat-header-background: #343a40;
+    --chat-header-text-color: #f8f9fa;
+    --chat-input-background: #495057;
+    --chat-input-text-color: #f8f9fa;
+    --chat-border-color: #495057;
+    --chat-send-button-background: #6f42c1;
+    --chat-send-button-icon-color: #ffffff;
+}
+
+.chat__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: var(--chat-header-background);
+    border-bottom: 1px solid var(--chat-border-color);
+    flex-shrink: 0;
+}
+.chat__header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--chat-header-text-color);
+}
+.chat__header .btn-icon {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+.chat__header .btn-icon svg {
+    stroke: var(--chat-header-text-color);
+}
+
+.chat__conversation-board {
+    flex-grow: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.chat__conversation-board__message-container {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 1.5rem;
+}
+.chat__conversation-board__message-container.reversed {
+    flex-direction: row-reverse;
+}
+.chat__conversation-board__message-container.reversed .chat__conversation-board__message__person {
+    margin: 0 0 0 0.75rem;
+}
+
+.chat__conversation-board__message__person {
+    text-align: center;
+    margin: 0 0.75rem 0 0;
+    flex-shrink: 0;
+}
+.chat__conversation-board__message__person__avatar {
+    height: 35px;
+    width: 35px;
+    overflow: hidden;
+    border-radius: 50%;
+}
+.chat__conversation-board__message__person__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.chat__conversation-board__message__context {
+    max-width: 80%;
+}
+.chat__conversation-board__message__bubble {
+    width: fit-content;
+    display: inline-block;
+    background: var(--chat-bubble-background);
+    color: var(--chat-text-color);
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+.reversed .chat__conversation-board__message__bubble {
+    background: var(--chat-bubble-me-background);
+    color: var(--chat-text-me-color);
+}
+
+.chat__conversation-board__message__bubble.thinking {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.chat__conversation-panel {
+    background: var(--chat-panel-background);
+    border-top: 1px solid var(--chat-border-color);
+    padding: 0.5rem 1rem;
+    flex-shrink: 0;
+}
+.chat__conversation-panel__container {
+    display: flex;
+    align-items: center;
+}
+.chat__conversation-panel__input {
+    width: 100%;
+    border: none;
+    background: var(--chat-input-background);
+    color: var(--chat-input-text-color);
+    padding: 0.75rem;
+    border-radius: 20px;
+    outline: none;
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+}
+.send-message-button {
+    background: var(--chat-send-button-background);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.send-message-button:hover {
+    transform: scale(1.05);
+}
+.send-message-button svg {
+    stroke: var(--chat-send-button-icon-color);
+    width: 20px;
+    height: 20px;
+}

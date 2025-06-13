@@ -1,3 +1,8 @@
+import json
+import os
+import logging
+
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse                     # HttpResponse는 PDF 다운로드용 (아직 미구현)
 from django.views.decorators.http import require_POST, require_GET     # 요청 메소드 제한
@@ -10,13 +15,22 @@ from django.templatetags.static import static                          # {% stat
 # 현재 앱의 forms.py 와 models.py, ai_services.py 임포트
 from .forms import PDFUploadForm
 from .models import ExamDocument, GeneratedExam, GeneratedQuestion, UserExamSession, UserAnswer
-from .ai_services import extract_text_and_images_from_pdf, generate_questions_via_openai
+from .ai_services import HuggingFaceRAGChatbot, extract_text_and_images_from_pdf, generate_questions_via_openai
 from .pdf_utils import render_to_pdf_reportlab
 from django.utils.encoding import uri_to_iri, iri_to_uri
 from urllib.parse import quote
 import random
 import re
 
+from .ai_services import (
+    extract_text_and_images_from_pdf,
+    create_and_save_vectorstore,
+    generate_questions_via_openai,
+    get_rag_chatbot_instance, # 수정된 부분: 직접 클래스를 임포트하는 대신 헬퍼 함수를 사용
+    preprocess_korean_history_pdf_text  # <<-- 새로 만든 함수를 import 합니다.
+)
+
+logger = logging.getLogger(__name__)  # 현재 파일(views.py)의 이름을 가진 로거 객체를 생성합니다. 이렇게 하면 Django 설정에 따라 로그가 체계적으로 관리됩니다.
 
 # 1. 초기 PDF 업로드 페이지 뷰
 # ==============================================================================
@@ -98,106 +112,72 @@ def ajax_process_pdf_view(request, exam_document_id):
 
     try:
         pdf_path = exam_doc.pdf_file.path
-        pdf_text, extracted_pdf_images_info = extract_text_and_images_from_pdf(pdf_path, exam_doc.id) # 이미지 정보 받음
-
+        
+        logger.info(f"views.py (ajax_process_pdf_view): ExamDocument ID {exam_doc.id} 처리 시작")
+        pdf_text, _ = extract_text_and_images_from_pdf(pdf_path, exam_doc.id)
+        
         if not pdf_text:
             return JsonResponse({'status': 'error', 'message': 'PDF에서 텍스트를 추출할 수 없습니다.'}, status=400)
-        print(f"views.py: PDF 텍스트 추출 완료. 추출된 PDF 이미지 수: {len(extracted_pdf_images_info)}")
-
+        
+        # <<-- 여기서 전처리 함수를 호출합니다! -->>
+        processed_pdf_text = preprocess_korean_history_pdf_text(pdf_text)
+        
+        # 가공된 텍스트로 Vector Store를 생성합니다.
+        create_and_save_vectorstore(processed_pdf_text, exam_doc.id)
+        
+        # OpenAI에 문제를 요청할 때는 가공되지 않은 원본 텍스트를 사용할 수도 있습니다.
+        # (AI는 키워드 요약본을 더 잘 이해할 수도 있기 때문)
         questions_data_list_from_ai = generate_questions_via_openai(
-            pdf_text, exam_doc.num_questions_requested, 
-            exam_doc.question_type_requested, exam_doc.subject_area
+            pdf_text, # 원본 텍스트 사용
+            exam_doc.num_questions_requested, 
+            exam_doc.question_type_requested, 
+            exam_doc.subject_area
         )
 
-        if not questions_data_list_from_ai or not isinstance(questions_data_list_from_ai, list) or not questions_data_list_from_ai:
+        if not questions_data_list_from_ai or not isinstance(questions_data_list_from_ai, list):
+            logger.error("AI 문제 생성 실패 또는 형식 오류.")
             return JsonResponse({'status': 'error', 'message': 'AI 문제 생성 실패 또는 형식 오류.'}, status=500)
-        print(f"views.py: AI 텍스트 문제 {len(questions_data_list_from_ai)}개 생성 완료.")
 
-        generated_exam_instance = GeneratedExam.objects.create(exam_document=exam_doc)
+        # 2. DB에 쓰는 작업만 트랜잭션으로 묶기
         js_questions_data = []
+        generated_exam_instance = None
+        with transaction.atomic():
+            # 기존 시험 데이터가 있다면 삭제
+            GeneratedExam.objects.filter(exam_document=exam_doc).delete()
+            
+            # 새 시험 세트 생성
+            generated_exam_instance = GeneratedExam.objects.create(exam_document=exam_doc)
+
+            for q_data_item_from_ai in questions_data_list_from_ai:
+                question_instance = GeneratedQuestion.objects.create(
+                    exam=generated_exam_instance,
+                    question_number=q_data_item_from_ai.get('question_number', 0),
+                    question_text=q_data_item_from_ai.get('question_text', ''),
+                    question_type=q_data_item_from_ai.get('question_type', 'unknown'),
+                    option1=q_data_item_from_ai.get('options')[0] if q_data_item_from_ai.get('options') and len(q_data_item_from_ai.get('options')) > 0 else None,
+                    option2=q_data_item_from_ai.get('options')[1] if q_data_item_from_ai.get('options') and len(q_data_item_from_ai.get('options')) > 1 else None,
+                    option3=q_data_item_from_ai.get('options')[2] if q_data_item_from_ai.get('options') and len(q_data_item_from_ai.get('options')) > 2 else None,
+                    option4=q_data_item_from_ai.get('options')[3] if q_data_item_from_ai.get('options') and len(q_data_item_from_ai.get('options')) > 3 else None,
+                    correct_answer=str(q_data_item_from_ai.get('correct_answer', '')),
+                    explanation=q_data_item_from_ai.get('explanation', '')
+                )
+                js_questions_data.append(question_instance.to_dict())
         
-        # 이미지 배정 카운터 (최대 1~2개 문제에만 이미지 배정하기 위함)
-        assigned_image_count = 0
-        max_images_to_assign = random.randint(1, 2) # 한 시험당 최대 이미지 포함 문제 수
-
-        for q_data_item_from_ai in questions_data_list_from_ai:
-            question_instance = GeneratedQuestion.objects.create(
-                exam=generated_exam_instance,
-                question_number=q_data_item_from_ai.get('question_number', len(js_questions_data) + 1),
-                question_text=q_data_item_from_ai.get('question_text', '내용 없음'),
-                question_type=q_data_item_from_ai.get('question_type', 'unknown_type'),
-                option1=q_data_item_from_ai.get('options')[0] if q_data_item_from_ai.get('options') and isinstance(q_data_item_from_ai.get('options'), list) and len(q_data_item_from_ai.get('options')) > 0 else None,
-                option2=q_data_item_from_ai.get('options')[1] if q_data_item_from_ai.get('options') and isinstance(q_data_item_from_ai.get('options'), list) and len(q_data_item_from_ai.get('options')) > 1 else None,
-                option3=q_data_item_from_ai.get('options')[2] if q_data_item_from_ai.get('options') and isinstance(q_data_item_from_ai.get('options'), list) and len(q_data_item_from_ai.get('options')) > 2 else None,
-                option4=q_data_item_from_ai.get('options')[3] if q_data_item_from_ai.get('options') and isinstance(q_data_item_from_ai.get('options'), list) and len(q_data_item_from_ai.get('options')) > 3 else None,
-                correct_answer=str(q_data_item_from_ai.get('correct_answer', '')),
-                explanation=q_data_item_from_ai.get('explanation', '')
-            )
-            question_dict_for_js = question_instance.to_dict()
-            
-            pdf_image_hint_obj = q_data_item_from_ai.get("pdf_image_reference_hint")
-            assigned_image_url = None
-
-            if assigned_image_count < max_images_to_assign and isinstance(pdf_image_hint_obj, dict) and extracted_pdf_images_info:
-                hint_page = pdf_image_hint_obj.get("page_number")
-                hint_desc_for_match = pdf_image_hint_obj.get("image_description", "").lower() # API 응답 키가 image_description이라고 가정
-
-                print(f"views.py: 문제 {question_instance.question_number} - AI PDF 이미지 힌트: page={hint_page}, desc='{hint_desc_for_match}'")
-
-                # 매칭 로직 시작
-                best_match_image = None
-                
-                # 1. 페이지 번호가 일치하는 이미지들 필터링
-                candidate_images_on_page = []
-                if hint_page:
-                    candidate_images_on_page = [img for img in extracted_pdf_images_info if img.get('page_number') == hint_page]
-                
-                if candidate_images_on_page: # 해당 페이지에 이미지가 있다면
-                    # 1-1. 설명도 일치하는 이미지 찾기 (간단한 포함 여부)
-                    if hint_desc_for_match:
-                        for img_info in candidate_images_on_page:
-                            if hint_desc_for_match in img_info.get('description',"").lower():
-                                best_match_image = img_info
-                                break 
-                    if not best_match_image: # 설명 매칭 안되면 해당 페이지 첫 이미지
-                        best_match_image = candidate_images_on_page[0]
-                elif hint_desc_for_match: # 페이지 힌트 없거나 해당 페이지에 이미지 없을때, 전체에서 설명으로만 매칭
-                    for img_info in extracted_pdf_images_info:
-                         if hint_desc_for_match in img_info.get('description',"").lower():
-                            best_match_image = img_info
-                            break
-                
-                if best_match_image:
-                    assigned_image_url = best_match_image.get('url')
-                    print(f"  PDF 이미지 매칭 성공: {assigned_image_url}")
-                    # extracted_pdf_images_info.remove(best_match_image) # 이 이미지는 더 이상 사용 안 함 (중복 방지)
-                                                                    # 이 로직은 available_pdf_images를 따로 만들어서 관리해야 더 정확함
-                    assigned_image_count += 1
-                else:
-                    print(f"  힌트에 맞는 PDF 이미지를 찾지 못함.")
-            
-            if assigned_image_url:
-                question_dict_for_js['image_url'] = assigned_image_url
-            
-            js_questions_data.append(question_dict_for_js)
-        
-        print(f"views.py: js_questions_data 리스트 구성 완료. 이미지 포함 문제 수: {assigned_image_count}")
-        print("--- views.py: JS로 반환할 최종 questions 데이터 (첫 2개) ---")
-        import pprint
-        pprint.pprint(js_questions_data[:2])
-        print("-------------------------------------------------")
-
+        logger.info(f"views.py: DB 저장 완료. JS로 반환할 최종 데이터 구성.")
         return JsonResponse({
             'status': 'completed', 
-            'exam_id': generated_exam_instance.id,
+            'exam_id': generated_exam_instance.id if generated_exam_instance else 0,
             'questions': js_questions_data,
             'exam_document_title': exam_doc.title
         })
 
     except Exception as e:
         import traceback
-        print(f"views.py (ajax_process_pdf_view): 최종 예외 발생 - {type(e).__name__}: {e}")
+        # ★★★ 디버깅 print문 5 ★★★
+        print(f"--- [DEBUG] CRITICAL ERROR: ajax_process_pdf_view 함수 전체에서 예외 발생! ---")
+        print(f"--- [DEBUG] 오류 타입: {type(e).__name__}, 오류 메시지: {e} ---")
         traceback.print_exc()
+        print("------------------------------------------------------------------")
         return JsonResponse({'status': 'error', 'message': f'문제 생성 중 예측하지 못한 서버 오류가 발생했습니다.'}, status=500)
 
 # 4. AJAX 요청 처리: 답안 채점
@@ -323,6 +303,51 @@ def download_answers_pdf_view(request, generated_exam_id):
         return HttpResponse("답지/해설 PDF 생성에 실패했습니다 (ReportLab).", status=500)
     
 
+# 7. 임시 오답노트/챗봇 테스트 페이지 뷰 (★★★★★ 새 테스트용 뷰)
+# ==============================================================================
+@require_GET
+def mistake_note_page_view(request, exam_document_id):
+    """
+    챗봇 기능을 테스트하기 위한 임시 오답노트 페이지.
+    실제 오답노트 페이지가 완성되면 이 뷰의 로직과 템플릿을 통합합니다.
+    """
+    exam_doc = get_object_or_404(ExamDocument, pk=exam_document_id)
+    
+    context = {
+        'page_title': f"'{exam_doc.title}' 오답노트",
+        'exam_document_id': exam_document_id, # JS에서 챗봇 API 호출 시 필요
+        'chatbot_ajax_url': reverse('flo_exam:ajax_chatbot', args=[exam_document_id]),
+    }
+    return render(request, 'flo_exam/mistake_note_page.html', context)
 
+@require_POST
+def ajax_chatbot_view(request, exam_document_id):
+    """
+    Hugging Face 기반 RAG 챗봇으로 답변을 생성하고 JSON으로 반환합니다.
+    """
+    try:
+        data = json.loads(request.body)
+        user_question = data.get('question')
+        if not user_question:
+            return JsonResponse({'status': 'error', 'answer': '질문이 없습니다.'}, status=400)
 
+        # 수정된 부분: 싱글턴 인스턴스를 가져옵니다.
+        chatbot = get_rag_chatbot_instance()
+        
+        if chatbot is None:
+            # 이 경우는 모델 로딩에 실패한 경우입니다.
+            return JsonResponse({'status': 'error', 'answer': '챗봇 서비스를 현재 사용할 수 없습니다. 서버 관리자에게 문의하세요.'}, status=503)
 
+        # 챗봇에게 질문하고 답변 받기
+        ai_answer = chatbot.ask(user_question, exam_document_id)
+
+        # 참고: 대화 기록을 유지하는 로직은 나중에 추가할 수 있습니다.
+        # 지금은 단일 질문/답변만 처리합니다.
+
+        return JsonResponse({'status': 'success', 'answer': ai_answer})
+
+    except Exception as e:
+        import traceback
+        print(f"views.py (ajax_chatbot_view): 챗봇 처리 중 오류 발생 - {e}")
+        traceback.print_exc()
+        return JsonResponse({'status': 'error', 'answer': '챗봇 응답 중 서버 오류가 발생했습니다.'}, status=500)
