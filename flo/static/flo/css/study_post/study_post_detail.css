@@ -8,11 +8,7 @@
     --border-color: #dee2e6;
     --background-color-page: #f8f9fa; /* 페이지 배경 */
     --background-color-content: #fff; /* 컨텐츠 영역 배경 */
-<<<<<<< HEAD
-    --button-primary-bg: #0d6efd;
-=======
     --button-primary-bg: #3294E4;
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     --button-primary-text: #fff;
     --button-secondary-bg: #6c757d;
     --button-secondary-text: #fff;
@@ -25,11 +21,7 @@
     --dark-border-color: #495057;
     --dark-background-color-page: #1a1a1a; /* 어두운 페이지 배경 */
     --dark-background-color-content: #2c2c2c; /* 어두운 컨텐츠 영역 배경 */
-<<<<<<< HEAD
-    --dark-button-primary-bg: #378bf9;
-=======
     --dark-button-primary-bg: #3294E4;
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     --dark-button-secondary-bg: #5a6268;
     --dark-avatar-border-color: #555;
 
@@ -130,21 +122,6 @@ body:not(.theme-light) .post-meta-info {
     margin-right: 20px; /* 오른쪽 여백 */
     margin-bottom: 5px; /* 작은 화면 줄바꿈 시 하단 여백 */
 }
-<<<<<<< HEAD
-.author-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    margin-right: 8px;
-    border: 1px solid var(--avatar-border-color);
-    object-fit: cover;
-}
-body:not(.theme-light) .author-avatar {
-    border-color: var(--dark-avatar-border-color);
-}
-=======
-
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 .author-name {
     font-weight: 500;
     color: var(--text-color-main);
@@ -181,19 +158,6 @@ body:not(.theme-light) .post-stats > span:not(:last-child)::after {
 }
 
 #attachments-list-container {
-<<<<<<< HEAD
-    /* margin-top, margin-bottom, border-top, padding-top 등 기존 스타일 유지 */
-    /* ★★★ 배경색 추가 ★★★ */
-    background-color: var(--background-color-page); /* 라이트 모드: 페이지 배경과 유사하게 또는 약간 다르게 */
-    border: 1px solid var(--border-color); /* 테두리 추가하여 구분 명확히 */
-    border-radius: 4px; /* 약간의 둥근 모서리 */
-    padding: 15px; /* 내부 여백 */
-    margin-bottom: 20px; /* 본문과의 하단 여백 */
-}
-body:not(.theme-light) #attachments-list-container {
-    background-color: #252528; /* 다크 모드: 컨텐츠 영역보다 약간 다른 어두운 색 */
-    /* 또는 var(--dark-background-color-content) 보다 살짝 다른 톤으로 */
-=======
     background-color: var(--background-color-page);
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -203,7 +167,6 @@ body:not(.theme-light) #attachments-list-container {
 }
 body:not(.theme-light) #attachments-list-container {
     background-color: #252528;
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     border-color: var(--dark-border-color);
 }
 
@@ -242,8 +205,6 @@ body:not(.theme-light) hr.post-divider {
     border-top-color: var(--dark-border-color);
 }
 
-<<<<<<< HEAD
-=======
 /* --- 공통 아바타 Wrapper 스타일 --- */
 .avatar-wrapper {
     border-radius: 50%;
@@ -333,7 +294,6 @@ body:not(.theme-light) .avatar-wrapper {
     height: 40px;
 }
 
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 /* 게시글 본문 */
 .post-body-content {
     line-height: 1.7;
@@ -435,20 +395,6 @@ body:not(.theme-light) .author-profile-more {
     display: flex;
     align-items: center;
 }
-<<<<<<< HEAD
-.author-avatar-small {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 12px;
-    border: 1px solid var(--avatar-border-color);
-    object-fit: cover;
-}
-body:not(.theme-light) .author-avatar-small {
-     border-color: var(--dark-avatar-border-color);
-}
-=======
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 
 .author-name-link {
     font-size: 0.95rem;
@@ -531,21 +477,6 @@ body:not(.theme-light) .comment-item-wrapper {
     align-items: center;
     margin-bottom: 8px;
 }
-<<<<<<< HEAD
-.commenter-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
-    border: 1px solid var(--avatar-border-color);
-    object-fit: cover;
-}
-body:not(.theme-light) .commenter-avatar {
-    border-color: var(--dark-avatar-border-color);
-}
-=======
-
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 .comment-author-details .commenter-name {
     font-weight: 500;
     font-size: 0.9rem;
@@ -622,19 +553,6 @@ body:not(.theme-light) .new-comment-form {
 .comment-form-author-avatar {
     margin-right: 15px;
 }
-<<<<<<< HEAD
-.current-user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid var(--avatar-border-color);
-    object-fit: cover;
-}
-body:not(.theme-light) .current-user-avatar {
-    border-color: var(--dark-avatar-border-color);
-}
-=======
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 
 .comment-form-input-area {
     flex-grow: 1;

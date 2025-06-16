@@ -5,17 +5,10 @@ from . import views
 app_name = 'flo' # 앱 네임스페이스 설정
 
 urlpatterns = [
-<<<<<<< HEAD
-    path('', views.home_view_in_flo, name='home'),
-    
-    # 인증 관련 URL 추가
-    path('signup/', views.signup_view, name='signup'),
-=======
     path('', views.home, name='home'),
     
     # 인증 관련 URL 추가
     # path('signup/', views.signup_view, name='signup'),
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     
@@ -34,8 +27,6 @@ urlpatterns = [
     path('study_post/<int:post_pk>/comment/new/', views.study_post_comment_create, name='study_post_comment_create'),
     path('comment/<int:pk>/edit/', views.study_post_comment_edit, name='study_post_comment_edit'), # (선택적 AJAX)
     path('comment/<int:pk>/delete/', views.study_post_comment_delete, name='study_post_comment_delete'), # (선택적 AJAX)
-<<<<<<< HEAD
-=======
     path('study_post/<int:post_pk>/comments/', views.ajax_get_comments, name='ajax_get_comments'), # 댓글 AJAX 로드용 URL
     
     # ★★★ 답글 작성 URL 추가 ★★★
@@ -45,42 +36,10 @@ urlpatterns = [
     # ★★★ 답글 작성 URL 추가 ★★★
     # pk는 부모 댓글의 ID를 의미합니다.
     path('comment/<int:pk>/reply/new/', views.study_post_reply_create, name='study_post_reply_create'),
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 
     # FAQ
     path('faq/', views.faq_list, name='faq_list'),
 
-<<<<<<< HEAD
-    # PDF 파일 업로드
-    path('pdf/upload/', views.pdf_upload_view, name='pdf_upload'),
-
-    # PDF 파일에서 문제 생성
-    path('pdf/<int:pdf_pk>/select_questions/', views.select_num_questions_view, name='select_num_questions'),
-
-    # 시험 준비
-    path('test/<int:test_set_pk>/take/', views.take_test_view, name='take_test'), 
-
-    # 시험 결과
-    path('test/result/<int:attempt_pk>/', views.test_result_view, name='test_result'),
-
-    # 마이페이지
-    path('mypage/', views.mypage_dashboard_view, name='mypage_dashboard'), # 대시보드
-    path('mypage/materials/', views.mypage_materials_view, name='mypage_materials'), # 학습자료 (시험 목록) 페이지
-    path('ajax/toggle_importance/<int:test_set_pk>/', views.toggle_importance_view, name='ajax_toggle_importance'),
-    path('ajax/get_test_set_details/<int:test_set_pk>/', views.get_test_set_details_api_view, name='ajax_get_test_set_details'),
-    path('download_test_set_pdf/<int:test_set_pk>/', views.download_test_set_pdf_view, name='download_test_set_pdf'),
-    path('mypage/goals/', views.mypage_learning_goals_view, name='mypage_learning_goals'), # 학습 목표 목록 및 생성
-    path('mypage/goal/<int:goal_pk>/edit/', views.learning_goal_edit_view, name='learning_goal_edit'), # 학습 목표 수정
-    path('mypage/goal/<int:goal_pk>/delete/', views.learning_goal_delete_view, name='learning_goal_delete'), # 학습 목표 삭제
-    path('mypage/incorrect-notes/', views.mypage_incorrect_notes_view, name='mypage_incorrect_notes'),
-    path('mypage/incorrect-notes/toggle-importance/<int:attempt_id>/', views.toggle_incorrect_note_importance_view, name='toggle_incorrect_note_importance'),
-    path('mypage/incorrect-notes/delete/<int:attempt_id>/', views.delete_incorrect_note_view, name='delete_incorrect_note'),
-    path('mypage/incorrect-notes/details/<int:attempt_id>/', views.get_incorrect_note_details_view, name='get_incorrect_note_details'),
-    path('mypage/incorrect-notes/retake/<int:attempt_id>/', views.retake_from_note_view, name='retake_from_note'),
-    path('attempt/<int:attempt_pk>/retake_incorrect/', views.retake_incorrect_answers_view, name='retake_incorrect_answers'), # 오답노트 다시풀기
-    path('retake_result/', views.retake_result_view, name='retake_result'), # 세션에서 데이터 가져오므로 별도 pk 필요 없을 수 있음
-    path('materials/delete/<int:test_set_pk>/', views.delete_test_set_view, name='delete_test_set'),
-=======
     # Account URLs
     # path('accounts/signup/', views.signup_view, name='account_signup'), # /flo/accounts/signup/
     # path('accounts/login/', views.login_view, name='account_login'),   # /flo/accounts/login/
@@ -107,5 +66,4 @@ urlpatterns = [
 
     # 좋아요
     # path('study-board/post/<int:post_pk>/like/', views.toggle_study_post_like_view, name='study_toggle_like'),
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 ]

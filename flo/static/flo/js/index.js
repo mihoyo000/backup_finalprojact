@@ -33,11 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Design
                 verticalCentered: false, // 컨텐츠를 섹션 내에서 직접 정렬할 것이므로 false
-<<<<<<< HEAD
-                fixedElements: '#header, .site-footer',
-=======
                 fixedElements: '#header',
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 responsiveWidth: 0,
                 lazyLoading: true,
 

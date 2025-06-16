@@ -9,12 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
 
         const headerLogoImg = document.getElementById('header-logo');
-<<<<<<< HEAD
-        const sidebarLogoImg = document.getElementById('sidebar-logo'); // <<<<<<<<<<< 수정된 부분: 사이드바 로고 요소 추가
-        const footerLogoImg = document.getElementById('footer-logo');
-=======
         const footerLogoImg = document.getElementById('footer-logo'); // 푸터 로고 이미지 요소 추가
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         const themeToggleImg = document.getElementById('theme-toggle-icon');
         const langToggleImg = document.getElementById('lang-toggle-icon');
         const themeItemIcons = {
@@ -23,12 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
             auto: document.getElementById('theme-item-icon-auto')
         };
         const themeMenuItems = document.querySelectorAll('.theme-dropdown-menu .dropdown-item.theme-item');
-<<<<<<< HEAD
-        const userProfileImage = document.getElementById('user-profile-image');
-
-        const getCurrentThemeSetting = () => localStorage.getItem('theme') || 'light';
-
-=======
 
         // 프로필 이미지 요소 추가
         // const userProfileImage = document.getElementById('user-profile-image');
@@ -36,16 +25,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const getCurrentThemeSetting = () => localStorage.getItem('theme') || 'light'; // 기본값을 'light'로 명시
 
         // 현재 body에 실제로 적용된 테마를 가져오는 헬퍼 함수 추가
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         const getCurrentAppliedTheme = () => {
             if (body.classList.contains('theme-dark')) {
                 return 'dark';
             }
-<<<<<<< HEAD
-            return 'light';
-=======
             return 'light'; // 기본값 또는 theme-light
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         };
 
         const applyTheme = (selectedThemeSetting) => {
@@ -64,67 +48,38 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             localStorage.setItem('theme', selectedThemeSetting);
-<<<<<<< HEAD
-            updateIcons(actualTheme, selectedThemeSetting);
-            updateActiveDropdownItem(selectedThemeSetting);
-        };
-
-        const updateIcons = (currentActualTheme, currentThemeSetting) => {
-=======
             setDefaultThemeAssets(); // 아이콘 및 프로필 이미지 등 모든 테마 관련 에셋 업데이트
             updateActiveDropdownItem(selectedThemeSetting);
         };
 
         // ▼▼▼ 추가 또는 기존 updateIcons 함수를 이 내용으로 대체/확장 ▼▼▼
         function setDefaultThemeAssets() {
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             const paths = window.iconImagePaths;
             if (!paths) {
                 console.error("iconImagePaths is not defined in window object.");
                 return;
             }
 
-<<<<<<< HEAD
-            const lightP = paths.light;
-            const darkP = paths.dark || paths.light;
-=======
             const currentActualTheme = getCurrentAppliedTheme(); // body에 실제 적용된 테마 (light/dark)
             const currentThemeSetting = getCurrentThemeSetting(); // 사용자가 선택한 설정 (light/dark/auto)
 
             const lightP = paths.light;
             const darkP = paths.dark || paths.light; // dark 경로 없으면 light 사용
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 
             // 1. 헤더 로고 변경
             if (headerLogoImg) {
                 headerLogoImg.src = (currentActualTheme === 'dark' && darkP.logo) ? darkP.logo : lightP.logo;
             }
 
-<<<<<<< HEAD
-            // START: 사이드바 로고 변경 로직 추가 <<<<<<<<<<< 수정된 부분
-            if (sidebarLogoImg) {
-                // 헤더 로고와 동일한 로직으로 사이드바 로고 이미지 경로 설정
-                sidebarLogoImg.src = (currentActualTheme === 'dark' && darkP.logo) ? darkP.logo : lightP.logo;
-            }
-            // END: 사이드바 로고 변경 로직 추가 <<<<<<<<<<< 수정된 부분
-
-=======
             // 2. 푸터 로고 변경
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             if (footerLogoImg) {
                 footerLogoImg.src = (currentActualTheme === 'dark' && darkP.logo) ? darkP.logo : lightP.logo;
             }
 
-<<<<<<< HEAD
-            if (themeToggleImg) {
-                if (currentThemeSetting === 'light') {
-                    themeToggleImg.src = lightP.themeLight;
-=======
             // 3. 헤더 테마 토글 버튼 아이콘 변경 (사용자 선택 'auto' 상태 반영)
             if (themeToggleImg) {
                 if (currentThemeSetting === 'light') {
                     themeToggleImg.src = (currentActualTheme === 'dark' && darkP.themeLight) ? darkP.themeLight : lightP.themeLight;
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 } else if (currentThemeSetting === 'dark') {
                     themeToggleImg.src = (currentActualTheme === 'dark' && darkP.themeDark) ? darkP.themeDark : lightP.themeDark;
                 } else { // 'auto'
@@ -132,26 +87,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-<<<<<<< HEAD
-=======
             // 4. 헤더 언어 토글 버튼 아이콘 변경
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             if (langToggleImg) {
                 langToggleImg.src = (currentActualTheme === 'dark' && darkP.translate) ? darkP.translate : lightP.translate;
             }
 
-<<<<<<< HEAD
-            if (themeItemIcons.light) {
-                if (currentActualTheme === 'light' && currentThemeSetting === 'light' && darkP.themeLight) {
-                    themeItemIcons.light.src = darkP.themeLight;
-                } else {
-                    themeItemIcons.light.src = (currentActualTheme === 'dark' && darkP.themeLight) ? darkP.themeLight : lightP.themeLight;
-                }
-=======
             // 5. 테마 드롭다운 내부 아이콘들 변경
             if (themeItemIcons.light) {
                 themeItemIcons.light.src = (currentActualTheme === 'dark' && darkP.themeLight) ? darkP.themeLight : lightP.themeLight;
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             }
             if (themeItemIcons.dark) {
                 themeItemIcons.dark.src = (currentActualTheme === 'dark' && darkP.themeDark) ? darkP.themeDark : lightP.themeDark;
@@ -160,24 +103,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 themeItemIcons.auto.src = (currentActualTheme === 'dark' && darkP.themeAuto) ? darkP.themeAuto : lightP.themeAuto;
             }
 
-<<<<<<< HEAD
-            if (userProfileImage && window.defaultProfileImagePaths) {
-                const hasCustomImage = userProfileImage.dataset.hasCustomImage === 'true';
-                if (!hasCustomImage) {
-                    let newProfileSrc = '';
-                    const appliedTheme = getCurrentAppliedTheme();
-                    if (appliedTheme === 'dark' && window.defaultProfileImagePaths.dark) {
-                        newProfileSrc = window.defaultProfileImagePaths.dark;
-                    } else if (window.defaultProfileImagePaths.light) {
-                        newProfileSrc = window.defaultProfileImagePaths.light;
-                    }
-                    if (newProfileSrc && userProfileImage.src !== newProfileSrc) {
-                        userProfileImage.src = newProfileSrc;
-                    }
-                }
-            }
-        };
-=======
             // 6. 모든 '.default-avatar' 클래스를 가진 기본 프로필 이미지 변경
             if (window.defaultProfileImagePaths) {
                 const lightDefaultProfile = window.defaultProfileImagePaths.light;
@@ -203,7 +128,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         // ▲▲▲ 추가 또는 기존 updateIcons 함수를 이 내용으로 대체/확장 끝 ▲▲▲
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 
         const updateActiveDropdownItem = (themeSetting) => {
             themeMenuItems.forEach(item => {
@@ -230,30 +154,13 @@ document.addEventListener('DOMContentLoaded', function () {
             prefersDarkScheme.addListener(handleSystemThemeChange);
         }
 
-<<<<<<< HEAD
-=======
         // 1. 먼저 현재 body 클래스 기준으로 아이콘들 초기 상태 설정 (특히 'auto'일 때 시스템 테마 반영)
         setDefaultThemeAssets();
         // 2. 그 다음 localStorage에 저장된 사용자 선택 테마 적용 (내부적으로 setDefaultThemeAssets 다시 호출)
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         applyTheme(getCurrentThemeSetting());
     }
     // --- 테마 전환 로직 끝 ---
 
-<<<<<<< HEAD
-
-    // --- TOP 버튼 로직 (기존 유지) ---
-    const scrollToTopBtn = document.getElementById('scroll-to-top');
-    if (scrollToTopBtn && typeof fullpage_api === 'undefined') {
-        let isScrolling;
-        window.onscroll = function() {
-            window.clearTimeout(isScrolling);
-            isScrolling = setTimeout(function() {
-                 scrollFunction();
-            }, 100);
-        };
-        function scrollFunction() {
-=======
     // ▼▼▼ 추가 시작 ▼▼▼ (반응형 헤더 로직)
     const navbarToggler = document.querySelector('.navbar-toggler');
     const mainNav = document.getElementById('mainNav');  // 스크롤 대상 컨테이너
@@ -387,34 +294,21 @@ document.addEventListener('DOMContentLoaded', function () {
     // ▲▲▲ 수정 ▲▲▲
         let isScrolling;
         const scrollFunction = () => {
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             const scrollPosition = document.body.scrollTop || document.documentElement.scrollTop;
             const shouldShow = scrollPosition > 200;
             const isVisible = scrollToTopBtn.style.opacity === '1';
 
             if (shouldShow && !isVisible) {
                 scrollToTopBtn.style.display = "block";
-<<<<<<< HEAD
-                void scrollToTopBtn.offsetWidth;
-                scrollToTopBtn.style.opacity = '1';
-=======
                 requestAnimationFrame(() => { // 다음 프레임에서 opacity 변경하여 애니메이션 트리거
                     scrollToTopBtn.style.opacity = '1';
                 });
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             } else if (!shouldShow && isVisible) {
                 scrollToTopBtn.style.opacity = '0';
                 setTimeout(() => {
                     if (scrollToTopBtn.style.opacity === '0') {
                          scrollToTopBtn.style.display = "none";
                      }
-<<<<<<< HEAD
-                }, 300);
-            }
-        }
-        scrollToTopBtn.addEventListener('click', function() { window.scrollTo({top: 0, behavior: 'smooth'}); });
-        scrollFunction();
-=======
                 }, 300); // CSS transition 시간과 일치
             }
         };
@@ -433,31 +327,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // 이 부분은 fullPage.js의 afterLoad 콜백에서 처리하는 것이 더 적합
         // 여기서는 기본적으로 숨김 처리하고, fullPage.js 설정에서 제어
         scrollToTopBtn.style.display = 'none';
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     }
     // --- TOP 버튼 로직 끝 ---
 
 
-<<<<<<< HEAD
-    // --- 서브 메뉴 호버 효과 (기존 유지) ---
-    if (window.jQuery) {
-        $(document).ready(function() {
-            $(".main-menu > li").hover(
-                function () {
-                    $(this).children(".sub-menu").stop(true, true).slideDown(200);
-                },
-                function () {
-                    $(this).children(".sub-menu").stop(true, true).slideUp(200);
-                }
-            );
-        });
-    } else {
-        console.warn("jQuery not loaded, main menu hover effect skipped.");
-    }
-    // --- 서브 메뉴 호버 효과 끝 ---
-
-});
-=======
     // --- 서브 메뉴 호버 효과 ---
     // ▼▼▼ 수정 ▼▼▼ (jQuery 사용 시, 데스크톱에서만 호버 작동하도록 조건 추가)
     if (window.jQuery) {
@@ -495,4 +368,3 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- 서브 메뉴 호버 효과 끝 ---
 
 });
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5

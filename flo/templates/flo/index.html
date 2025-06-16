@@ -19,11 +19,7 @@
                 <span class="s1-title-line1">새로운 공부 시작,</span>
                 <span class="s1-title-line2"><span class="flo-highlight">Flo</span>가 함께할께요.</span>
             </h1>
-<<<<<<< HEAD
-            <a href="#" class="btn btn-flo-start">시작하기</a>
-=======
             <a href="{% url 'flo_exam:upload_page' %}" class="btn btn-flo-start">시작하기</a>
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         </div>
     </div>
 
@@ -32,32 +28,17 @@
         <div class="slide-content section2-content">
             <h2 class="s2-main-title">기능 소개</h2>
             <div class="feature-container">
-<<<<<<< HEAD
-                <div class="feature-block">
-                    <div class="feature-text">
-                        {# "끙끙" 부분을 "Flo" 회전 텍스트로 변경 #}
-                        <p>혼자 어떻게 공부할지 몰라<span class="flo-rotated-text">Flo<br>Flo</span> 앓고 계신가요?<br>공부하고 싶으신 자료를 Flo에게 주세요.</p>
-                        <h3>Flo가 맞춤 시험 문제를 만들어 드립니다.</h3>
-                        <a href="#" class="btn btn-flo-feature1">시험 문제 만들기 <i class="bi bi-arrow-right-short"></i></a>
-=======
                 {# 첫 번째 기능 블록: 인라인 스타일 제거, 식별 클래스 추가 #}
                 <div class="feature-block feature-bg-1">
                     <div class="feature-text">
                         <p>혼자 어떻게 공부할지 몰라<span class="flo-rotated-text">Flo<br>Flo</span> 앓고 계신가요?<br>공부하고 싶으신 자료를 Flo에게 주세요.</p>
                         <h3>Flo가 맞춤 시험 문제를 만들어 드립니다.</h3>
                         <a href="{% url 'flo_exam:upload_page' %}" class="btn btn-flo-feature1">시험 문제 만들기 <i class="bi bi-arrow-right-short"></i></a>
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                     </div>
                     <div class="feature-image">
                         <img src="{% static 'flo/images/slide/slide2-1.png' %}" alt="{% translate 'Customized Problems' %}">
                     </div>
                 </div>
-<<<<<<< HEAD
-                <div class="feature-block reverse">
-                    <div class="feature-text">
-                        <p>나와 비슷한 사람과 함께 공부하고 싶으신가요?</p>
-                        <span class="section-2-strong">학습 자료 공유</span><span class="section-2-no-strong">부터 소통할 수 있는</span><span class="section-2-strong">커뮤니티</span><span class="section-2-no-strong">까지,</span>
-=======
 
                 {# 두 번째 기능 블록: 인라인 스타일 제거, 식별 클래스 추가 #}
                 <div class="feature-block reverse feature-bg-2">
@@ -67,20 +48,14 @@
                         <div class="middle-text-group">
                             <span class="section-2-strong">학습 자료 공유</span><span class="section-2-no-strong">부터 소통할 수 있는</span><span class="section-2-strong">커뮤니티</span><span class="section-2-no-strong">까지,</span>
                         </div>
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                         <h3>스터디 활동을 위한 모든 것이 준비되어 있습니다.</h3>
                         <a href="#" class="btn btn-flo-feature2">스터디 활동 시작 <i class="bi bi-arrow-right-short"></i></a>
                     </div>
                     <div class="feature-image">
-<<<<<<< HEAD
-                        <img src="{% static 'flo/images/slide/slide2-2.png' %}" alt="{% translate 'Study Activities' %}">
-                    </div>
-=======
                         <img src="{% static 'flo/images/slide/slide2-2.png' %}" alt="{% translate 'Customized Problems' %}">
                     </div>
                     {# feature-image는 작은 화면에서 display: none 이므로, inner-bg에 영향을 주지 않음 #}
                     <!-- </div> -->
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 </div>
             </div>
         </div>
@@ -89,31 +64,6 @@
     <!-- Section 3: 커뮤니티 - 인기글 (기존과 동일) -->
     <div class="section section-3" data-anchor="community-posts">
         <div class="slide-content section3-content">
-<<<<<<< HEAD
-            <h2 class="s3-main-title">요즘 뜨는 게시글 Top3</h2>
-            <div class="posts-grid">
-                {% for i in "123" %} {# Django 템플릿 루프로 실제 데이터 반복 #}
-                <div class="post-card">
-                    <div class="post-thumbnail-wrapper">
-                        <img src="{% static 'flo/images/slide/slide3.jpg' %}" alt="{% translate 'Post Thumbnail' %} {{ i }}" class="post-thumbnail">
-                    </div>
-                    <div class="post-info">
-                        <h4 class="post-title">한국사 능력검정시험 핵심 자료 공유...</h4> <!-- ❗ 제목은 나중에 몇 글자 이상이면 ...으로 표시되게 수정하기 -->
-                        <div class="post-meta">
-                            <span class="post-author">
-                                <!-- <img src="#" alt="cat123" class="author-avatar"> cat123 -->
-                            </span>
-                            <span class="post-stats">
-                                <i class="bi bi-chat-dots"></i> 21
-                                <i class="bi bi-heart-fill"></i> 37 {# 채워진 하트로 변경 #}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            <a href="#" class="btn btn-flo-community">학습 게시판 <i class="bi bi-arrow-right-short"></i></a>
-=======
             <h2 class="s3-main-title">요즘 뜨는 게시글</h2>
             
             <div class="top-posts-container">
@@ -175,7 +125,6 @@
             <a href="{% url 'flo:study_post_list' %}" class="btn btn-flo-community">
                 학습 게시판 <i class="bi bi-arrow-right-short"></i>
             </a>
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         </div>
     </div>
 

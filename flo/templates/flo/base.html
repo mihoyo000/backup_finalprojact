@@ -1,10 +1,6 @@
 {% load static i18n %}
 <!DOCTYPE html>
-<<<<<<< HEAD
-<html lang="{{ LANGUAGE_CODE }}">
-=======
 <html lang="{{ LANGUAGE_CODE|default:'ko' }}" {% if request.COOKIES.django_theme == 'dark' %}data-bs-theme="dark"{% else %}data-bs-theme="light"{% endif %}></html>
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 <head>
     {% load static %}
     <meta charset="UTF-8">
@@ -17,8 +13,6 @@
     <link rel="stylesheet" href="{% static 'flo/css/base.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
-<<<<<<< HEAD
-=======
 {% if messages %}
     <script>
         // 페이지 로딩이 끝나면 바로 실행됩니다.
@@ -30,7 +24,6 @@
         });
     </script>
     {% endif %}
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
 <body>
 
     <header id="header">
@@ -42,15 +35,6 @@
                     </a>
                 </div>
 
-<<<<<<< HEAD
-                <nav class="main-nav">
-                    <ul class="main-menu">
-                        {% if user.is_authenticated %} {# 로그인한 사용자에게만 보이도록 조건 추가 #}
-                        <li><a href="{% url 'flo:pdf_upload' %}">{% translate "Flo와 문제 풀기" %}</a></li>
-                        {% endif %}
-                        <li>
-                            <a href="#">{% translate "스터디" %}</a>
-=======
                 {# ▼▼▼ 추가 ▼▼▼ (모바일용 햄버거 메뉴 토글 버튼) #}
                 <button class="navbar-toggler" type="button" aria-label="Toggle navigation">
                     <span class="toggler-icon-bar"></span>
@@ -94,49 +78,21 @@
                             {# ▼▼▼ 수정 ▼▼▼ (모바일 서브메뉴 토글 위해 href, data-bs-toggle, 화살표 추가) #}
                             <a href="#" data-bs-toggle="submenu">{% translate "스터디" %} <span class="submenu-arrow">▾</span></a>
                             {# ▲▲▲ 수정 ▲▲▲ #}
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                             <ul class="sub-menu">
                                 <li><a href="#">{% translate "스터디 게시판" %}</a></li>
                                 <li><a href="#">{% translate "채팅" %}</a></li>
                             </ul>
                         </li>
                         <li>
-<<<<<<< HEAD
-                            <a href="{% url 'flo:study_post_list' %}">{% translate "커뮤니티" %}</a>
-=======
                             {# ▼▼▼ 수정 ▼▼▼ (모바일 서브메뉴 토글 위해 href, data-bs-toggle, 화살표 추가) #}
                             <a href="{% url 'flo:study_post_list' %}" data-bs-toggle="submenu">{% translate "커뮤니티" %} <span class="submenu-arrow">▾</span></a>
                              {# ▲▲▲ 수정 ▲▲▲ #}
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                             <ul class="sub-menu">
                                 <li><a href="{% url 'flo:study_post_list' %}">{% translate "학습 게시판" %}</a></li>
                                 <li><a href="{% url 'flo:faq_list' %}">{% translate "FAQ" %}</a></li>
                             </ul>
                         </li>
                     </ul>
-<<<<<<< HEAD
-                </nav>
-
-                <div class="header-right-controls">
-                    <div class="auth-links ms-auto"> {# ms-auto는 Bootstrap 5에서 오른쪽 정렬 #}
-                        {% if user.is_authenticated %}
-                            <div class="dropdown">
-                                {# START: 수정된 사용자 정보 표시 부분 #}
-                                <a href="#" class="user-dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <div class="profile-image-wrapper">
-                                        <img src="{{ user.profile.get_profile_image_url }}"
-                                            alt="{{ user.profile.get_display_name }} Profile"
-                                            id="user-profile-image"
-                                            data-has-custom-image="{{ user.profile.has_custom_profile_image|yesno:'true,false' }}">
-                                    </div>
-                                    <span>{{ user.profile.get_display_name }}님</span>
-                                </a>
-                                {# END: 수정된 사용자 정보 표시 부분 #}
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    {# 나중에 마이페이지, 계정 관리 링크 추가 #}
-                                    <li><a class="dropdown-item" href="#">{% translate "마이페이지" %}</a></li>
-                                    <li><a class="dropdown-item" href="#">{% translate "계정 관리" %}</a></li>
-=======
                 </nav> 
 
                 <div class="header-right-controls">
@@ -156,7 +112,6 @@
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="#">{% translate "마이페이지" %}</a></li>
                                     <li><a class="dropdown-item" href="{% url 'accounts:information_redi' %}">{% translate "계정 관리" %}</a></li>
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form id="logoutForm" method="post" action="{% url 'flo:logout' %}">
@@ -167,13 +122,6 @@
                                 </ul>
                             </div>
                         {% else %}
-<<<<<<< HEAD
-                            {# 로그인 버튼의 id="btn-login"은 JS와 연동될 수 있으므로 유지하거나, 단순 링크로 변경 #}
-                            <a href="{% url 'flo:login' %}" id="btn-login" class="btn btn-outline-light">{% translate "로그인" %}</a>
-                        {% endif %}
-                    </div>
-
-=======
                             <a href="#" id="btn-login" data-bs-toggle="modal" data-bs-target="#loginModal">
                                 {% translate "로그인" %}
                             </a>
@@ -188,7 +136,6 @@
 
                     {# 테마 및 언어 선택 드롭다운 #}
 
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                     <div class="theme-dropdown dropdown">
                         <button type="button" id="theme-toggle-btn" class="btn theme-btn" title="{% translate "Change theme" %}" data-bs-toggle="dropdown" aria-expanded="false">
                             <img id="theme-toggle-icon" src="{% static 'flo/images/light/header/light-auto.png' %}" alt="Theme Icon">
@@ -276,12 +223,9 @@
                 <div class="footer-email-row">
                     <span>{% translate "개발자 이메일:" %} <strong><a href="mailto:abc@gmail.com">abc@gmail.com</a></strong></span>
                 </div>
-<<<<<<< HEAD
-=======
                 <div class="footer-copyright">
                     <span>&copy; 2025 (주)Flo. All rights reserved.</span>
                 </div>
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             </div>
 
             {# 구분선 (소셜 아이콘 위) #}
@@ -301,11 +245,8 @@
         </div>
     </footer>
 
-<<<<<<< HEAD
-=======
     {% include 'flo/auth/login.html' %}
 
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     <button id="scroll-to-top" title="{% translate "Scroll to top" %}" style="display: none;">
         <span class="arrow-up">▲</span> {% translate "TOP" %}
     </button>

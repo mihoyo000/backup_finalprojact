@@ -37,13 +37,6 @@
 
             <div class="post-meta-info">
                 <div class="author-info">
-<<<<<<< HEAD
-                    {% if post.author.profile.has_custom_profile_image %}
-                        <img src="{{ post.author.profile.get_profile_image_url }}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar">
-                    {% else %}
-                        <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar default-avatar">
-                    {% endif %}
-=======
                     {# === 변경 시작 === #}
                     <div class="avatar-wrapper author-avatar-wrapper"> {# (1) Wrapper div 추가 및 클래스 지정 #}
                         {% if post.author.profile.has_custom_profile_image %}
@@ -53,7 +46,6 @@
                         {% endif %}
                     </div>
                     {# === 변경 끝 === #}
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                     <span class="author-name">{{ post.author.profile.get_display_name }}</span>
                 </div>
                 <div class="post-stats">
@@ -131,35 +123,19 @@
             <button id="like-button" data-post-id="{{ post.pk }}" class="btn btn-like {% if is_liked %}active{% endif %}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16" style="margin-right: 5px;">
                     <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
-<<<<<<< HEAD
-                  </svg>
-                추천&nbsp; <span id="like-count">{{ post.total_likes }}</span>
-=======
                 </svg>
                 좋아요&nbsp; <span id="like-count">{{ post.total_likes }}</span>
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             </button>
             <span class="comment-count-display">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-text-fill" viewBox="0 0 16 16" style="margin-right: 5px;">
                     <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793zm3.5 1a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 2.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 2.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1z"/>
-<<<<<<< HEAD
-                  </svg>
-=======
                 </svg>
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 댓글&nbsp; <span id="comment-total-count">{{ post.comment_count }}</span>
             </span>
         </div>
 
         <div class="author-profile-more">
             <div class="author-profile-box">
-<<<<<<< HEAD
-                 {% if post.author.profile.has_custom_profile_image %}
-                    <img src="{{ post.author.profile.get_profile_image_url }}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar-small">
-                {% else %}
-                    <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ post.author.profile.get_display_name }}" class="author-avatar-small default-avatar">
-                {% endif %}
-=======
                 {# === 변경 시작 === #}
                 <div class="avatar-wrapper author-avatar-small-wrapper"> {# (1) Wrapper div 추가 및 클래스 지정 #}
                     {% if post.author.profile.has_custom_profile_image %}
@@ -169,7 +145,6 @@
                     {% endif %}
                 </div>
                 {# === 변경 끝 === #}
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 <span class="author-name-link">
                     {{ post.author.profile.get_display_name }}
                     <a href="#">님의 게시글 더보기 ></a> {# 링크 URL 수정 필요 #}
@@ -183,14 +158,9 @@
             <div class="comments-header">
                 <span class="comments-title">댓글</span>
                 <div class="comment-sort-options">
-<<<<<<< HEAD
-                    <a href="#" class="sort-option active" data-sort="created_at">등록순</a>
-                    <a href="#" class="sort-option" data-sort="-created_at">최신순</a>
-=======
                     {# data-sort 값은 views.py의 정렬 기준과 일치해야 함 #}
                     <a href="#" class="sort-option {% if current_sort_order == 'created_at' %}active{% endif %}" data-sort="created_at">등록순</a>
                     <a href="#" class="sort-option {% if current_sort_order == '-created_at' %}active{% endif %}" data-sort="-created_at">최신순</a>
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 </div>
             </div>
 
@@ -198,13 +168,6 @@
                 {% for comment in comments %}
                 <li id="comment-{{ comment.id }}" class="comment-item-wrapper">
                     <div class="comment-author-meta">
-<<<<<<< HEAD
-                        {% if comment.author.profile.has_custom_profile_image %}
-                            <img src="{{ comment.author.profile.get_profile_image_url }}" alt="{{ comment.author.profile.get_display_name }}" class="commenter-avatar">
-                        {% else %}
-                             <img src="{% static 'flo/images/icons/profile/default_profile_light.png' %}" alt="{{ comment.author.profile.get_display_name }}" class="commenter-avatar default-avatar">
-                        {% endif %}
-=======
                         {# === 변경 시작 === #}
                         <div class="avatar-wrapper commenter-avatar-wrapper"> {# (1) Wrapper div 추가 및 클래스 지정 #}
                             {% if comment.author.profile.has_custom_profile_image %}
@@ -214,7 +177,6 @@
                             {% endif %}
                         </div>
                         {# === 변경 끝 === #}
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                         <div class="comment-author-details">
                             <strong class="commenter-name">{{ comment.author.profile.get_display_name }}</strong>
                             <span class="comment-date">{{ comment.created_at|date:"Y-m-d H:i" }}</span>
@@ -223,10 +185,6 @@
                     <p class="comment-content-text" id="comment-text-{{comment.id}}">{{ comment.content|linebreaksbr }}</p>
                     {% if request.user.is_authenticated and request.user == comment.author %}
                     <div class="comment-item-actions">
-<<<<<<< HEAD
-                        <button class="btn-link-style edit-comment" data-comment-id="{{ comment.id }}">수정</button>
-                        <button class="btn-link-style delete-comment" data-comment-id="{{ comment.id }}" data-delete-url="{% url 'flo:study_post_comment_delete' comment.pk %}">삭제</button>
-=======
                         {% if request.user.is_authenticated and request.user == comment.author %}
                             <button class="btn-link-style edit-comment" data-comment-id="{{ comment.id }}">수정</button>
                             <button class="btn-link-style delete-comment" data-comment-id="{{ comment.id }}" data-delete-url="{% url 'flo:study_post_comment_delete' comment.pk %}">삭제</button>
@@ -234,7 +192,6 @@
                         {% if user.is_authenticated %}
                             <button class="btn-link-style reply-comment-btn" data-comment-id="{{ comment.id }}">답글</button>
                         {% endif %}
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                     </div>
                     <form id="edit-comment-form-{{comment.id}}" class="edit-comment-form" style="display:none;" data-edit-url="{% url 'flo:study_post_comment_edit' comment.pk %}">
                         {% csrf_token %}
@@ -245,8 +202,6 @@
                         </div>
                     </form>
                     {% endif %}
-<<<<<<< HEAD
-=======
 
                     {# --- ▼▼▼ 답글 목록 및 답글 폼 추가 ▼▼▼ --- #}
                     <div class="replies-container">
@@ -302,7 +257,6 @@
                         {% endif %}
                     </div>
                     {# --- ▲▲▲ 여기까지 추가 ▲▲▲ --- #}
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 </li>
                 {% empty %}
                 <li id="no-comments" class="no-comments-message">아직 댓글이 없습니다.</li>
@@ -359,14 +313,6 @@ function getCookie(name) {
 const csrftoken = getCookie('csrftoken');
 
 document.addEventListener('DOMContentLoaded', function() {
-<<<<<<< HEAD
-    // 추천 버튼 AJAX
-    const likeButton = document.getElementById('like-button');
-    if (likeButton) {
-        likeButton.addEventListener('click', function() {
-            const postId = this.dataset.postId;
-            fetch(`/flo/study_post/${postId}/like/`, { // URL 수정: 앱 이름 'flo'와 모델명 'study_post' 일치
-=======
     // 좋아요 버튼 AJAX
     const likeButton = document.getElementById('like-button');
     if (likeButton) {
@@ -385,21 +331,12 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Constructed URL for like action:', url);
 
             fetch(url, { // URL이 올바르게 사용되는지 확인
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrftoken,
                     'X-Requested-With': 'XMLHttpRequest',
                 },
             })
-<<<<<<< HEAD
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('like-count').textContent = data.count;
-                this.classList.toggle('active', data.liked); // 'liked' 대신 'active' 사용 (CSS와 일치)
-            })
-            .catch(error => console.error('Like error:', error));
-=======
             .then(response => {
                 // ★★★ 디버깅: 응답 상태 확인 ★★★
                 console.log('Like action response status:', response.status);
@@ -436,7 +373,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert('좋아요 처리 중 알 수 없는 오류가 발생했습니다.');
                 }
             });
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         });
     }
 
@@ -445,14 +381,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (commentForm) {
         commentForm.addEventListener('submit', function(e) {
             e.preventDefault();
-<<<<<<< HEAD
-=======
             // ★★★ [추가] 1. 등록 확인창 ★★★
             if (!confirm('댓글을 등록하시겠습니까?')) {
                 return; // 사용자가 '취소'하면 함수 종료
             }
 
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             const formData = new FormData(this);
             const currentUserAvatarElement = document.querySelector('.new-comment-form .current-user-avatar');
             const defaultProfileImageUrl = "{% static 'flo/images/icons/profile/default_profile_light.png' %}"; // 기본 이미지 경로
@@ -463,11 +396,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData,
                 headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
             })
-<<<<<<< HEAD
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-=======
             .then(response => { // 에러 처리를 위해 이 부분을 좀 더 견고하게 만듭니다.
                 if (!response.ok) throw new Error('서버 응답 오류');
                 return response.json();
@@ -477,18 +405,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     // ★★★ [추가] 2. 성공 알림창 ★★★
                     alert('댓글이 성공적으로 등록되었습니다.');
 
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                     const commentList = document.getElementById('comment-list');
                     const noCommentsLi = document.getElementById('no-comments');
                     if (noCommentsLi) noCommentsLi.remove();
 
-<<<<<<< HEAD
-=======
                     const currentUserAvatarElement = document.querySelector('.new-comment-form .current-user-avatar');
                     const defaultProfileImageUrl = "{% static 'flo/images/icons/profile/default_profile_light.png' %}";
                     const currentUserAvatarUrl = currentUserAvatarElement ? currentUserAvatarElement.src : defaultProfileImageUrl;
 
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                     const authorProfileImageUrl = data.author_profile_image_url || currentUserAvatarUrl;
                     const authorDisplayName = data.author_display_name || data.author_username;
 
@@ -518,17 +442,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     commentList.insertAdjacentHTML('beforeend', newCommentHtml);
                     this.reset();
                     document.getElementById('comment-total-count').textContent = data.comment_count;
-<<<<<<< HEAD
-                    bindCommentActionButtons(document.getElementById(`comment-${data.comment_id}`));
-                    setDefaultAvatarTheme();
-                } else {
-                    alert(data.errors || data.message || '댓글 작성에 실패했습니다.');
-                }
-            })
-            .catch(error => {
-                console.error('Comment submit error:', error);
-                alert('댓글 작성 중 오류가 발생했습니다.');
-=======
                     
                     const newCommentElement = document.getElementById(`comment-${data.comment_id}`);
                     if (newCommentElement) { // 새로 추가된 요소가 확실히 존재하는지 확인
@@ -547,7 +460,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Comment submit error:', error); // 이 부분에서 해당 오류가 출력되었을 것입니다.
                 // ★★★ [수정] 4. 예외 발생 시 알림창 ★★★
                 alert('댓글 등록 중 오류가 발생했습니다. 네트워크나 서버 상태를 확인해주세요.');
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
             });
         });
     }
@@ -576,8 +488,6 @@ document.addEventListener('DOMContentLoaded', function() {
             button.removeEventListener('click', handleDeleteCommentClick); // 기존 리스너 제거
             button.addEventListener('click', handleDeleteCommentClick);
         });
-<<<<<<< HEAD
-=======
 
         // ▼▼▼ 답글 관련 버튼 이벤트 바인딩 추가 ▼▼▼
         commentItemElement.querySelectorAll('.reply-comment-btn').forEach(button => {
@@ -589,7 +499,6 @@ document.addEventListener('DOMContentLoaded', function() {
         commentItemElement.querySelectorAll('.cancel-reply').forEach(button => {
             button.addEventListener('click', handleCancelReplyClick);
         });
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     }
 
     // 이벤트 핸들러 함수들 (중복 바인딩 방지 위해 외부로 분리)
@@ -603,14 +512,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleEditFormSubmit(e) {
         e.preventDefault();
-<<<<<<< HEAD
-=======
         // ★★★ [추가] 1. 수정 확인창 ★★★
         if (!confirm('댓글을 수정하시겠습니까?')) {
             return;
         }
 
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         const commentId = this.id.split('-').pop();
         const formData = new FormData(this);
         fetch(this.dataset.editUrl, {
@@ -621,12 +527,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-<<<<<<< HEAD
-=======
                 // ★★★ [추가] 2. 성공 알림창 ★★★
                 alert('댓글이 성공적으로 수정되었습니다.');
 
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 document.getElementById(`comment-text-${commentId}`).innerHTML = data.content.replace(/\n/g, '<br>');
                 document.getElementById(`comment-text-${commentId}`).style.display = 'block';
                 this.style.display = 'none';
@@ -634,12 +537,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 actionsDiv.querySelector('.edit-comment').style.display = 'inline-block';
                 actionsDiv.querySelector('.delete-comment').style.display = 'inline-block';
             } else {
-<<<<<<< HEAD
-                alert(data.message || '댓글 수정에 실패했습니다.');
-            }
-        })
-        .catch(error => console.error('Comment edit error:', error));
-=======
                 // ★★★ [수정] 3. 실패 알림창 ★★★
                 alert('댓글 수정에 실패했습니다: ' + (data.message || '입력 내용을 확인해주세요.'));
             }
@@ -723,7 +620,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Reply submit error:', error);
             alert('답글 등록 중 오류가 발생했습니다.');
         });
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     }
 
     function handleCancelEditClick() {
@@ -743,12 +639,6 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
         })
-<<<<<<< HEAD
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                document.getElementById(`comment-${data.deleted_comment_id}`).remove();
-=======
         .then(response => {
             console.log('Delete response status:', response.status); // 응답 상태 코드 확인
             // 만약 response.ok (상태 코드가 200-299)가 아니라면 여기서 에러 처리 가능
@@ -775,18 +665,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     console.warn(`Comment element with id comment-${data.deleted_comment_id} not found.`);
                 }
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
                 document.getElementById('comment-total-count').textContent = data.comment_count;
                 if (data.comment_count === 0 && !document.getElementById('no-comments')) {
                     document.getElementById('comment-list').innerHTML = '<li id="no-comments" class="no-comments-message">아직 댓글이 없습니다.</li>';
                 }
             } else {
-<<<<<<< HEAD
-                alert(data.message || '댓글 삭제에 실패했습니다.');
-            }
-        })
-        .catch(error => console.error('Comment delete error:', error));
-=======
                 // ★★★ [수정] 3. 실패 알림창 ★★★
                 alert('댓글 삭제에 실패했습니다: ' + (data.message || '다시 시도해주세요.'));
             }
@@ -796,7 +679,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // ★★★ [수정] 4. 예외 발생 시 알림창 ★★★
             alert('댓글 삭제 처리 중 오류가 발생했습니다.');
         });
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
     }
 
 
@@ -809,11 +691,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.sort-option').forEach(option => {
         option.addEventListener('click', function(e) {
             e.preventDefault();
-<<<<<<< HEAD
-            document.querySelectorAll('.sort-option').forEach(opt => opt.classList.remove('active'));
-            this.classList.add('active');
-            // 서버에 정렬 요청 로직 추가
-=======
             const sortOrder = this.dataset.sort;
             const currentPostPk = "{{ post.pk }}"; // 현재 게시글의 PK 가져오기
 
@@ -898,7 +775,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error fetching sorted comments:', error);
                 alert('댓글을 정렬하는 중 오류가 발생했습니다.');
             });
->>>>>>> b0590081b1e26a670b5c09461d4acb164dcc58f5
         });
     });
 
