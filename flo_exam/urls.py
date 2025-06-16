@@ -11,5 +11,7 @@ urlpatterns = [
     path('ajax/score-exam/<int:generated_exam_id>/', views.ajax_process_scoring_view, name='ajax_process_scoring'),
     path('download/questions/<int:generated_exam_id>/pdf/', views.download_questions_pdf_view, name='download_questions_pdf'),
     path('download/answers/<int:generated_exam_id>/pdf/', views.download_answers_pdf_view, name='download_answers_pdf'),
-
+    
+    path('ajax/chat/<int:exam_document_id>/', views.ajax_chatbot_view, name='ajax_chatbot'),
+    path('mistake-note/<int:exam_document_id>/', views.mistake_note_page_view, name='mistake_note_page'),
 ]
