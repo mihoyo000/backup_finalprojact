@@ -4,68 +4,7 @@
 {% block title %}{% translate "나의 학습 목표" %} - {{ block.super }}{% endblock %}
 
 {% block extra_css %}
-<style>
-    /* ====================================================================== */
-    /* 학습 목표 페이지 전용 스타일 (라이트 모드)                              */
-    /* ====================================================================== */
-    .learning-goals-page .card {
-        border: 1px solid #e9ecef;
-        border-radius: 0.5rem;
-        background-color: #fff;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
-    }
-    .learning-goals-page .card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-    }
-    .learning-goals-page .card-header {
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #e9ecef;
-    }
-    .learning-goals-page .card-footer {
-        background-color: #f8f9fa;
-        border-top: 1px solid #e9ecef;
-    }
-    .learning-goals-page .card-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-    .learning-goals-page .learning-goal-title-link {
-        text-decoration: none;
-        color: inherit;
-    }
-    .learning-goals-page .progress {
-        height: 1rem;
-        background-color: #e9ecef;
-    }
-    .learning-goals-page .progress-bar {
-        background-color: #0d6efd;
-    }
-    .learning-goals-page .progress-bar .achievement-rate-text {
-        font-size: 0.75rem;
-        line-height: 1rem;
-        color: white;
-        font-weight: 500;
-    }
-
-    /* ====================================================================== */
-    /* 다크 모드 스타일                                                       */
-    /* ====================================================================== */
-    body.theme-dark .learning-goals-page .card { background-color: #212529; border-color: #495057; color: #ced4da; }
-    body.theme-dark .learning-goals-page .card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
-    body.theme-dark .learning-goals-page .card-header,
-    body.theme-dark .learning-goals-page .card-footer { background-color: #343a40; border-color: #495057; }
-    body.theme-dark .learning-goals-page .card .card-title,
-    body.theme-dark .learning-goals-page .card .goal-title-text { color: #f8f9fa; }
-    body.theme-dark .learning-goals-page .progress { background-color: #495057; }
-    
-    /* 페이지네이션 다크모드 스타일 */
-    body.theme-dark .learning-goals-page .pagination .page-link { background-color: transparent; border-color: #454c54; color: #adb5bd; }
-    body.theme-dark .learning-goals-page .pagination .page-link:hover { background-color: #343a40; color: #fff; }
-    body.theme-dark .learning-goals-page .pagination .page-item.active .page-link { background-color: #0d6efd; border-color: #0d6efd; color: #fff; }
-    body.theme-dark .learning-goals-page .pagination .page-item.disabled .page-link { color: #6c757d; }
-</style>
+ <link rel="stylesheet" href="{% static 'flo/css/mypage_learning_goals.css' %}">
 {% endblock %}
 {# --- 이하 mypage_content 와 extra_js 블록은 그대로 유지됩니다 --- #}
 {% block mypage_content %}
@@ -117,7 +56,7 @@
     {# ---------------------------------------------------------------------- #}
     <div class="my-goals-list-or-message-section mt-2">
         {% if total_goals_count > 0 %} {# 전체 목표 개수를 기준으로 목록 또는 메시지 표시 #}
-            <h4>{% translate "진행중인 학습 목표" %}</h4> 
+            
             <div class="row row-cols-1 row-cols-md-2 g-4">
     {% for goal in learning_goals_page %} {# 페이지네이션된 객체 사용 #}
         <div class="col">
@@ -142,14 +81,17 @@
                                 <button class="btn btn-sm btn-danger py-0 px-1 cancel-edit-goal-title-btn"><i class="bi bi-x-lg"></i></button>
                             </span>
                         </div>
-                        <i class="bi {% if goal.is_important %}bi-star-fill text-warning{% else %}bi-star text-muted{% endif %} fs-5 ms-2 toggle-goal-importance-btn" 
-                           data-goal-id="{{ goal.pk }}" title="{% translate '중요도 변경' %}" style="cursor: pointer;"></i>
+                        <i class="bi {% if goal.is_important %}bi-star-fill text-warning{% else %}bi-star{% endif %} fs-5 ms-2 toggle-goal-importance-btn" 
+                           data-goal-id="{{ goal.pk }}" 
+                           title="{% translate '중요도 변경' %}" 
+                           style="cursor: pointer; color: {% if goal.is_important %}#ffc107{% else %}#6c757d{% endif %};">
+                        </i>
                     </div>
 
                     {# 목표 횟수 및 진행률 표시/수정 영역 #}
                     <div class="mb-2 goal-repetition-section">
                         <span class="goal-repetition-display">
-                            {% translate "진행률" %}: <span class="current-repetition-count">{{ goal.current_repetition_count }}</span> / <span class="target-repetition-count">{{ goal.target_repetition_count }}</span>
+                            {% translate "학습목표" %}: <span class="current-repetition-count">{{ goal.current_repetition_count }}</span> / <span class="target-repetition-count">{{ goal.target_repetition_count }}</span>
                             <button class="btn btn-sm btn-outline-secondary ms-2 py-0 px-1 edit-goal-repetition-btn" data-goal-id="{{ goal.pk }}" title="{% translate '목표 횟수 수정' %}"><i class="bi bi-pencil"></i></button>
                         </span>
                         <span class="goal-repetition-edit-form" style="display: none;">
@@ -305,25 +247,21 @@
 
         // --- 학습 목표 카드 내 인라인 수정 로직 ---
 
-        // 중요도 토글
+        // --- ▼▼▼ 중요도 토글 로직을 아래 코드로 교체합니다 ▼▼▼ ---
         document.querySelectorAll('.toggle-goal-importance-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const goalId = this.dataset.goalId;
                 fetch(`/flo_my/ajax/learning-goal/toggle-importance/${goalId}/`, {
                     method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrftoken,
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Content-Type': 'application/json' // 본문이 없으므로 필수는 아님
-                    },
+                    headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
+                        // 클래스와 인라인 스타일을 모두 변경합니다.
                         this.classList.toggle('bi-star-fill', data.is_important);
-                        this.classList.toggle('text-warning', data.is_important);
                         this.classList.toggle('bi-star', !data.is_important);
-                        this.classList.toggle('text-muted', !data.is_important);
+                        this.style.color = data.is_important ? '#ffc107' : '#6c757d';
                     } else {
                         alert('오류: ' + data.message);
                     }
@@ -331,6 +269,7 @@
                 .catch(error => console.error('Error toggling importance:', error));
             });
         });
+        // --- ▲▲▲ 중요도 토글 로직 교체 끝 ▲▲▲ ---
 
         // 제목 수정
         document.querySelectorAll('.learning-goal-card').forEach(card => {
@@ -446,7 +385,7 @@
                 });
             }
 
-            // 마감일 수정
+            // --- ▼▼▼ 마감일 수정 로직을 아래 코드로 완전히 교체합니다 ▼▼▼ ---
             const dueDateDisplay = card.querySelector('.goal-due-date-display');
             const dueDateEditForm = card.querySelector('.goal-due-date-edit-form');
             const editDueDateBtn = card.querySelector('.edit-goal-due-date-btn');
@@ -454,29 +393,98 @@
             const cancelDueDateBtn = card.querySelector('.cancel-edit-goal-due-date-btn');
             const dueDateInput = card.querySelector('.goal-due-date-input');
             const dueDateTextElement = card.querySelector('.due-date-text');
-            const dueDateEditHelper = card.querySelector('.due-date-edit-helper'); // Helper text element
-            const creationDateStr = card.dataset.creationDate; // Goal's creation date
+            const dueDateEditHelper = card.querySelector('.due-date-edit-helper');
+            const creationDateStr = card.dataset.creationDate;
+
+            const getDayOfWeek = (dateString) => {
+                const days = ['일', '월', '화', '수', '목', '금', '토'];
+                const date = new Date(dateString + 'T00:00:00'); // 시간 정보 추가하여 정확성 확보
+                return `(${days[date.getDay()]})`;
+            };
+
+            if (dueDateTextElement) {
+                const originalDate = dueDateTextElement.textContent.trim();
+                dueDateTextElement.textContent = `${originalDate} ${getDayOfWeek(originalDate)}`;
+            }
 
             if (editDueDateBtn) {
                 editDueDateBtn.addEventListener('click', function() {
                     dueDateDisplay.style.display = 'none';
                     dueDateEditForm.style.display = 'inline';
-                    dueDateInput.value = dueDateTextElement.textContent.trim();
+                    
+                    // --- 날짜 범위 설정 로직 수정 ---
+                    const today = new Date();
+                    const formatDate = (date) => {
+                        const y = date.getFullYear();
+                        const m = String(date.getMonth() + 1).padStart(2, '0');
+                        const d = String(date.getDate()).padStart(2, '0');
+                        return `${y}-${m}-${d}`;
+                    };
+                    
+                    // 선택 가능한 최소 날짜는 '오늘'
+                    dueDateInput.min = formatDate(today);
+                    
+                    // Helper 텍스트 업데이트
+                    if(dueDateEditHelper) {
+                        dueDateEditHelper.textContent = `마감일은 오늘(${formatDate(today)})부터 설정 가능합니다.`;
+                    }
+                    
+                    dueDateInput.focus();
+                });
+            }
 
-                    if (creationDateStr) {
-                        const parts = creationDateStr.split('-');
-                        const creationDate = new Date(parts[0], parts[1] - 1, parts[2]); // Month is 0-indexed
-                        creationDate.setHours(0,0,0,0); // Normalize to start of day
+            if (cancelDueDateBtn) {
+                cancelDueDateBtn.addEventListener('click', function() {
+                    dueDateDisplay.style.display = 'inline';
+                    dueDateEditForm.style.display = 'none';
+                    if(dueDateEditHelper) dueDateEditHelper.textContent = ''; 
+                });
+            }
 
-                        const today = new Date();
-                        today.setHours(0,0,0,0); // Normalize to start of day
+            if (saveDueDateBtn) {
+                saveDueDateBtn.addEventListener('click', function() {
+                    const goalId = this.dataset.goalId;
+                    const newDueDate = dueDateInput.value;
+                    
+                    // --- 프론트엔드 유효성 검사 추가 ---
+                    const today = new Date();
+                    const selectedDate = new Date(newDueDate + 'T00:00:00');
+                    today.setHours(0, 0, 0, 0); // 시간 정보 초기화
 
-                        // min 날짜는 오늘
-                        const minWidgetDate = new Date(today);
-                        
-                        // max 날짜는 생성일 + 6일
-                        const maxWidgetDate = new Date(creationDate.getTime());
-                        maxWidgetDate.setDate(creationDate.getDate() + 6);
+                    if (selectedDate < today) {
+                        alert('마감일은 오늘 또는 미래의 날짜로만 설정할 수 있습니다.');
+                        return; // 서버로 요청을 보내지 않고 중단
+                    }
+
+                    fetch(`/flo_my/ajax/learning-goal/update-due-date/${goalId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `due_date=${encodeURIComponent(newDueDate)}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const newDate = data.new_due_date;
+                            dueDateTextElement.textContent = `${newDate} ${getDayOfWeek(newDate)}`;
+                            
+                            dueDateDisplay.style.display = 'inline';
+                            dueDateEditForm.style.display = 'none';
+                            if(dueDateEditHelper) dueDateEditHelper.textContent = ''; 
+                        } else {
+                            alert('오류: ' + data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error updating due date:', error));
+                });
+            }
+        });
+    });
+    </script>
+{% endblock %}
                         
                         const formatDate = (date) => {
                             const y = date.getFullYear();
@@ -489,7 +497,7 @@
                         dueDateInput.max = formatDate(maxWidgetDate);
                         
                         if(dueDateEditHelper) {
-                            dueDateEditHelper.textContent = `마감일은 오늘부터 생성일(${creationDateStr}) 기준 일주일 이내(${formatDate(maxWidgetDate)})까지만 설정 가능합니다.`;
+                            dueDateEditHelper.textContent = `마감일은 생성일(${creationDateStr}) 기준 일주일 이내(${formatDate(maxWidgetDate)})까지만 설정 가능합니다.`;
                         }
                     }
                     dueDateInput.focus();
@@ -505,9 +513,9 @@
             if (saveDueDateBtn) {
                 saveDueDateBtn.addEventListener('click', function() {
                     const goalId = this.dataset.goalId;
-                    const newDueDate = dueDateInput.value; // YYYY-MM-DD 형식
+                    const newDueDate = dueDateInput.value;
                     fetch(`/flo_my/ajax/learning-goal/update-due-date/${goalId}/`, {
-                        method: 'POST',
+                        method: 'POST', // 이 안의 fetch 요청 코드는 이전과 동일
                         headers: {
                             'X-CSRFToken': csrftoken,
                             'X-Requested-With': 'XMLHttpRequest',
@@ -518,7 +526,9 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            dueDateTextElement.textContent = data.new_due_date;
+                            // --- 3. 저장 성공 시, 새로운 날짜에도 요일을 붙여줍니다 ---
+                            const newDate = data.new_due_date;
+                            dueDateTextElement.textContent = `${newDate} ${getDayOfWeek(newDate)}`;
                             dueDateDisplay.style.display = 'inline';
                             dueDateEditForm.style.display = 'none';
                             if(dueDateEditHelper) dueDateEditHelper.textContent = ''; 
@@ -532,4 +542,3 @@
         });
     });
     </script>
-{% endblock %}

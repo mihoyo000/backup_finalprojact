@@ -1,0 +1,130 @@
+/* ====================================================================== */
+/* 학습 목표 페이지 전용 스타일 (라이트 모드)                              */
+/* ====================================================================== */
+.learning-goals-page .card {
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+.learning-goals-page .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+.learning-goals-page .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+.learning-goals-page .card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+.learning-goals-page .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.learning-goals-page .learning-goal-title-link {
+    text-decoration: none;
+    color: inherit;
+}
+.learning-goals-page .progress {
+    height: 1rem;
+    background-color: #e9ecef;
+}
+.learning-goals-page .progress-bar {
+    background-color: #0d6efd;
+}
+.learning-goals-page .progress-bar .achievement-rate-text {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: white;
+    font-weight: 500;
+}
+
+/* ====================================================================== */
+/* 다크 모드 스타일                                                       */
+/* ====================================================================== */
+body.theme-dark .learning-goals-page .card { background-color: #212529; border-color: #495057; color: #ced4da; }
+body.theme-dark .learning-goals-page .card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+body.theme-dark .learning-goals-page .card-header { background-color: #343a40; border-color: #495057; } /* 헤더는 기존 유지 가능 또는 --dark-surface-1 사용 가능 */
+body.theme-dark .learning-goals-page .card-footer {
+    background-color: var(--dark-surface-1); /* 학습 자료 카드 푸터와 동일하게 --dark-surface-1 변수 사용 */
+    border-color: var(--dark-border);       /* 학습 자료 카드 푸터와 동일하게 --dark-border 변수 사용 */
+}
+body.theme-dark .learning-goals-page .card .card-title,
+body.theme-dark .learning-goals-page .card .goal-title-text { color: #f8f9fa; }
+body.theme-dark .learning-goals-page .progress { background-color: #495057; }
+
+/* 페이지네이션 다크모드 스타일 */
+body.theme-dark .learning-goals-page .pagination .page-link {
+    background-color: transparent !important; /* 배경색 투명하게 강제 */
+    border-color: var(--dark-border, #454c54) !important;
+    color: var(--dark-text-primary, #EAEAEA) !important; /* 기본 텍스트 색상을 더 밝게 변경 */
+}
+body.theme-dark .learning-goals-page .pagination .page-link:hover {
+    background-color: var(--dark-surface-2, #343a40) !important; /* 호버 시 배경색 변수 사용 및 강제 */
+    color: var(--dark-text-primary, #fff) !important; /* 호버 시 텍스트 색상 변수 사용 및 강제 */
+    border-color: var(--dark-surface-2, #343a40) !important; /* 호버 시 테두리 색상도 배경과 통일 */
+}
+body.theme-dark .learning-goals-page .pagination .page-item.active .page-link {
+    background-color: var(--dark-accent, #0d6efd) !important; /* 활성 배경색 변수 사용 및 강제 */
+    border-color: var(--dark-accent, #0d6efd) !important; /* 활성 테두리 색상 변수 사용 및 강제 */
+    color: var(--dark-button-text-on-accent, #141A22) !important; /* 활성 텍스트 색상 변수 사용 및 강제 */
+}
+body.theme-dark .learning-goals-page .pagination .page-item.disabled .page-link {
+    color: var(--dark-text-secondary, #C0C0C0) !important; /* 비활성 텍스트 색상을 더 밝게 변경 */
+    background-color: transparent !important; /* 비활성 배경색 투명하게 */
+    border-color: var(--dark-border, #454c54) !important; /* 비활성 테두리 색상 */
+}
+body.theme-dark .learning-goals-page .pagination .page-item.disabled .page-link:hover {
+    color: var(--dark-text-disabled, #6c757d) !important; /* 비활성 호버 시 색상 변화 없음 */
+}
+
+/* ====================================================================== */
+/* ★★★ 중요도(별) 아이콘 커서 깜빡임 문제 해결 ★★★                       */
+/* ====================================================================== */
+.toggle-goal-importance-btn {
+    user-select: none; /* 사용자가 텍스트처럼 선택하는 것을 방지 */
+    -webkit-user-select: none; /* 크롬, 사파리 등 웹킷 브라우저용 */
+}
+
+/* ====================================================================== */
+/* ★★★ 다크 모드 텍스트 색상 문제 해결 ★★★                       */
+/* ====================================================================== */
+
+/* '학습목표' 텍스트 색상 변경 */
+body.theme-dark .learning-goals-page .goal-repetition-section .goal-repetition-display {
+    color: #ced4da; /* 제목(primary)보다는 약간 덜 밝은 secondary 텍스트 색상 */
+}
+
+/* '마감일' 텍스트 색상 변경 (small 태그와 그 안의 span 모두에 적용) */
+body.theme-dark .learning-goals-page .goal-due-date-section .goal-due-date-display small.text-muted {
+    color: #ced4da !important; /* Bootstrap의 .text-muted를 덮어쓰기 위해 !important 사용 */
+}
+
+/* --- 라이트 모드에서의 색상도 필요한 경우 아래와 같이 추가 (이미 mypage.css에 유사한 규칙이 있을 수 있음) --- */
+/* 학습 목표 카드 내 '학습목표:' 텍스트 */
+body.theme-light .learning-goals-page .learning-goal-card .goal-repetition-section .goal-repetition-display {
+    color: var(--light-text-secondary); /* 예시: 라이트 모드 보조 텍스트 색상 */
+}
+
+/* 학습 목표 카드 내 '마감일:' 텍스트 */
+body.theme-light .learning-goals-page .learning-goal-card .goal-due-date-section .goal-due-date-display small.text-muted {
+    color: var(--light-text-secondary) !important; /* 예시: 라이트 모드 보조 텍스트 색상 */
+}
+
+/* 학습 목표 카드 내 실제 마감 날짜 텍스트 (span.due-date-text) */
+body.theme-light .learning-goals-page .learning-goal-card .goal-due-date-section .goal-due-date-display small.text-muted span.due-date-text {
+    color: var(--light-text-secondary); /* 예시: 라이트 모드 보조 텍스트 색상 */
+}
+
+/* 학습 목표 카드 다크 모드 삭제 버튼 색상 (학습 자료와 동일하게) */
+body.theme-dark .learning-goals-page .learning-goal-card .card-footer .btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+body.theme-dark .learning-goals-page .learning-goal-card .card-footer .btn-outline-danger:hover {
+    color: var(--dark-text-primary); /* 호버 시 텍스트 색상은 기존 유지 또는 --dark-button-text-on-accent 등으로 변경 가능 */
+    background-color: #dc3545;
+}

@@ -1,81 +1,101 @@
-{% extends "flo_my/mypage_base.html" %}
-{% load static i18n %}
-{% block title %}{% translate "나의 오답노트" %} - 마이페이지{% endblock %}
+{% extends "flo_my/mypage_base.html" %}{% load static i18n %}
+{% block title %}{% translate "나의 오답 노트" %} - 마이페이지{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'flo/css/mypage_incorrect_notes.css' %}">
+{% endblock %}
+
 {% block mypage_content %}
-    <div class="mypage-incorrect-notes-page"> {# 모든 콘텐츠를 이 div 안에 넣습니다. #}
-        <div class="page-title-container mb-4"> {# 제목 부분을 div 안으로 이동 #}
-            <i class="bi bi-journal-x page-title-icon"></i>
-            <h2 class="page-main-title">{% translate "나의 오답노트" %}</h2>
-        </div>
-        
-        <div class="table-responsive"> {# 테이블을 감싸는 div 추가 #}
-            <table class="materials-table">
-                <thead>
-                    <tr>
-                        <th scope="col" style="width: 5%;" class="text-center">중요</th>
-                        <th scope="col">제목</th>
-                        <th scope="col" style="width: 15%;">응시 날짜</th>
-                        <th scope="col" style="width: 10%;" class="text-center">점수</th>
-                        <th scope="col" style="width: 10%;" class="text-center">관리</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for attempt in attempts_page %}
-                    <tr id="attempt-row-{{ attempt.pk }}">
-                        <td class="text-center">
-                            <span class="star-icon {% if attempt.is_important %}important{% endif %}" data-url="{% url 'flo_my:ajax_toggle_note_importance' attempt.pk %}">★</span>
-                        </td>
-                        <td>
-                            <a href="{% url 'flo_exam:mistake_note_page' attempt.generated_exam.exam_document.pk %}">{{ attempt.generated_exam.exam_document.title }}</a>
-                        </td>
-                        <td>
-                            {{ attempt.start_time|date:"Y.m.d" }}
-                        </td>
-                        <td class="text-center">
-                            {{ attempt.score|floatformat:"0" }}점
-                        </td>
-                        <td class="text-center action-icons">
-                            <button type="button" class="btn btn-sm btn-icon text-danger delete-attempt-btn" data-url="{% url 'flo_my:ajax_delete_note' attempt.pk %}" title="삭제"><i class="bi bi-trash3"></i></button>
-                        </td>
-                    </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-5">
-                                <a href="{% url 'flo_my:mypage_materials' %}" class="no-content-icon-link"><i class="bi bi-pencil-square" style="font-size: 4rem; color: #6b7280;"></i></a>
-                                <p class="lead mt-3">아직 오답 기록이 없어요.</p>
-                                <p class="text-muted">학습 자료에서 시험에 응시하고 틀린 문제를 확인해보세요!</p>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
-        {% if attempts_page.has_other_pages %}
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if attempts_page.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ attempts_page.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">‹</a></li>
-                {% else %}
-                    <li class="page-item disabled"><span class="page-link">‹</span></li>
-                {% endif %}
+<div class="incorrect-notes-page"> {# 페이지 전체를 감싸는 div 추가 #}
 
-                {% for i in custom_page_range %}
-                    <li class="page-item {% if attempts_page.number == i %}active{% endif %}">
-                        <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
-                    </li>
+    <div class="page-title-container mb-4">
+        <i class="bi bi-journal-x page-title-icon"></i>
+        <h2 class="page-main-title">{% translate "나의 오답 노트" %}</h2>
+    </div>
+    {# 오답노트 목록 또는 "오답노트 없음" 메시지 표시 섹션 #}
+    <div class="my-notes-list-or-message-section mt-2">
+        {% if attempts_page and attempts_page.object_list %}
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                {% for attempt in attempts_page %}
+                <div class="col">
+                    <div class="card h-100 incorrect-note-card" id="note-card-{{ attempt.pk }}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="incorrect-note-title-container flex-grow-1 me-2">
+                                    <a href="{% url 'flo_exam:mistake_note_page' attempt.generated_exam.exam_document.pk %}?attempt_id={{ attempt.pk }}" class="incorrect-note-title-link">
+                                        <h5 class="card-title mb-0 d-inline note-title-text">{{ attempt.generated_exam.exam_document.title }}</h5>
+                                    </a>
+                                </div>
+                                <i class="bi {% if attempt.is_important %}bi-star-fill text-warning{% else %}bi-star{% endif %} fs-5 ms-2 toggle-note-importance-btn"
+                                   data-attempt-id="{{ attempt.pk }}"
+                                   title="{% translate '중요도 변경' %}"
+                                   style="cursor: pointer; color: {% if attempt.is_important %}#ffc107{% else %}#6c757d{% endif %};">
+                                </i>
+                            </div>
+
+                            <p class="card-text text-muted">
+                                <small>{% translate "응시일" %}: {{ attempt.start_time|date:"Y-m-d H:i" }}</small>
+                            </p>
+                            <p class="card-text note-score-text">
+                                <strong>{% translate "점수" %}:</strong> {{ attempt.score|floatformat:0 }}점
+                            </p>
+                            {# 필요시 추가 정보 (예: 정답률 등) #}
+                        </div>
+                        <div class="card-footer text-end">
+                            <a href="{% url 'flo_exam:mistake_note_page' attempt.generated_exam.exam_document.pk %}?attempt_id={{ attempt.pk }}" class="btn btn-sm btn-outline-primary me-1">{% translate "오답노트 보기" %}</a>
+                            <button type="button" class="btn btn-sm btn-outline-danger delete-note-btn" data-attempt-id="{{ attempt.pk }}">{% translate "삭제" %}</button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}                
+                    {# 오답노트가 없을 때 표시되는 내용 (no-content-container 사용) #}
+                    <div class="col-12">
+                        <div class="no-content-container">
+                            <div class="no-content-message text-center">
+                                <a href="{% url 'flo_exam:upload_page' %}" class="no-content-icon-link"> {# PDF 업로드 페이지로 연결 #}
+                                    <i class="bi bi-journals"></i> {# 아이콘 변경 #}
+                                </a>
+                                <p class="lead no-content-text-primary">{% translate "아직 생성된 오답노트가 없어요." %}</p>
+                                <p class="no-content-text-secondary">{% translate "시험에 응시하고 틀린 문제를 확인하여 오답노트를 만들어 보세요!" %}</p>
+                            </div>
+                        </div>
+                    </div>
                 {% endfor %}
+            </div>
 
-                {% if attempts_page.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ attempts_page.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">›</a></li>
-                {% else %}
-                    <li class="page-item disabled"><span class="page-link">›</span></li>
-                {% endif %}
-            </ul>
-        </nav>
+            {# 페이지네이션 컨트롤 #}
+            {% if attempts_page.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if attempts_page.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ attempts_page.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% translate "이전" %}</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">{% translate "이전" %}</span></li>
+                    {% endif %}
+
+                    {% for i in custom_page_range %}
+                        {% if attempts_page.number == i %}
+                            <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if attempts_page.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ attempts_page.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% translate "다음" %}</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">{% translate "다음" %}</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
         {% endif %}
     </div>
+    
+    
+</div>
 {% endblock %}
+
 
 {% block extra_js %}
 <script>
@@ -84,43 +104,73 @@ document.addEventListener('DOMContentLoaded', function() {
     const csrftoken = getCookie('csrftoken');
 
     // 중요도 토글
-    document.querySelectorAll('.star-icon').forEach(star => {
-        star.addEventListener('click', function() {
-            const url = this.dataset.url;
-            fetch(url, {
+    document.querySelectorAll('.toggle-note-importance-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const attemptId = this.dataset.attemptId;
+            fetch(`/flo_my/ajax/note/toggle-importance/${attemptId}/`, {
                 method: 'POST',
                 headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
-            }).then(response => response.json()).then(data => {
+            })
+            .then(response => response.json())
+            .then(data => {
                 if (data.status === 'success') {
-                    this.classList.toggle('important', data.is_important);
+                    this.classList.toggle('bi-star-fill', data.is_important);
+                    this.classList.toggle('bi-star', !data.is_important);
+                    this.style.color = data.is_important ? '#ffc107' : '#6c757d';
                 } else {
-                    alert('오류: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
-            });
+            })
+            .catch(error => console.error('Error toggling note importance:', error));
         });
     });
 
-    // 오답 기록 삭제
-    document.querySelectorAll('.delete-attempt-btn').forEach(button => {
+    // 오답노트 삭제
+    document.querySelectorAll('.delete-note-btn').forEach(button => {
         button.addEventListener('click', function() {
-            if (confirm('정말로 이 응시 기록을 삭제하시겠습니까?')) {
-                const url = this.dataset.url;
-                fetch(url, {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
-                }).then(response => response.json()).then(data => {
-                    if (data.status === 'success') {
-                        const row = this.closest('tr');
-                        if (row) {
-                            row.style.transition = 'opacity 0.5s';
-                            row.style.opacity = '0';
-                            setTimeout(() => row.remove(), 500);
-                        }
-                    } else {
-                        alert('삭제 오류: ' + data.message);
-                    }
-                });
+            if (!confirm('{% translate "정말로 이 오답노트를 삭제하시겠습니까?" %}')) {
+                return;
             }
+            const attemptId = this.dataset.attemptId;
+            fetch(`/flo_my/ajax/note/delete/${attemptId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const cardCol = this.closest('.col');
+                    if (cardCol) {
+                        cardCol.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+                        cardCol.style.opacity = '0';
+                        cardCol.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            cardCol.remove();
+                            if (document.querySelectorAll('.incorrect-note-card').length === 0) {
+                                const listContainer = document.querySelector('.my-notes-list-or-message-section .row');
+                                if (listContainer) {
+                                    listContainer.innerHTML = `
+                                        <div class="col-12">
+                                            <div class="no-content-container">
+                                                <div class="no-content-message text-center">
+                                                    <a href="{% url 'flo_exam:upload_page' %}" class="no-content-icon-link"> {# PDF 업로드 페이지로 연결 #}
+                                                        <i class="bi bi-journals"></i>
+                                                    </a>
+                                                    <p class="lead no-content-text-primary">{% translate "아직 생성된 오답노트가 없어요." %}</p>
+                                                    <p class="no-content-text-secondary">{% translate "시험에 응시하고 틀린 문제를 확인하여 오답노트를 만들어 보세요!" %}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                            }
+                        }, 300);
+                    }
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error deleting note:', error));
         });
     });
 });

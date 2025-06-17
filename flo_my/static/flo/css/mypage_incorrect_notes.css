@@ -1,141 +1,123 @@
 /* static/flo/css/mypage_incorrect_notes.css */
 
-/* ============================================= */
-/* 오답노트 페이지 아이콘 (mypage_base.html 에서 사용) */
-/* ============================================= */
-
-/* 오답노트 페이지 제목 옆 아이콘 색상 및 위치 조정 */
-body.theme-dark #mypage-main-content .page-title-container .bi-journal-x.page-title-icon {
-    top: -10px;
-    color: var(--dark-accent) !important;
+/* ====================================================================== */
+/* 오답노트 페이지 전용 스타일 (라이트 모드)                              */
+/* ====================================================================== */
+.incorrect-notes-page .card {
+    border: 1px solid var(--light-border, #e9ecef);
+    border-radius: 0.5rem;
+    background-color: var(--light-surface-card, #fff);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
-body.theme-light #mypage-main-content .page-title-container .bi-journal-x.page-title-icon {
-    top: -10px;
-    color: var(--light-accent) !important;
+.incorrect-notes-page .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
-
-/* ============================================= */
-/* 검색/필터 폼 스타일 (mypage_materials.html 에서 가져옴) */
-/* ============================================= */
-.search-filters-form .form-group {
-    margin-right: 1rem;
-    margin-bottom: 1rem;
+.incorrect-notes-page .card-footer {
+    background-color: var(--light-surface-1, #f8f9fa);
+    border-top: 1px solid var(--light-border, #e9ecef);
+    padding: 0.75rem 1rem;
 }
-.search-filters-form .form-control-sm {
-    font-size: 0.875rem;
-    padding: 0.25rem 0.5rem;
-    height: calc(1.5em + 0.5rem + 2px); /* Bootstrap 기본값 */
+.incorrect-notes-page .card-title {
+    font-size: var(--font-size-card-title, 1.1rem);
+    font-weight: 600;
 }
-.search-filters-form .form-check-input {
-    margin-top: 0.4em;
-}
-.search-filters-form .btn-sm {
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-}
-
-/* ============================================= */
-/* 오답노트 목록 테이블 스타일 (mypage_materials.html 에서 가져옴) */
-/* ============================================= */
-.materials-table {
-    width: 100%;
-    margin-bottom: 1rem;
-    color: inherit;
-    border-collapse: collapse;
-}
-
-.materials-table th,
-.materials-table td {
-    padding: 0.75rem;
-    vertical-align: middle;
-    border-top: 1px solid;
-}
-body.theme-dark .materials-table th,
-body.theme-dark .materials-table td {
-    border-top-color: var(--dark-border);
-}
-body.theme-light .materials-table th,
-body.theme-light .materials-table td {
-    border-top-color: var(--light-border);
-}
-
-.materials-table thead th {
-    vertical-align: bottom;
-    border-bottom: 2px solid;
-    font-weight: 500;
-}
-body.theme-dark .materials-table thead th {
-    border-bottom-color: var(--dark-border);
-}
-body.theme-light .materials-table thead th {
-    border-bottom-color: var(--light-border);
-}
-
-/* 테이블 내 아이콘 버튼 */
-.action-icons a,
-.action-icons button {
-    margin-left: 0.5rem;
-    font-size: 1.1rem;
+.incorrect-notes-page .incorrect-note-title-link {
     text-decoration: none;
-    /* 버튼 기본 스타일 리셋 */
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
+    color: inherit;
+}
+.incorrect-notes-page .incorrect-note-title-link:hover .note-title-text {
+    text-decoration: underline;
+    color: var(--light-accent);
+}
+.incorrect-notes-page .note-score-text {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+body.theme-light .incorrect-notes-page .note-score-text strong {
+    color: var(--light-text-primary);
 }
 
-/* 중요도 별 아이콘 */
-.star-icon {
-    cursor: pointer;
-    font-size: 1.3rem;
-}
-body.theme-dark .star-icon.important { color: var(--dark-accent); }
-body.theme-light .star-icon.important { color: #FFC107; }
 
-body.theme-dark .star-icon { color: var(--dark-icon-color); }
-body.theme-light .star-icon { color: var(--light-icon-color); }
-
-/* ============================================= */
-/* 상세 보기 모달 스타일 (mypage_materials.html 에서 가져옴) */
-/* ============================================= */
-/* 다크 모드 모달 */
-body.theme-dark .modal-content {
-    background-color: var(--dark-surface-card, #2C3A47);
-    color: var(--dark-text-primary, #EAEAEA);
-    border-color: var(--dark-border, #3A4F60);
+/* ====================================================================== */
+/* 다크 모드 스타일                                                       */
+/* ====================================================================== */
+body.theme-dark .incorrect-notes-page .card {
+    background-color: #212529; /* 학습 목표/자료 카드와 동일한 배경색 */
+    border-color: #495057;     /* 학습 목표/자료 카드와 동일한 테두리색 */
+    color: #ced4da;            /* 학습 목표/자료 카드와 동일한 글자색 */
 }
-body.theme-dark .modal-header {
-    border-bottom-color: var(--dark-border, #3A4F60);
+body.theme-dark .incorrect-notes-page .card:hover {
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
 }
-body.theme-dark .modal-header .btn-close {
-    filter: invert(1) grayscale(100%) brightness(200%);
+body.theme-dark .incorrect-notes-page .card-footer {
+    background-color: var(--dark-surface-1, #141A22); /* 학습 목표/자료 카드 푸터와 동일 */
+    border-color: var(--dark-border, #495057);       /* 학습 목표/자료 카드 푸터와 동일 */
 }
-body.theme-dark .modal-title {
-    color: var(--dark-text-primary, #EAEAEA);
+body.theme-dark .incorrect-notes-page .card .card-title,
+body.theme-dark .incorrect-notes-page .card .note-title-text {
+    color: var(--dark-text-primary, #f8f9fa);
 }
-body.theme-dark .modal-body {
-    color: var(--dark-text-secondary, #C0C0C0);
+body.theme-dark .incorrect-notes-page .incorrect-note-title-link:hover .note-title-text {
+    color: var(--dark-accent);
 }
-body.theme-dark .modal-body h1,
-body.theme-dark .modal-body h2,
-body.theme-dark .modal-body h3,
-body.theme-dark .modal-body h4,
-body.theme-dark .modal-body h5,
-body.theme-dark .modal-body h6,
-body.theme-dark .modal-body .question-text-selector,
-body.theme-dark .modal-body strong {
-    color: var(--dark-text-primary, #EAEAEA);
+body.theme-dark .incorrect-notes-page .note-score-text {
+    color: var(--dark-text-secondary);
 }
-body.theme-dark .modal-footer {
-    border-top-color: var(--dark-border, #3A4F60);
+body.theme-dark .incorrect-notes-page .note-score-text strong {
+    color: var(--dark-text-primary);
+}
+/* 다크 모드에서 "응시일" 날짜 텍스트 색상 (학습자료와 유사하게) */
+body.theme-dark .incorrect-notes-page .card-text.text-muted small {
+    color: var(--dark-text-secondary, #C0C0C0) !important;
 }
 
-/* 다크 모드 모달 내 '닫기' 버튼 */
-body.theme-dark .modal-footer .btn-secondary {
-    color: var(--dark-text-primary, #EAEAEA);
-    background-color: var(--dark-surface-1, #141A22);
-    border-color: var(--dark-border, #3A4F60);
+
+/* 페이지네이션 다크모드 스타일 (다른 마이페이지 탭과 동일하게 적용) */
+body.theme-dark .incorrect-notes-page .pagination .page-link {
+    background-color: transparent !important;
+    border-color: var(--dark-border, #454c54) !important;
+    color: var(--dark-text-primary, #EAEAEA) !important;
 }
-body.theme-dark .modal-footer .btn-secondary:hover {
-    background-color: var(--dark-border, #3A4F60);
+body.theme-dark .incorrect-notes-page .pagination .page-link:hover {
+    background-color: var(--dark-surface-2, #343a40) !important;
+    color: var(--dark-text-primary, #fff) !important;
+    border-color: var(--dark-surface-2, #343a40) !important;
 }
+body.theme-dark .incorrect-notes-page .pagination .page-item.active .page-link {
+    background-color: var(--dark-accent, #0d6efd) !important;
+    border-color: var(--dark-accent, #0d6efd) !important;
+    color: var(--dark-button-text-on-accent, #141A22) !important;
+}
+body.theme-dark .incorrect-notes-page .pagination .page-item.disabled .page-link {
+    color: var(--dark-text-secondary, #C0C0C0) !important;
+    background-color: transparent !important;
+    border-color: var(--dark-border, #454c54) !important;
+}
+body.theme-dark .incorrect-notes-page .pagination .page-item.disabled .page-link:hover {
+    color: var(--dark-text-disabled, #6c757d) !important;
+}
+
+/* 중요도(별) 아이콘 커서 깜빡임 문제 해결 (다른 마이페이지 탭과 동일하게 적용) */
+.toggle-note-importance-btn {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* 카드 하단 버튼 스타일 (다른 마이페이지 탭과 유사하게) */
+.incorrect-notes-page .card-footer .btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
+}
+/* 라이트 모드 카드 버튼 */
+body.theme-light .incorrect-notes-page .card-footer .btn-outline-primary { color: var(--light-accent); border-color: var(--light-accent); }
+body.theme-light .incorrect-notes-page .card-footer .btn-outline-primary:hover { color: #fff; background-color: var(--light-accent); }
+body.theme-light .incorrect-notes-page .card-footer .btn-outline-danger { color: #dc3545; border-color: #dc3545; }
+body.theme-light .incorrect-notes-page .card-footer .btn-outline-danger:hover { color: #fff; background-color: #dc3545; }
+
+/* 다크 모드 카드 버튼 */
+body.theme-dark .incorrect-notes-page .card-footer .btn-outline-primary { color: var(--dark-accent); border-color: var(--dark-accent); }
+body.theme-dark .incorrect-notes-page .card-footer .btn-outline-primary:hover { color: var(--dark-button-text-on-accent); background-color: var(--dark-accent); }
+body.theme-dark .incorrect-notes-page .card-footer .btn-outline-danger { color: #f87171; border-color: #f87171; } /* 학습 목표/자료와 동일 */
+body.theme-dark .incorrect-notes-page .card-footer .btn-outline-danger:hover { color: var(--dark-text-primary); background-color: #f87171; } /* 학습 목표/자료와 동일 */

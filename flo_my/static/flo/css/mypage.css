@@ -66,6 +66,11 @@ body {
     font-size: var(--font-size-base);
     line-height: 1.6;
     margin: 0;
+    /* 추가: html과 body가 최소한 뷰포트 높이를 가지도록 설정 */
+    min-height: 100%;
+}
+html {
+    min-height: 100%;
     overflow-x: hidden;
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
@@ -81,22 +86,49 @@ body.theme-dark .bi { color: var(--dark-icon-color); }
 body.theme-light .bi { color: var(--light-icon-color); }
 
 /* ====================================================================== */
-/* ★★★ 마이페이지 레이아웃 정의 ★★★ */
+/* ★★★ 마이페이지 레이아웃 정의 ★★★          */
 /* ====================================================================== */
-
-/* 2. 마이페이지 전체를 감싸는 새로운 컨테이너를 정의합니다. */
-#mypage-container {
+.mypage-body-wrapper {
     display: flex;
-    height: 100vh;
+    padding-top: 70px; /* 헤더 높이만큼 아래에서 시작 */
 }
 
-/* 4. 오른쪽 메인 패널 (헤더 + 콘텐츠) 스타일을 정의합니다. */
+#mypage-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    position: fixed; /* 화면에 고정 */
+    left: 0;
+    top: 70px; /* 헤더 아래에 위치 */
+    height: calc(100vh - 70px); /* 헤더를 뺀 나머지 높이 */
+    background-color: #fff;
+    border-right: 1px solid #e9ecef;
+    overflow-y: auto;
+}
+
+/* 다크 모드 레이아웃 */
+body.theme-dark #mypage-sidebar { background-color: #121212; border-right-color: #343a40; }
+
+/* #main-panel 스타일 정의 (기존 주석 처리된 부분 활용 및 수정) */
 #main-panel {
-    flex-grow: 1; /* 남은 공간을 모두 차지 */
+    flex-grow: 1; /* #mypage-container 내에서 남은 공간을 모두 차지 */
     display: flex;
     flex-direction: column;
-    margin-left: 250px; /* 사이드바 너비만큼 왼쪽 마진 */
+    margin-left: var(--sidebar-width); /* 사이드바 너비만큼 왼쪽 마진 */
+    min-height: 100vh; /* 최소 뷰포트 높이를 가지도록 하여 푸터가 항상 하단에 위치하도록 함 */
 }
+body.theme-dark #main-panel {
+    background-color: var(--dark-surface-2, #1F2833); /* #mypage-main-content와 유사한 배경색 */
+}
+body.theme-light #main-panel {
+    background-color: var(--light-bg, #F8F9FA);
+}
+
+#mypage-main-content { /* <main> 태그 */
+    flex-grow: 1; /* #main-panel 내에서 헤더와 푸터를 제외한 공간을 채움 */
+    padding: 2rem;
+    /* margin-left: 250px; /* 이 줄 삭제: #main-panel에서 처리 */
+}
+body.theme-dark #mypage-main-content { background-color: #1a1d21; }
 
 /* ============================================= */
 /* 마이페이지 헤더 (검색창, 오른쪽 아이콘)        */
@@ -716,4 +748,43 @@ body.theme-light .no-content-icon-link i {
 }
 body.theme-dark .no-content-icon-link i {
     color: var(--dark-accent);
+}
+
+/* mypage.css */
+
+/* ... (기존 mypage.css 내용) ... */
+
+/* ====================================================================== */
+/* ★★★ 학습 목표 카드 내 텍스트 색상 명시적 지정 (다크 모드) ★★★        */
+/* ====================================================================== */
+
+/* 학습 목표 카드 내 '학습목표:' 텍스트 */
+body.theme-dark .learning-goals-page .learning-goal-card .goal-repetition-section .goal-repetition-display {
+    color: var(--dark-text-secondary); /* 예시: 다크 모드 보조 텍스트 색상 */
+}
+
+/* 학습 목표 카드 내 '마감일:' 텍스트 */
+body.theme-dark .learning-goals-page .learning-goal-card .goal-due-date-section .goal-due-date-display small.text-muted {
+    color: var(--dark-text-secondary) !important; /* 예시: 다크 모드 보조 텍스트 색상, !important로 우선순위 높임 */
+}
+
+/* 학습 목표 카드 내 실제 마감 날짜 텍스트 (span.due-date-text) */
+body.theme-dark .learning-goals-page .learning-goal-card .goal-due-date-section .goal-due-date-display small.text-muted span.due-date-text {
+    color: var(--dark-text-secondary); /* 예시: 다크 모드 보조 텍스트 색상 */
+}
+
+/* --- 라이트 모드에서의 색상도 필요한 경우 아래와 같이 추가 --- */
+/* 학습 목표 카드 내 '학습목표:' 텍스트 */
+body.theme-light .learning-goals-page .learning-goal-card .goal-repetition-section .goal-repetition-display {
+    color: var(--light-text-secondary); /* 예시: 라이트 모드 보조 텍스트 색상 */
+}
+
+/* 학습 목표 카드 내 '마감일:' 텍스트 */
+body.theme-light .learning-goals-page .learning-goal-card .goal-due-date-section .goal-due-date-display small.text-muted {
+    color: var(--light-text-secondary) !important; /* 예시: 라이트 모드 보조 텍스트 색상 */
+}
+
+/* 학습 목표 카드 내 실제 마감 날짜 텍스트 (span.due-date-text) */
+body.theme-light .learning-goals-page .learning-goal-card .goal-due-date-section .goal-due-date-display small.text-muted span.due-date-text {
+    color: var(--light-text-secondary); /* 예시: 라이트 모드 보조 텍스트 색상 */
 }

@@ -1,93 +1,102 @@
 {% extends "flo_my/mypage_base.html" %}{% load static i18n %}
 {% block title %}{% translate "나의 학습 자료" %} - 마이페이지{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'flo/css/mypage_materials.css' %}">
+{% endblock %}
+
 {% block mypage_content %}
+<div class="learning-materials-page"> {# 페이지 전체를 감싸는 div 추가 #}
+
     <div class="page-title-container mb-4">
         <i class="bi bi-file-earmark-text-fill page-title-icon"></i>
         <h2 class="page-main-title">{% translate "나의 학습 자료" %}</h2>
     </div>
 
-    {# ▼▼▼ 가장 간단하고 표준적인 구조로 변경 ▼▼▼ #}
-    <div class="table-responsive">
-        <table class="materials-table">
-            <thead>
-                <tr>
-                    <th scope="col" style="width: 5%;" class="text-center">중요</th>
-                    <th scope="col">제목</th>
-                    <th scope="col" style="width: 15%;">생성 날짜</th>
-                    <th scope="col" style="width: 15%;" class="text-center">관리</th>
-                </tr>
-            </thead>
-            <tbody>
-                {# for 루프 안에서는 empty를 사용하여 데이터가 없을 경우를 처리합니다. #}
+    {# 학습 자료 목록 또는 "자료 없음" 메시지 표시 섹션 #}
+    <div class="my-materials-list-or-message-section mt-2">
+        {% if test_sets_page and test_sets_page.object_list %}
+            <div class="row row-cols-1 row-cols-md-2 g-4">
                 {% for material in test_sets_page %}
-                <tr id="material-row-{{ material.pk }}">
-                    <td class="text-center">
-                        <span class="star-icon {% if material.is_important %}important{% endif %}" data-url="{% url 'flo_my:ajax_toggle_material_importance' material.pk %}">★</span>
-                    </td>
-                    <td>
-                        <a href="{% url 'flo_exam:loading_page_entry' material.pk %}?retake=true">{{ material.title }}</a>
-                    </td>
-                    <td>
-                        {{ material.uploaded_at|date:"Y.m.d" }}
-                    </td>
-                    <td class="text-center action-icons">
-                        {% if material.generated_exam %}
-                        <a href="{% url 'flo_exam:download_questions_pdf' material.generated_exam.pk %}" class="btn btn-sm btn-icon" title="시험문제 PDF 다운로드"><i class="bi bi-download"></i></a>
-                        {% endif %}
-                        <button type="button" class="btn btn-sm btn-icon text-danger delete-material-btn" data-url="{% url 'flo_my:ajax_delete_material' material.pk %}" title="삭제"><i class="bi bi-trash3"></i></button>
-                    </td>
-                </tr>
+                <div class="col">
+                    <div class="card h-100 learning-material-card" id="material-card-{{ material.pk }}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="learning-material-title-container flex-grow-1 me-2">
+                                    <a href="{% url 'flo_exam:loading_page_entry' material.pk %}?retake=true" class="learning-material-title-link">
+                                        <h5 class="card-title mb-0 d-inline material-title-text">{{ material.title }}</h5>
+                                    </a>
+                                </div>
+                                <i class="bi {% if material.is_important %}bi-star-fill text-warning{% else %}bi-star{% endif %} fs-5 ms-2 toggle-material-importance-btn"
+                                   data-doc-id="{{ material.pk }}"
+                                   title="{% translate '중요도 변경' %}"
+                                   style="cursor: pointer; color: {% if material.is_important %}#ffc107{% else %}#6c757d{% endif %};">
+                                </i>
+                            </div>
+
+                            <p class="card-text text-muted">
+                                <small>{% translate "업로드" %}: {{ material.uploaded_at|date:"Y-m-d H:i" }}</small>
+                            </p>
+                            {% if material.description %}
+                            <p class="card-text material-description-text">
+                                {{ material.description|truncatewords:20 }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer text-end">
+                            <a href="{% url 'flo_exam:loading_page_entry' material.pk %}?retake=true" class="btn btn-sm btn-outline-primary me-1">{% translate "시험 응시" %}</a>
+                            {% if material.generated_exam %}
+                            <a href="{% url 'flo_exam:download_questions_pdf' material.generated_exam.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="{% translate '시험문제 PDF 다운로드' %}"><i class="bi bi-download"></i> {% translate "PDF" %}</a>
+                            {% endif %}
+                            <button type="button" class="btn btn-sm btn-outline-danger delete-material-btn" data-doc-id="{{ material.pk }}">{% translate "삭제" %}</button>
+                        </div>
+                    </div>
+                </div>
                 {% empty %}
-                    {# 목록이 비어있을 때 표시될 내용 #}
-                    <tr>
-                        <td colspan="4" class="text-center py-5">
-                            <a href="{% url 'flo_exam:upload_page' %}" class="no-content-icon-link"><i class="bi bi-file-earmark-plus-fill" style="font-size: 4rem; color: #6b7280;"></i></a>
-                            <p class="lead mt-3">아직 생성된 학습 자료가 없어요.</p>
-                            <p class="text-muted">지금 바로 PDF를 업로드하여 첫 학습 자료를 만들어 보세요!</p>
-                        </td>
-                    </tr>
+                    {# 학습 자료가 없을 때 표시되는 내용 (no-content-container 사용) #}
+                    <div class="col-12">
+                        <div class="no-content-container">
+                            <div class="no-content-message text-center">
+                                <a href="{% url 'flo_exam:upload_page' %}" class="no-content-icon-link">
+                                    <i class="bi bi-file-earmark-plus-fill"></i>
+                                </a>
+                                <p class="lead no-content-text-primary">{% translate "아직 업로드된 학습 자료가 없어요." %}</p>
+                                <p class="no-content-text-secondary">{% translate "지금 바로 PDF를 업로드하여 첫 학습 자료를 만들어 보세요!" %}</p>
+                            </div>
+                        </div>
+                    </div>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    
-    {# 페이지네이션 #}
-    {% if test_sets_page.has_other_pages %}
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
+            </div>
 
-                {# 이전 페이지 버튼 #}
-                {% if test_sets_page.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ test_sets_page.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">‹</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">‹</span>
-                    </li>
-                {% endif %}
+            {# 페이지네이션 컨트롤 #}
+            {% if test_sets_page.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if test_sets_page.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ test_sets_page.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% translate "이전" %}</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">{% translate "이전" %}</span></li>
+                    {% endif %}
 
-                {# 페이지 번호 목록 #}
-                {% for i in custom_page_range %}
-                    <li class="page-item {% if test_sets_page.number == i %}active{% endif %}">
-                        <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
-                    </li>
-                {% endfor %}
+                    {% for i in custom_page_range %}
+                        {% if test_sets_page.number == i %}
+                            <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
 
-                {# 다음 페이지 버튼 #}
-                {% if test_sets_page.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ test_sets_page.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">›</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">›</span>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
+                    {% if test_sets_page.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ test_sets_page.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% translate "다음" %}</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">{% translate "다음" %}</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
         {% endif %}
+    </div>
+</div>
 {% endblock %}
 
 
@@ -96,8 +105,79 @@
 document.addEventListener('DOMContentLoaded', function() {
     function getCookie(name) {let cookieValue = null;if (document.cookie && document.cookie !== '') {const cookies = document.cookie.split(';');for (let i = 0; i < cookies.length; i++) {const cookie = cookies[i].trim();if (cookie.substring(0, name.length + 1) === (name + '=')) {cookieValue = decodeURIComponent(cookie.substring(name.length + 1));break;}}}return cookieValue;}
     const csrftoken = getCookie('csrftoken');
-    document.querySelectorAll('.star-icon').forEach(star => {star.addEventListener('click', function() {const url = this.dataset.url;fetch(url, {method: 'POST',headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },}).then(response => response.json()).then(data => {if (data.status === 'success') {this.classList.toggle('important', data.is_important);} else {alert('오류가 발생했습니다: ' + data.message);}});});});
+
+    // 중요도 토글 (학습 목표 페이지와 동일한 로직 사용)
+    document.querySelectorAll('.toggle-material-importance-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const docId = this.dataset.docId; // data-doc-id로 변경
+            fetch(`/flo_my/ajax/material/toggle-importance/${docId}/`, { // URL 직접 구성
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    this.classList.toggle('bi-star-fill', data.is_important);
+                    this.classList.toggle('bi-star', !data.is_important);
+                    this.style.color = data.is_important ? '#ffc107' : '#6c757d';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error toggling material importance:', error));
+        });
+    });
+
+    // 자료 삭제 (학습 목표 페이지와 유사한 로직 사용)
     document.querySelectorAll('.delete-material-btn').forEach(button => {button.addEventListener('click', function() {if (confirm('정말로 이 학습 자료를 삭제하시겠습니까?\n삭제된 자료는 복구할 수 없습니다.')) {const url = this.dataset.url;fetch(url, {method: 'POST',headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },}).then(response => response.json()).then(data => {if (data.status === 'success') {const row = this.closest('tr');if (row) {row.style.transition = 'opacity 0.5s';row.style.opacity = '0';setTimeout(() => row.remove(), 500);}} else {alert('삭제 중 오류가 발생했습니다: ' + data.message);}});}});});
+    document.querySelectorAll('.delete-material-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            if (!confirm('{% translate "정말로 이 학습 자료를 삭제하시겠습니까?" %}')) {
+                return;
+            }
+            const docId = this.dataset.docId; // data-doc-id로 변경
+            fetch(`/flo_my/ajax/material/delete/${docId}/`, { // URL 직접 구성
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const cardCol = this.closest('.col');
+                    if (cardCol) {
+                        cardCol.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+                        cardCol.style.opacity = '0';
+                        cardCol.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            cardCol.remove();
+                            // TODO: 자료 개수 확인 후 "자료 없음" 메시지 표시 로직
+                            if (document.querySelectorAll('.learning-material-card').length === 0) {
+                                const listContainer = document.querySelector('.my-materials-list-or-message-section .row');
+                                if (listContainer) {
+                                    listContainer.innerHTML = `
+                                        <div class="col-12">
+                                            <div class="no-content-container">
+                                                <div class="no-content-message text-center">
+                                                    <a href="{% url 'flo_exam:upload_page' %}" class="no-content-icon-link">
+                                                        <i class="bi bi-file-earmark-plus-fill"></i>
+                                                    </a>
+                                                    <p class="lead no-content-text-primary">{% translate "아직 업로드된 학습 자료가 없어요." %}</p>
+                                                    <p class="no-content-text-secondary">{% translate "지금 바로 PDF를 업로드하여 첫 학습 자료를 만들어 보세요!" %}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                            }
+                        }, 300);
+                    }
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error deleting material:', error));
+        });
+    });
 });
 </script>
 {% endblock %}

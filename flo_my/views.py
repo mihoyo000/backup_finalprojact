@@ -69,7 +69,7 @@ def mypage_materials_view(request):
     """'나의 학습 자료' 목록을 보여주는 뷰입니다."""
     materials_query = ExamDocument.objects.filter(author=request.user).order_by('-is_important', '-uploaded_at')
     
-    paginator = Paginator(materials_query, 5)
+    paginator = Paginator(materials_query, 4) # 페이지당 항목 수를 4개로 변경
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -96,7 +96,7 @@ def mypage_incorrect_notes_view(request):
         'generated_exam__exam_document'
     ).order_by('-is_important', '-start_time')
     
-    paginator = Paginator(attempts_query, 5)
+    paginator = Paginator(attempts_query, 4) # 페이지당 항목 수를 4개로 변경
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -140,12 +140,33 @@ def mypage_learning_goals_view(request):
     else:
         form = LearningGoalForm(user=user)
 
-    all_goals = LearningGoal.objects.filter(user=user, is_completed=False).order_by('-is_important', 'due_date')
-    
+    # --- ▼▼▼ 페이지네이션 및 정렬 로직 시작 ▼▼▼ ---
+    # 1. 모든 진행중인 목표를 가져오되, 중요도 높은 순 -> 최신순으로 정렬
+    all_goals_query = LearningGoal.objects.filter(
+        user=user, 
+        is_completed=False
+    ).order_by('-is_important', '-created_at')
+
+    # 2. Paginator를 사용하여 4개씩 나누기
+    paginator = Paginator(all_goals_query, 4) 
+    page_number = request.GET.get('page')
+    learning_goals_page = paginator.get_page(page_number)
+
+    # 3. 페이지네이션 범위 계산 (다른 페이지와 동일)
+    num_pages = paginator.num_pages
+    current_page = learning_goals_page.number
+    start_page = max(1, current_page - 2)
+    end_page = min(num_pages, start_page + 4)
+    if end_page - start_page < 4:
+        start_page = max(1, end_page - 4)
+    custom_page_range = range(start_page, end_page + 1)
+    # --- ▲▲▲ 로직 끝 ▲▲▲ ---
+
     context = {
         'form': form, 
-        'learning_goals_page': all_goals, # 템플릿 변수 이름을 일관성 있게 변경
-        'total_goals_count': LearningGoal.objects.filter(user=user).count(), # '새 목표 추가' 버튼 표시용
+        'learning_goals_page': learning_goals_page, # 이제 페이지네이션된 객체를 전달
+        'total_goals_count': all_goals_query.count(), # 필터링된 전체 목표 수
+        'custom_page_range': custom_page_range, # 페이지네이션 범위 전달
         'mypage_nav_active': 'learning_goals',
     }
     return render(request, 'flo_my/mypage/learning_goals.html', context)
@@ -229,3 +250,73 @@ def ajax_delete_note(request, attempt_id):
     attempt = get_object_or_404(UserExamSession, pk=attempt_id, user=request.user)
     attempt.delete()
     return JsonResponse({'status': 'success'})
+
+# ======================================================================
+# 학습 목표 인라인 수정을 위한 AJAX 처리 뷰 함수들
+# ======================================================================
+
+@login_required
+@require_POST
+def ajax_toggle_learning_goal_importance(request, goal_id):
+    """AJAX: 학습 목표 중요도 토글"""
+    goal = get_object_or_404(LearningGoal, pk=goal_id, user=request.user)
+    goal.is_important = not goal.is_important
+    goal.save(update_fields=['is_important'])
+    return JsonResponse({'status': 'success', 'is_important': goal.is_important})
+
+@login_required
+@require_POST
+def ajax_update_learning_goal_title(request, goal_id):
+    """AJAX: 학습 목표 제목 수정"""
+    goal = get_object_or_404(LearningGoal, pk=goal_id, user=request.user)
+    new_title = request.POST.get('title', '').strip()
+    if new_title:
+        goal.title = new_title
+        goal.save(update_fields=['title'])
+        return JsonResponse({'status': 'success', 'new_title': goal.title})
+    return JsonResponse({'status': 'error', 'message': '제목을 비워둘 수 없습니다.'})
+
+@login_required
+@require_POST
+def ajax_update_learning_goal_repetition_count(request, goal_id):
+    """AJAX: 학습 목표 반복 횟수 수정"""
+    goal = get_object_or_404(LearningGoal, pk=goal_id, user=request.user)
+    try:
+        new_count = int(request.POST.get('repetition_count', 1))
+        if new_count >= goal.current_repetition_count and new_count > 0:
+            goal.target_repetition_count = new_count
+            goal.save() # save 메서드에서 is_completed와 achievement_rate가 자동 계산됨
+            return JsonResponse({
+                'status': 'success',
+                'new_repetition_count': goal.target_repetition_count,
+                'current_repetition_count': goal.current_repetition_count,
+                'achievement_rate': goal.achievement_rate
+            })
+        else:
+            return JsonResponse({'status': 'error', 'message': '목표 횟수는 현재 완료 횟수보다 크거나 같아야 합니다.'})
+    except (ValueError, TypeError):
+        return JsonResponse({'status': 'error', 'message': '유효한 숫자를 입력해주세요.'})
+
+@login_required
+@require_POST
+def ajax_update_learning_goal_due_date(request, goal_id):
+    """AJAX: 학습 목표 마감일 수정"""
+    goal = get_object_or_404(LearningGoal, pk=goal_id, user=request.user)
+    new_date_str = request.POST.get('due_date')
+
+    if new_date_str:
+        try:
+            new_date = date.fromisoformat(new_date_str)
+            today = timezone.now().date()
+
+            # --- 백엔드 유효성 검사 추가 ---
+            if new_date < today:
+                return JsonResponse({'status': 'error', 'message': '마감일은 오늘 또는 미래의 날짜여야 합니다.'})
+            
+            goal.due_date = new_date
+            goal.save(update_fields=['due_date'])
+            return JsonResponse({'status': 'success', 'new_due_date': goal.due_date.strftime('%Y-%m-%d')})
+        except ValueError:
+            return JsonResponse({'status': 'error', 'message': '올바른 날짜 형식이 아닙니다.'})
+            
+    return JsonResponse({'status': 'error', 'message': '날짜를 입력해주세요.'})

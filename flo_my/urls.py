@@ -30,14 +30,8 @@ urlpatterns = [
 
     # --- 오답 노트 (UserExamSession) 관련 AJAX ---
     path('ajax/note/toggle-importance/<int:attempt_id>/', views.ajax_toggle_note_importance, name='ajax_toggle_note_importance'),
-    path('ajax/note/delete/<int:attempt_id>/', views.ajax_delete_note, name='ajax_delete_note'),]
-    
-    # --- 학습 목표 (LearningGoal) 관련 AJAX ---
-    # 참고: 현재 views.py에는 학습 목표 인라인 수정을 위한 AJAX 뷰가 없습니다.
-    #      따라서 해당 기능이 필요할 때까지 아래 경로들은 주석 처리하는 것이 안전합니다.
-    #      만약 인라인 수정 기능이 필요하다면, 이 주석을 풀고 views.py에 함수들을 추가해야 합니다.
-    #
-    # path('ajax/learning-goal/toggle-importance/<int:goal_id>/', views.ajax_toggle_learning_goal_importance, name='ajax_toggle_learning_goal_importance'),
-    # path('ajax/learning-goal/update-title/<int:goal_id>/', views.ajax_update_learning_goal_title, name='ajax_update_learning_goal_title'),
-    # path('ajax/learning-goal/update-repetition-count/<int:goal_id>/', views.ajax_update_learning_goal_repetition_count, name='ajax_update_learning_goal_repetition_count'),
-    # path('ajax/learning-goal/update-due-date/<int:goal_id>/', views.ajax_update_learning_goal_due_date, name='ajax_update_learning_goal_due_date'),
+    path('ajax/note/delete/<int:attempt_id>/', views.ajax_delete_note, name='ajax_delete_note'),
+    path('ajax/learning-goal/toggle-importance/<int:goal_id>/', views.ajax_toggle_learning_goal_importance, name='ajax_toggle_learning_goal_importance'),
+    path('ajax/learning-goal/update-title/<int:goal_id>/', views.ajax_update_learning_goal_title, name='ajax_update_learning_goal_title'),
+    path('ajax/learning-goal/update-repetition-count/<int:goal_id>/', views.ajax_update_learning_goal_repetition_count, name='ajax_update_learning_goal_repetition_count'),
+    path('ajax/learning-goal/update-due-date/<int:goal_id>/', views.ajax_update_learning_goal_due_date, name='ajax_update_learning_goal_due_date'),]
