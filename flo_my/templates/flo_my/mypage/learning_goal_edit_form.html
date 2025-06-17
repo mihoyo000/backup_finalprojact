@@ -1,80 +1,84 @@
 {% extends "flo_my/mypage_base.html" %}
-{% load i18n %}
+{% load static i18n %}
 
-{% block title %}{% translate "학습 목표 수정" %} - {{ goal.title }}{% endblock %}
+{% block title %}{% translate "학습 목표 수정" %} - {{ block.super }}{% endblock %}
 
 {% block mypage_content %}
-    <div class="learning-goal-edit-form-wrapper" style="max-width: 700px; margin: auto;"> {# 폼 전체를 감싸는 래퍼 #}
-        <h2 class="mb-4">{% translate "학습 목표 수정" %}</h2>
-    
-        <form method="post" class="learning-goal-edit-form">
-            {% csrf_token %}
-
-            {# form.as_p 대신 수동 렌더링 #}
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.non_field_errors %}
-                        <p class="mb-0">{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            {# 1. 학습 목표 제목 (수정 가능) #}
-            <div class="mb-3">
-                <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
-                {{ form.title }}
-                {% if form.title.help_text %}<small class="form-text text-muted d-block mt-1">{{ form.title.help_text }}</small>{% endif %}
-                {% for error in form.title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-            </div>
-
-            {# 2. 목표 유형 (수정 불가 - 텍스트로 표시) #}
-            <div class="mb-3">
-                <label class="form-label">{% translate "목표 유형" %}</label>
-                <div class="form-control disabled-look">{{ goal.get_goal_type_display }}</div>
-            </div>
-            
-            {# 3. 대상 Test 또는 응시 기록 (수정 불가 - 텍스트로 표시) #}
-            {% if goal.goal_type == 'TEST_RETAKE' and goal.target_test_set %}
-            <div class="mb-3">
-                <label class="form-label">{% translate "대상 Test" %}</label>
-                <div class="form-control disabled-look">{{ goal.target_test_set.title }}</div>
-            </div>
-            {% elif goal.goal_type == 'INCORRECT_ANSWERS_RETAKE' and goal.target_attempt_for_incorrect_notes %}
-            <div class="mb-3">
-                <label class="form-label">{% translate "대상 시험 응시 기록" %}</label>
-                <div class="form-control disabled-look">{{ goal.target_attempt_for_incorrect_notes }}</div>
-            </div>
-            {% endif %}
-
-            {# 4. 목표 반복 횟수 (수정 가능) #}
-            <div class="mb-3">
-                <label for="{{ form.target_repetition_count.id_for_label }}" class="form-label">{{ form.target_repetition_count.label }}</label>
-                {{ form.target_repetition_count }}
-                {% if form.target_repetition_count.help_text %}<small class="form-text text-muted d-block mt-1">{{ form.target_repetition_count.help_text }}</small>{% endif %}
-                {% for error in form.target_repetition_count.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-            </div>
-
-            {# 5. 학습 마감일 (수정 가능) #}
-            <div class="mb-3">
-                <label for="{{ form.due_date.id_for_label }}" class="form-label">{{ form.due_date.label }}</label>
-                {{ form.due_date }}
-                {% if form.due_date.help_text %}<small class="form-text text-muted d-block mt-1">{{ form.due_date.help_text }}</small>{% endif %}
-                {% for error in form.due_date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-            </div>
-
-            {# 6. 중요 목표 여부 (수정 가능) #}
-            <div class="form-check mb-4">
-                {{ form.is_important }}
-                <label class="form-check-label" for="{{ form.is_important.id_for_label }}">
-                    {{ form.is_important.label }}
-                </label>
-                {% for error in form.is_important.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-            </div>
-            
-            <div class="d-flex justify-content-end">
-                <a href="{% url 'flo_my:mypage_learning_goals' %}" class="btn btn-secondary me-2">{% translate "취소" %}</a>
-                <button type="submit" class="btn btn-primary">{{ submit_text|default:_("수정 완료") }}</button>
-            </div>
-        </form>
+<div class="learning-goal-edit-page">
+    <div class="page-title-actions-header d-flex justify-content-between align-items-center mb-4">
+        <div class="page-title-container">
+            <i class="bi bi-pencil-square page-title-icon"></i>
+            <h3 class="page-main-title mb-0 d-inline">{% translate "학습 목표 수정" %}: {{ goal.title }}</h3>
+        </div>
     </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>{% translate "목표 정보 수정" %}</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# 목표 유형은 수정 불가, 정보만 표시 #}
+                <div class="mb-3">
+                    <label class="form-label"><strong>{% translate "목표 유형" %}:</strong></label>
+                    <p class="form-control-plaintext">{{ goal.get_goal_type_display }}</p>
+                </div>
+
+                {# 대상 시험지 또는 응시 기록 (수정 불가, 정보만 표시) #}
+                {% if goal.goal_type == 'TEST_RETAKE' and goal.target_test_set %}
+                <div class="mb-3">
+                    <label class="form-label"><strong>{% translate "대상 시험지" %}:</strong></label>
+                    <p class="form-control-plaintext">{{ goal.target_test_set.title }}</p>
+                </div>
+                {% elif goal.goal_type == 'INCORRECT_ANSWERS_RETAKE' and goal.target_attempt_for_incorrect_notes %}
+                <div class="mb-3">
+                    <label class="form-label"><strong>{% translate "대상 응시 기록" %}:</strong></label>
+                    <p class="form-control-plaintext">{{ goal.target_attempt_for_incorrect_notes.generated_exam.exam_document.title }} (응시일: {{ goal.target_attempt_for_incorrect_notes.start_time|date:"Y-m-d" }})</p>
+                </div>
+                {% endif %}
+
+                {# 수정 가능한 필드들 #}
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% if form.title.help_text %}<small class="form-text text-muted">{{ form.title.help_text }}</small>{% endif %}
+                    {% for error in form.title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.target_repetition_count.id_for_label }}" class="form-label">{{ form.target_repetition_count.label }}</label>
+                    {{ form.target_repetition_count }}
+                    {% if form.target_repetition_count.help_text %}<small class="form-text text-muted">{{ form.target_repetition_count.help_text }}</small>{% endif %}
+                    {% for error in form.target_repetition_count.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.due_date.id_for_label }}" class="form-label">{{ form.due_date.label }}</label>
+                    {{ form.due_date }}
+                    {% if form.due_date.help_text %}<small class="form-text text-muted">{{ form.due_date.help_text }}</small>{% endif %}
+                    {% for error in form.due_date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="mb-3 form-check">
+                    {{ form.is_important }}
+                    <label for="{{ form.is_important.id_for_label }}" class="form-check-label">{{ form.is_important.label }}</label>
+                    {% for error in form.is_important.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-primary">{% translate "변경사항 저장" %}</button>
+                <a href="{% url 'flo_my:mypage_learning_goals' %}" class="btn btn-secondary">{% translate "취소" %}</a>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

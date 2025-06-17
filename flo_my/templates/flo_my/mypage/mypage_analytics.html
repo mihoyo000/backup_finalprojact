@@ -1,0 +1,74 @@
+{% extends "flo_my/mypage_base.html" %}
+{% load static i18n %}
+
+{% block title %}{% translate "나의 학습 현황" %} - {{ block.super }}{% endblock %}
+
+
+{% block mypage_content %}
+{# --- ▼▼▼ 모든 콘텐츠를 이 div 안에 넣어 스타일을 격리합니다 ▼▼▼ --- #}
+<div class="mypage-analytics-page">
+
+    <div class="page-title-container mb-4">
+        <i class="bi bi-bar-chart-line-fill page-title-icon"></i>
+        <h2 class="page-main-title">{% translate "나의 학습 현황" %}</h2>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="chart-card">
+                <h4 class="chart-title">{% translate "목표 달성 플로우 (최근 7일)" %}</h4>
+                <canvas id="goalFlowChart"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="chart-card">
+                <h4 class="chart-title">{% translate "최근 정답률 분석 (최근 7일)" %}</h4>
+                <canvas id="accuracyDonutChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-card">
+                <h4 class="chart-title">{% translate "최근 학습 시간 (분, 최근 7일)" %}</h4>
+                <canvas id="learningTimeBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h4 class="chart-title">{% translate "나의 강점 (평균 점수 Top 3)" %}</h4>
+                <ul class="list-group list-group-flush">
+                    {# 데이터가 채워지기 전 임시 텍스트 #}
+                    <li class="list-group-item">{% translate "데이터 분석 중..." %}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h4 class="chart-title">{% translate "나의 약점 (평균 점수 Bottom 3)" %}</h4>
+                <ul class="list-group list-group-flush">
+                    {# 데이터가 채워지기 전 임시 텍스트 #}
+                    <li class="list-group-item">{% translate "데이터 분석 중..." %}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+{# --- ▲▲▲ mypage-analytics-page div 끝 ▲▲▲ --- #}
+{% endblock %}
+
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 이 안에서 차트 생성 코드를 작성할 예정입니다.
+            console.log("학습 현황 페이지 스크립트 로드 완료!");
+        });
+    </script>
+{% endblock %}

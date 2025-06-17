@@ -57,7 +57,8 @@ INSTALLED_APPS = [
     'tinymce',  # 추가된 부분
     'flo.apps.FloConfig',  # 추가된 부분
     'accounts.apps.AccountsConfig',  # accounts 앱 추가
-    'flo_exam.apps.FloExamConfig' # 추가된 부분 / flo프로그램 페이지
+    'flo_exam.apps.FloExamConfig', # 추가된 부분 / flo프로그램 페이지
+    'flo_my.apps.FloMyConfig',
 ]
 
 MIDDLEWARE = [

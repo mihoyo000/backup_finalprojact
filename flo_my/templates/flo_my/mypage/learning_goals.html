@@ -1,22 +1,73 @@
 {% extends "flo_my/mypage_base.html" %}
 {% load static i18n %}
 
-{# ====================================================================== #}
-{# 페이지 타이틀 블록                                                       #}
-{# ====================================================================== #}
 {% block title %}{% translate "나의 학습 목표" %} - {{ block.super }}{% endblock %}
 
-{# ====================================================================== #}
-{# 이 페이지 전용 추가 CSS 링크 블록                                        #}
-{# ====================================================================== #}
-{% block extra_css %} {# ★★★ mypage_base.html의 블록 이름과 일치시키세요 (예: extra_css) ★★★ #}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'flo/css/mypage_learning_goals.css' %}"> {# ★★★ CSS 파일 링크 추가 ★★★ #}
-{% endblock %}
+{% block extra_css %}
+<style>
+    /* ====================================================================== */
+    /* 학습 목표 페이지 전용 스타일 (라이트 모드)                              */
+    /* ====================================================================== */
+    .learning-goals-page .card {
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+    }
+    .learning-goals-page .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+    .learning-goals-page .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .learning-goals-page .card-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+    }
+    .learning-goals-page .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    .learning-goals-page .learning-goal-title-link {
+        text-decoration: none;
+        color: inherit;
+    }
+    .learning-goals-page .progress {
+        height: 1rem;
+        background-color: #e9ecef;
+    }
+    .learning-goals-page .progress-bar {
+        background-color: #0d6efd;
+    }
+    .learning-goals-page .progress-bar .achievement-rate-text {
+        font-size: 0.75rem;
+        line-height: 1rem;
+        color: white;
+        font-weight: 500;
+    }
 
-{# ====================================================================== #}
-{# 마이페이지 메인 콘텐츠 블록 시작                                         #}
-{# ====================================================================== #}
+    /* ====================================================================== */
+    /* 다크 모드 스타일                                                       */
+    /* ====================================================================== */
+    body.theme-dark .learning-goals-page .card { background-color: #212529; border-color: #495057; color: #ced4da; }
+    body.theme-dark .learning-goals-page .card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+    body.theme-dark .learning-goals-page .card-header,
+    body.theme-dark .learning-goals-page .card-footer { background-color: #343a40; border-color: #495057; }
+    body.theme-dark .learning-goals-page .card .card-title,
+    body.theme-dark .learning-goals-page .card .goal-title-text { color: #f8f9fa; }
+    body.theme-dark .learning-goals-page .progress { background-color: #495057; }
+    
+    /* 페이지네이션 다크모드 스타일 */
+    body.theme-dark .learning-goals-page .pagination .page-link { background-color: transparent; border-color: #454c54; color: #adb5bd; }
+    body.theme-dark .learning-goals-page .pagination .page-link:hover { background-color: #343a40; color: #fff; }
+    body.theme-dark .learning-goals-page .pagination .page-item.active .page-link { background-color: #0d6efd; border-color: #0d6efd; color: #fff; }
+    body.theme-dark .learning-goals-page .pagination .page-item.disabled .page-link { color: #6c757d; }
+</style>
+{% endblock %}
+{# --- 이하 mypage_content 와 extra_js 블록은 그대로 유지됩니다 --- #}
 {% block mypage_content %}
 <div class="learning-goals-page">
 
@@ -28,8 +79,7 @@
             <i class="bi bi-bullseye page-title-icon"></i> 
             <h3 class="page-main-title mb-0 d-inline">{% translate "나의 학습 목표" %}</h3>
         </div>
-        {# ★★★ 조건 수정: 이제 learning_goals는 "진행중인 목표"만 있으므로 이 조건이 정확하게 작동합니다. ★★★ #}
-        {% if learning_goals %}
+        {% if total_goals_count > 0 %} {# 전체 목표 개수를 기준으로 버튼 표시 #}
             <button type="button" class="btn btn-primary btn-sm" id="toggleCreateGoalFormBtnHeader" title="{% translate '새 학습 목표 만들기' %}">
                 <i class="bi bi-plus-lg"></i> {% translate "새 목표 추가" %}
             </button>
@@ -39,11 +89,8 @@
     {# ---------------------------------------------------------------------- #}
     {# 새 학습 목표 만들기 폼 섹션 (CSS와 인라인 스타일로 초기에 숨겨짐)     #}
     {# ---------------------------------------------------------------------- #}
-    {# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ #}
-    {# ★★★ 핵심 수정: 서버 사이드에서 조건부로 인라인 스타일을 직접 삽입! ★★★ #}
-    {# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ #}
     <div class="card mb-5 create-goal-section" id="learningGoalFormContainer" 
-         style="{% if not learning_goals %}display: none;{% endif %}">
+         style="display: {% if total_goals_count == 0 %}block{% else %}none{% endif %};"> {# 목표 없으면 폼 보이기 #}
         
         <div class="card-header">
             <h4>{% translate "새 학습 목표 만들기" %}</h4>
@@ -69,36 +116,74 @@
     {# 학습 목표 목록 또는 "목표 없음" 메시지 표시 섹션                          #}
     {# ---------------------------------------------------------------------- #}
     <div class="my-goals-list-or-message-section mt-2">
-        {% if learning_goals %}
+        {% if total_goals_count > 0 %} {# 전체 목표 개수를 기준으로 목록 또는 메시지 표시 #}
             <h4>{% translate "진행중인 학습 목표" %}</h4> 
             <div class="row row-cols-1 row-cols-md-2 g-4">
-    {% for goal in learning_goals %}
+    {% for goal in learning_goals_page %} {# 페이지네이션된 객체 사용 #}
         <div class="col">
-            <div class="card h-100 learning-goal-card">
+            <div class="card h-100 learning-goal-card" data-creation-date="{{ goal.created_at|date:'Y-m-d' }}">
                 <div class="card-body">
                     
                     {# 1. 제목과 별 아이콘을 한 줄에 배치하기 위한 div 추가 #}
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <a href="{% if goal.goal_type == 'TEST_RETAKE' and goal.target_test_set %}{% url 'flo_my:take_test' goal.target_test_set.pk %}{% elif goal.goal_type == 'INCORRECT_ANSWERS_RETAKE' and goal.target_attempt_for_incorrect_notes %}{% url 'flo_my:retake_incorrect_answers' goal.target_attempt_for_incorrect_notes.pk %}{% else %}#{% endif %}" class="learning-goal-title-link flex-grow-1">
-                            <h5 class="card-title mb-0">{{ goal.title }}</h5>
-                        </a>
-                        {# 중요 목표일 때만 별 아이콘 표시 #}
-                        {% if goal.is_important %}
-                            <i class="bi bi-star-fill text-warning fs-5 ms-3" title="중요 목표"></i>
-                        {% endif %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="learning-goal-title-container flex-grow-1 me-2">
+                            {# 제목 표시 영역 #}
+                            <span class="goal-title-display">
+                                <a href="{% if goal.goal_type == 'TEST_RETAKE' and goal.target_test_set %}{% url 'flo_exam:loading_page_entry' goal.target_test_set.pk %}?retake=true{% elif goal.goal_type == 'INCORRECT_ANSWERS_RETAKE' and goal.target_attempt_for_incorrect_notes %}{% url 'flo_exam:mistake_note_page' goal.target_attempt_for_incorrect_notes.generated_exam.exam_document.pk %}{% else %}#{% endif %}" 
+                                   class="learning-goal-title-link">
+                                    <h5 class="card-title mb-0 d-inline goal-title-text">{{ goal.title }}</h5>
+                                </a>
+                                <button class="btn btn-sm btn-outline-secondary ms-2 py-0 px-1 edit-goal-title-btn" data-goal-id="{{ goal.pk }}" title="{% translate '제목 수정' %}"><i class="bi bi-pencil"></i></button>
+                            </span>
+                            {# 제목 수정 폼 (숨겨져 있음) #}
+                            <span class="goal-title-edit-form" style="display: none;">
+                                <input type="text" class="form-control form-control-sm d-inline-block w-auto goal-title-input" value="{{ goal.title }}">
+                                <button class="btn btn-sm btn-success py-0 px-1 save-goal-title-btn" data-goal-id="{{ goal.pk }}"><i class="bi bi-check-lg"></i></button>
+                                <button class="btn btn-sm btn-danger py-0 px-1 cancel-edit-goal-title-btn"><i class="bi bi-x-lg"></i></button>
+                            </span>
+                        </div>
+                        <i class="bi {% if goal.is_important %}bi-star-fill text-warning{% else %}bi-star text-muted{% endif %} fs-5 ms-2 toggle-goal-importance-btn" 
+                           data-goal-id="{{ goal.pk }}" title="{% translate '중요도 변경' %}" style="cursor: pointer;"></i>
                     </div>
 
-                    <p class="card-text">진행률: {{ goal.current_repetition_count }} / {{ goal.target_repetition_count }}</p>
-                    <div class="progress mb-2">
-                        <div class="progress-bar" role="progressbar" style="width: {{ goal.achievement_rate }}%;" aria-valuenow="{{ goal.achievement_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    {# 목표 횟수 및 진행률 표시/수정 영역 #}
+                    <div class="mb-2 goal-repetition-section">
+                        <span class="goal-repetition-display">
+                            {% translate "진행률" %}: <span class="current-repetition-count">{{ goal.current_repetition_count }}</span> / <span class="target-repetition-count">{{ goal.target_repetition_count }}</span>
+                            <button class="btn btn-sm btn-outline-secondary ms-2 py-0 px-1 edit-goal-repetition-btn" data-goal-id="{{ goal.pk }}" title="{% translate '목표 횟수 수정' %}"><i class="bi bi-pencil"></i></button>
+                        </span>
+                        <span class="goal-repetition-edit-form" style="display: none;">
+                            <input type="number" class="form-control form-control-sm d-inline-block goal-repetition-input" value="{{ goal.target_repetition_count }}" min="1" style="width: 70px;">
+                            <button class="btn btn-sm btn-success py-0 px-1 save-goal-repetition-btn" data-goal-id="{{ goal.pk }}"><i class="bi bi-check-lg"></i></button>
+                            <button class="btn btn-sm btn-danger py-0 px-1 cancel-edit-goal-repetition-btn"><i class="bi bi-x-lg"></i></button>
+                        </span>
                     </div>
-                    <p class="card-text text-muted"><small>마감일: {{ goal.due_date|date:"Y-m-d" }}</small></p>
+                    <div class="progress mb-2 goal-progress-bar-container">
+                        <div class="progress-bar" role="progressbar" style="width: {{ goal.achievement_rate }}%;" aria-valuenow="{{ goal.achievement_rate }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="achievement-rate-text">{{ goal.achievement_rate }}%</span>
+                        </div>
+                    </div>
 
+                    {# 마감일 표시/수정 영역 #}
+                    <div class="goal-due-date-section">
+                        <span class="goal-due-date-display">
+                            <small class="text-muted">{% translate "마감일" %}: <span class="due-date-text">{{ goal.due_date|date:"Y-m-d" }}</span></small>
+                            <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 edit-goal-due-date-btn" data-goal-id="{{ goal.pk }}" title="{% translate '마감일 수정' %}"><i class="bi bi-pencil"></i></button>
+                        </span>
+                        <span class="goal-due-date-edit-form" style="display: none;">
+                            <input type="date" class="form-control form-control-sm d-inline-block goal-due-date-input" value="{{ goal.due_date|date:"Y-m-d" }}" style="width: auto;">
+                            <button class="btn btn-sm btn-success py-0 px-1 save-goal-due-date-btn" data-goal-id="{{ goal.pk }}"><i class="bi bi-check-lg"></i></button>
+                            <button class="btn btn-sm btn-danger py-0 px-1 cancel-edit-goal-due-date-btn"><i class="bi bi-x-lg"></i></button>
+                            <small class="form-text text-muted due-date-edit-helper" style="display: block; margin-top: 0.25rem; font-size: 0.8em;"></small> {# Helper text placeholder #}
+                        </span>
+                    </div>
                 </div>
                 
                 {# 2. 버튼들을 card-footer로 분리하여 배치 #}
                 <div class="card-footer text-end">
-                    <a href="{% url 'flo_my:learning_goal_edit' goal.pk %}" class="btn btn-sm btn-outline-secondary">{% translate "수정" %}</a>
+                    {# 학습 완료/미완료 토글 버튼 (선택적 기능) #}
+                    {# <button class="btn btn-sm {% if goal.is_completed %}btn-outline-secondary{% else %}btn-outline-success{% endif %} me-2 toggle-goal-completion-btn" data-goal-id="{{ goal.pk }}">{% if goal.is_completed %}{% translate "미완료로 변경" %}{% else %}{% translate "완료 처리" %}{% endif %}</button> #}
+                    {# "수정" 버튼 제거됨 - 인라인 편집으로 대체 #}
                     <form action="{% url 'flo_my:learning_goal_delete' goal.pk %}" method="post" class="d-inline ms-1">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말로 이 학습 목표를 삭제하시겠습니까?');">{% translate "삭제" %}</button>
@@ -108,6 +193,33 @@
         </div>
         {% endfor %}
             </div>
+            {# 페이지네이션 컨트롤 시작 #}
+            {% if learning_goals_page.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if learning_goals_page.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ learning_goals_page.previous_page_number }}">{% translate "이전" %}</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">{% translate "이전" %}</span></li>
+                    {% endif %}
+
+                    {% for i in custom_page_range %}
+                        {% if learning_goals_page.number == i %}
+                            <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if learning_goals_page.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ learning_goals_page.next_page_number }}">{% translate "다음" %}</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">{% translate "다음" %}</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {# 페이지네이션 컨트롤 끝 #}
         {% else %}
             {# --- 학습 목표가 없을 때 표시되는 내용 --- #}
             <div class="no-goals-container">
@@ -128,6 +240,23 @@
 {% block extra_js %}
     {{ block.super }}
     <script>
+    // CSRF 토큰 가져오기 (AJAX POST 요청 시 필요)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
     document.addEventListener('DOMContentLoaded', function() {
         const learningGoalFormContainer = document.getElementById('learningGoalFormContainer');
         const toggleCreateGoalFormBtnHeader = document.getElementById('toggleCreateGoalFormBtnHeader');
@@ -139,7 +268,7 @@
             addGoalIconEmpty.addEventListener('click', function() {
                 if (learningGoalFormContainer) {
                     learningGoalFormContainer.style.display = 'block';
-                    document.querySelector('.no-goals-container').style.display = 'none'; // "목표 없음" 메시지 숨기기
+                    // "목표 없음" 메시지는 total_goals_count에 의해 이미 숨겨져 있을 것임
                     learningGoalFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
@@ -173,7 +302,234 @@
             goalTypeSelect.addEventListener('change', toggleDependentGoalFields);
             toggleDependentGoalFields(); // 폼 내부 필드 초기화는 항상 실행
         }
+
+        // --- 학습 목표 카드 내 인라인 수정 로직 ---
+
+        // 중요도 토글
+        document.querySelectorAll('.toggle-goal-importance-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const goalId = this.dataset.goalId;
+                fetch(`/flo_my/ajax/learning-goal/toggle-importance/${goalId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json' // 본문이 없으므로 필수는 아님
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        this.classList.toggle('bi-star-fill', data.is_important);
+                        this.classList.toggle('text-warning', data.is_important);
+                        this.classList.toggle('bi-star', !data.is_important);
+                        this.classList.toggle('text-muted', !data.is_important);
+                    } else {
+                        alert('오류: ' + data.message);
+                    }
+                })
+                .catch(error => console.error('Error toggling importance:', error));
+            });
+        });
+
+        // 제목 수정
+        document.querySelectorAll('.learning-goal-card').forEach(card => {
+            const titleDisplay = card.querySelector('.goal-title-display');
+            const titleEditForm = card.querySelector('.goal-title-edit-form');
+            const editBtn = card.querySelector('.edit-goal-title-btn');
+            const saveBtn = card.querySelector('.save-goal-title-btn');
+            const cancelBtn = card.querySelector('.cancel-edit-goal-title-btn');
+            const titleInput = card.querySelector('.goal-title-input');
+            const titleTextElement = card.querySelector('.goal-title-text'); // h5 태그 내부
+
+            if (editBtn) {
+                editBtn.addEventListener('click', function() {
+                    titleDisplay.style.display = 'none';
+                    titleEditForm.style.display = 'inline'; // 또는 'block'
+                    titleInput.value = titleTextElement.textContent.trim(); // 현재 텍스트로 input 초기화
+                    titleInput.focus();
+                });
+            }
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function() {
+                    titleDisplay.style.display = 'inline'; // 또는 'block'
+                    titleEditForm.style.display = 'none';
+                });
+            }
+
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    const goalId = this.dataset.goalId;
+                    const newTitle = titleInput.value.trim();
+
+                    fetch(`/flo_my/ajax/learning-goal/update-title/${goalId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `title=${encodeURIComponent(newTitle)}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            titleTextElement.textContent = data.new_title;
+                            titleDisplay.style.display = 'inline'; // 또는 'block'
+                            titleEditForm.style.display = 'none';
+                        } else {
+                            alert('오류: ' + data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error updating title:', error));
+                });
+            }
+
+            // 목표 횟수 수정
+            const repetitionDisplay = card.querySelector('.goal-repetition-display');
+            const repetitionEditForm = card.querySelector('.goal-repetition-edit-form');
+            const editRepetitionBtn = card.querySelector('.edit-goal-repetition-btn');
+            const saveRepetitionBtn = card.querySelector('.save-goal-repetition-btn');
+            const cancelRepetitionBtn = card.querySelector('.cancel-edit-goal-repetition-btn');
+            const repetitionInput = card.querySelector('.goal-repetition-input');
+            const targetRepetitionTextElement = card.querySelector('.target-repetition-count');
+            const currentRepetitionTextElement = card.querySelector('.current-repetition-count');
+            const progressBar = card.querySelector('.progress-bar');
+            const achievementRateText = card.querySelector('.achievement-rate-text');
+
+
+            if (editRepetitionBtn) {
+                editRepetitionBtn.addEventListener('click', function() {
+                    repetitionDisplay.style.display = 'none';
+                    repetitionEditForm.style.display = 'inline';
+                    repetitionInput.value = targetRepetitionTextElement.textContent.trim();
+                    repetitionInput.focus();
+                });
+            }
+            if (cancelRepetitionBtn) {
+                cancelRepetitionBtn.addEventListener('click', function() {
+                    repetitionDisplay.style.display = 'inline';
+                    repetitionEditForm.style.display = 'none';
+                });
+            }
+            if (saveRepetitionBtn) {
+                saveRepetitionBtn.addEventListener('click', function() {
+                    const goalId = this.dataset.goalId;
+                    const newRepetitionCount = repetitionInput.value.trim();
+                    fetch(`/flo_my/ajax/learning-goal/update-repetition-count/${goalId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `repetition_count=${encodeURIComponent(newRepetitionCount)}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            targetRepetitionTextElement.textContent = data.new_repetition_count;
+                            currentRepetitionTextElement.textContent = data.current_repetition_count; // 현재 횟수도 업데이트 될 수 있음
+                            progressBar.style.width = data.achievement_rate + '%';
+                            progressBar.setAttribute('aria-valuenow', data.achievement_rate);
+                            if(achievementRateText) achievementRateText.textContent = data.achievement_rate + '%';
+
+                            repetitionDisplay.style.display = 'inline';
+                            repetitionEditForm.style.display = 'none';
+                            // TODO: is_completed 상태에 따라 카드 스타일 변경 (예: 흐리게 처리)
+                        } else {
+                            alert('오류: ' + data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error updating repetition count:', error));
+                });
+            }
+
+            // 마감일 수정
+            const dueDateDisplay = card.querySelector('.goal-due-date-display');
+            const dueDateEditForm = card.querySelector('.goal-due-date-edit-form');
+            const editDueDateBtn = card.querySelector('.edit-goal-due-date-btn');
+            const saveDueDateBtn = card.querySelector('.save-goal-due-date-btn');
+            const cancelDueDateBtn = card.querySelector('.cancel-edit-goal-due-date-btn');
+            const dueDateInput = card.querySelector('.goal-due-date-input');
+            const dueDateTextElement = card.querySelector('.due-date-text');
+            const dueDateEditHelper = card.querySelector('.due-date-edit-helper'); // Helper text element
+            const creationDateStr = card.dataset.creationDate; // Goal's creation date
+
+            if (editDueDateBtn) {
+                editDueDateBtn.addEventListener('click', function() {
+                    dueDateDisplay.style.display = 'none';
+                    dueDateEditForm.style.display = 'inline';
+                    dueDateInput.value = dueDateTextElement.textContent.trim();
+
+                    if (creationDateStr) {
+                        const parts = creationDateStr.split('-');
+                        const creationDate = new Date(parts[0], parts[1] - 1, parts[2]); // Month is 0-indexed
+                        creationDate.setHours(0,0,0,0); // Normalize to start of day
+
+                        const today = new Date();
+                        today.setHours(0,0,0,0); // Normalize to start of day
+
+                        // min 날짜는 오늘
+                        const minWidgetDate = new Date(today);
+                        
+                        // max 날짜는 생성일 + 6일
+                        const maxWidgetDate = new Date(creationDate.getTime());
+                        maxWidgetDate.setDate(creationDate.getDate() + 6);
+                        
+                        const formatDate = (date) => {
+                            const y = date.getFullYear();
+                            const m = String(date.getMonth() + 1).padStart(2, '0');
+                            const d = String(date.getDate()).padStart(2, '0');
+                            return `${y}-${m}-${d}`;
+                        };
+
+                        dueDateInput.min = formatDate(minWidgetDate);
+                        dueDateInput.max = formatDate(maxWidgetDate);
+                        
+                        if(dueDateEditHelper) {
+                            dueDateEditHelper.textContent = `마감일은 오늘부터 생성일(${creationDateStr}) 기준 일주일 이내(${formatDate(maxWidgetDate)})까지만 설정 가능합니다.`;
+                        }
+                    }
+                    dueDateInput.focus();
+                });
+            }
+            if (cancelDueDateBtn) {
+                cancelDueDateBtn.addEventListener('click', function() {
+                    dueDateDisplay.style.display = 'inline';
+                    dueDateEditForm.style.display = 'none';
+                    if(dueDateEditHelper) dueDateEditHelper.textContent = ''; 
+                });
+            }
+            if (saveDueDateBtn) {
+                saveDueDateBtn.addEventListener('click', function() {
+                    const goalId = this.dataset.goalId;
+                    const newDueDate = dueDateInput.value; // YYYY-MM-DD 형식
+                    fetch(`/flo_my/ajax/learning-goal/update-due-date/${goalId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `due_date=${encodeURIComponent(newDueDate)}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            dueDateTextElement.textContent = data.new_due_date;
+                            dueDateDisplay.style.display = 'inline';
+                            dueDateEditForm.style.display = 'none';
+                            if(dueDateEditHelper) dueDateEditHelper.textContent = ''; 
+                        } else {
+                            alert('오류: ' + data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error updating due date:', error));
+                });
+            }
+        });
     });
     </script>
 {% endblock %}
-

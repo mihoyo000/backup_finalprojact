@@ -1,12 +1,12 @@
-/* static/flo/css/mypage_learning_goals.css */
+/* static/flo/css/mypage.css */
 
 /* ============================================= */
 /* CSS 변수 정의 (다크/라이트 공통 및 모드별)     */
 /* ============================================= */
 :root {
     /* --- 크기 및 간격 변수 --- */
-    --header-height: 150px;
-    --sidebar-width: 350px;
+    --header-height: 150px; /* 헤더 높이 축소 */
+    --sidebar-width: 250px; /* 사이드바 너비 축소 */
     --main-content-max-width: 1400px;
     
     /* 폰트 크기 */
@@ -16,8 +16,8 @@
     --font-size-lg: 1.125rem;
     --font-size-xl: 1.25rem;
     --font-size-page-main-title: 1.75rem;
-    /* --font-size-sidebar-title: 1.6rem; "MY PAGE" 문구 제거 */
-    --font-size-sidebar-menu: 2rem;   
+    --font-size-sidebar-title: 1.3rem; /* 사이드바 "MY PAGE" 타이틀 크기 조정 */
+    --font-size-sidebar-menu: 1rem;   /* 사이드바 메뉴 폰트 크기 조정 */
     --font-size-card-title: 1.15rem;
 
     /* --- 다크 모드 색상 변수 --- */
@@ -66,11 +66,8 @@ body {
     font-size: var(--font-size-base);
     line-height: 1.6;
     margin: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
     overflow-x: hidden;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 body.theme-dark { background-color: var(--dark-bg); color: var(--dark-text-primary); }
 body.theme-dark a { color: var(--dark-accent); text-decoration: none; }
@@ -83,23 +80,42 @@ body.theme-light a:hover { color: var(--light-accent-hover); }
 body.theme-dark .bi { color: var(--dark-icon-color); }
 body.theme-light .bi { color: var(--light-icon-color); }
 
+/* ====================================================================== */
+/* ★★★ 마이페이지 레이아웃 정의 ★★★ */
+/* ====================================================================== */
+
+/* 2. 마이페이지 전체를 감싸는 새로운 컨테이너를 정의합니다. */
+#mypage-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* 4. 오른쪽 메인 패널 (헤더 + 콘텐츠) 스타일을 정의합니다. */
+#main-panel {
+    flex-grow: 1; /* 남은 공간을 모두 차지 */
+    display: flex;
+    flex-direction: column;
+    margin-left: 250px; /* 사이드바 너비만큼 왼쪽 마진 */
+}
+
 /* ============================================= */
 /* 마이페이지 헤더 (검색창, 오른쪽 아이콘)        */
 /* ============================================= */
+/* 5. 헤더 스타일을 수정합니다. (position:fixed 제거) */
 #mypage-header {
-    height: var(--header-height);
-    position: fixed; 
-    top: 0; 
-    left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
-    padding: 0 30px;
-    z-index: 1030; 
+    height: 150px; /* var(--header-height)와 동일값 */
+    border-bottom: 0px solid #e9ecef; /* --light-border와 유사하나, 명시적 값 사용 */
+    flex-shrink: 0;
     display: flex; 
     align-items: center;
-    box-sizing: border-box;
+    padding: 0 2rem;
+    background-color: #ffffff; /* var(--light-surface-1)와 동일값 */
+    width: 100%;
+    /* box-sizing: border-box; 제거됨, 필요시 추가 */
+    /* z-index: 1030; 제거됨 */
 }
-body.theme-dark #mypage-header { background-color: var(--dark-surface-1); border-bottom: 1px solid var(--dark-border); }
-body.theme-light #mypage-header { background-color: var(--light-surface-1); border-bottom: 1px solid var(--light-border);}
+body.theme-dark #mypage-header { background-color: #121212; border-bottom-color: #343a40; }
+/* body.theme-light #mypage-header는 위 기본 스타일에 병합됨 */
 
 #mypage-header .mypage-header-container {
     display: flex; 
@@ -137,8 +153,13 @@ body.theme-dark #mypage-header .header-right-controls .btn:hover { background-co
 body.theme-light #mypage-header .header-right-controls .btn:hover { background-color: rgba(0,0,0,0.05); }
 
 #mypage-header .auth-links .profile-image-wrapper { width: 34px; height: 34px; border-width: 1.5px; }
-body.theme-dark #mypage-header .auth-links .profile-image-wrapper { border-color: var(--dark-text-secondary); }
+body.theme-dark #mypage-header .auth-links .profile-image-wrapper { border-color: #ffffff; } /* 예시: 밝은 회색 */
 body.theme-light #mypage-header .auth-links .profile-image-wrapper { border-color: var(--light-border); }
+
+/* 다크 모드에서 사용자 정의 프로필 이미지 밝기 조절 */
+body.theme-dark #user-profile-image { /* data-has-custom-image 조건 제거 */
+    filter: invert(1) !important; /* 이미지를 반전시킵니다. */
+}
 
 #mypage-header .auth-links .user-display-name { font-size: var(--font-size-sm); margin-left: 8px; font-weight: 500; }
 body.theme-dark #mypage-header .auth-links .user-display-name { color: var(--dark-text-primary); }
@@ -157,41 +178,53 @@ body.theme-light .dropdown-item.active, body.theme-light .dropdown-item:active {
 /* ============================================= */
 /* 마이페이지 사이드바 (로고, MY PAGE, 메뉴)       */
 /* ============================================= */
+/* 3. 왼쪽 사이드바 스타일을 정의합니다. */
 #mypage-sidebar {
-    width: var(--sidebar-width); min-width: var(--sidebar-width); height: 100vh; 
-    position: fixed; left: 0; top: 0; z-index: 1025; 
-    display: flex; flex-direction: column;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-body.theme-dark #mypage-sidebar { background-color: var(--dark-surface-1); }
-body.theme-light #mypage-sidebar { background-color: var(--light-surface-1); }
-
-#mypage-sidebar .sidebar-header {
-    display: flex; 
-    align-items: center; 
-    padding: 0 0px;
-    height: var(--header-height);
-    box-sizing: border-box; 
+    width: 250px;
     flex-shrink: 0;
+    background-color: #ffffff; /* 라이트 모드 배경 */
+    border-right: 0px solid #e9ecef; /* 구분선 */
+    display: flex;
+    flex-direction: column;
+    position: fixed; /* 화면에 고정 */
+    left: 0;
+    top: 0;
+    height: 100%;
+    z-index: 1031; /* 헤더보다 위에 오도록 */
 }
-body.theme-dark #mypage-sidebar .sidebar-header {}
-body.theme-light #mypage-sidebar .sidebar-header {}
+body.theme-dark #mypage-sidebar {
+    background-color: #121212;
+    border-right-color: #343a40;
+}
+
+/* 사이드바 헤더는 새로운 #mypage-sidebar 구조에 맞게 유지 또는 조정될 수 있음 */
+#mypage-sidebar .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* 로고와 타이틀을 중앙 정렬 (필요에 따라 조정) */
+    padding: 0 20px; /* 내부 여백 추가 */
+    height: var(--header-height); /* 페이지 헤더와 동일한 높이 유지 */
+    box-sizing: border-box;
+    flex-shrink: 0;
+    border-bottom: 0px solid var(--light-border, #e9ecef); /* 헤더처럼 하단 테두리 추가 */
+}
+body.theme-dark #mypage-sidebar .sidebar-header {
+    border-bottom-color: var(--dark-border, #4A5568);
+}
 
 #mypage-sidebar .sidebar-header .logo-container {
     display: flex; 
     align-items: center; 
-    height: 10px;
-    line-height: normal; 
+    margin-right: 10px; /* 로고와 "MY PAGE" 타이틀 사이 간격 */
 }
 #mypage-sidebar .sidebar-header .logo-container a {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
 }
 #mypage-sidebar .sidebar-header .logo-container img#sidebar-logo {
     display: block; 
-    height: 135px;
+    height: 135px; /* 로고 이미지 크기 축소 */
     width: auto;
 }
 
@@ -199,7 +232,7 @@ body.theme-light #mypage-sidebar .sidebar-header {}
 .mypage-sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
 .mypage-sidebar-nav .nav-item a {
     display: flex; align-items: center; padding: 15px 30px; 
-    font-size: var(--font-size-sidebar-menu); font-weight: 400; 
+    font-size: var(--font-size-sidebar-menu); font-weight: 500; /* 폰트 굵기 약간 증가 */
     text-decoration: none; 
     transition: color 0.15s ease, background-color 0.15s ease, border-left-color 0.15s ease;
     border-left: 3px solid transparent;
@@ -210,25 +243,37 @@ body.theme-dark .mypage-sidebar-nav .nav-item a { color: var(--dark-text-seconda
 body.theme-dark .mypage-sidebar-nav .nav-item a:hover { color: var(--dark-accent); background-color: rgba(var(--dark-accent-rgb, 102, 252, 241), 0.07); }
 body.theme-dark .mypage-sidebar-nav .nav-item.active a { color: var(--dark-accent); background-color: rgba(var(--dark-accent-rgb, 102, 252, 241), 0.12); border-left-color: var(--dark-accent); font-weight: 500; }
 body.theme-light .mypage-sidebar-nav .nav-item a { color: var(--light-text-secondary); }
-body.theme-light .mypage-sidebar-nav .nav-item a:hover { color: var(--light-accent); background-color: rgba(var(--light-accent-rgb, 13, 110, 253), 0.04); }
-body.theme-light .mypage-sidebar-nav .nav-item.active a { color: var(--light-accent); background-color: rgba(var(--light-accent-rgb, 13, 110, 253), 0.08); border-left-color: var(--light-accent); font-weight: 500; }
+body.theme-light .mypage-sidebar-nav .nav-item a:hover { color: var(--light-accent); background-color: rgba(var(--light-accent-rgb, 13, 110, 253), 0.07); } /* 호버 배경색 약간 진하게 */
+body.theme-light .mypage-sidebar-nav .nav-item.active a { color: var(--light-accent); background-color: rgba(var(--light-accent-rgb, 13, 110, 253), 0.12); border-left-color: var(--light-accent); font-weight: 600; } /* 활성 메뉴 폰트 굵기 증가 */
+
+/* 사이드바 "MY PAGE" 타이틀 스타일 */
+#mypage-sidebar .sidebar-mypage-title {
+    font-size: var(--font-size-sidebar-title);
+    font-weight: 600;
+    margin-bottom: 0; /* 기본 마진 제거 */
+}
 
 /* ============================================= */
 /* 마이페이지 메인 콘텐츠 영역                     */
 /* ============================================= */
-.mypage-body-wrapper { padding-left: var(--sidebar-width); padding-top: var(--header-height); width: 100%; box-sizing: border-box; flex-grow: 1; display: flex; }
-#mypage-main-content { min-height: calc(100vh - var(--header-height)); padding: 0; flex-grow: 1; transition: background-color 0.3s ease; }
-body.theme-dark #mypage-main-content { background-color: var(--dark-surface-2); }
-body.theme-light #mypage-main-content { background-color: var(--light-surface-2); }
+/* .mypage-body-wrapper 스타일은 새로운 레이아웃 구조로 대체되어 제거 또는 주석 처리 */
 
+/* 6. 메인 콘텐츠 영역을 정의합니다. */
+#mypage-main-content {
+    flex-grow: 1;
+    padding: 2rem;
+    background-color: #f8f9fa; /* var(--light-surface-2) 또는 var(--light-bg)와 유사 */
+}
+body.theme-dark #mypage-main-content {
+    background-color: #1a1d21;
+}
 .main-content-inner-wrapper { max-width: var(--main-content-max-width); margin: 0 auto; padding: 30px 40px; }
 
 .page-title-container { 
     display: flex; align-items: center; gap: 0.7rem; margin-bottom: 2rem !important; 
 }
 .page-title-icon { 
-    font-size: 1.7rem; position: relative;
-    top: -5px; /* 모든 아이콘의 기본 위치를 약간 위로 조정 */
+    font-size: 1.7rem; 
 } 
 
 /* 테마별 아이콘 공통 색상 */
@@ -300,7 +345,7 @@ body.theme-light .learning-goal-edit-form-wrapper .card {
     font-size: var(--font-size-lg); 
     padding: 0.8rem 1.2rem; 
     margin-bottom: 0; 
-    border-bottom: 1px solid; 
+    border-bottom: 0px solid; 
     font-weight: 500; 
 }
 body.theme-dark .learningGoalFormContainer .card-header h4,
@@ -487,7 +532,14 @@ body.theme-light .learning-goal-card .btn-warning { background-color: #FFC107; b
 /* ============================================= */
 /* 푸터                                        */
 /* ============================================= */
-.site-footer { padding-left: var(--sidebar-width); border-top: 1px solid; padding-top: 20px; padding-bottom: 20px; font-size: var(--font-size-sm); }
+.site-footer {
+    /* padding-left: var(--sidebar-width); -- #main-panel의 margin-left로 대체 */
+    border-top: 1px solid; 
+    padding-top: 20px; 
+    padding-bottom: 20px; 
+    font-size: var(--font-size-sm);
+    flex-shrink: 0; /* #main-panel 내부에서 크기 유지 */
+}
 body.theme-dark .site-footer { background-color: var(--dark-bg); border-top-color: var(--dark-border); color: var(--dark-text-secondary); }
 body.theme-light .site-footer { background-color: var(--light-bg); border-top-color: var(--light-border); color: var(--light-text-secondary); }
 .site-footer .footer-container { max-width: var(--main-content-max-width); margin: 0 auto; padding-left: 40px; padding-right: 40px; }

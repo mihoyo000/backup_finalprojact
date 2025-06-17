@@ -1,316 +1,103 @@
 {% extends "flo_my/mypage_base.html" %}{% load static i18n %}
-{% block title %}{{ page_title|default:_("나의 학습 자료") }} - 마이페이지{% endblock %}
-
-{% block extra_css %}
-    <style>
-        .materials-table { width: 100%; margin-bottom: 1rem; color: inherit; border-collapse: collapse; }
-        .materials-table th, .materials-table td { padding: 0.75rem; vertical-align: middle; border-top: 1px solid; }
-        body.theme-dark .materials-table th, body.theme-dark .materials-table td { border-top-color: var(--dark-border); }
-        body.theme-light .materials-table th, body.theme-light .materials-table td { border-top-color: var(--light-border); }
-        .materials-table thead th { vertical-align: bottom; border-bottom: 2px solid; font-weight: 500; }
-        body.theme-dark .materials-table thead th { border-bottom-color: var(--dark-border); }
-        body.theme-light .materials-table thead th { border-bottom-color: var(--light-border); }
-        .search-filters-form .form-group { margin-right: 1rem; margin-bottom: 1rem; }
-        .search-filters-form .form-control-sm { font-size: 0.875rem; padding: 0.25rem 0.5rem; height: calc(1.5em + 0.5rem + 2px); }
-        .search-filters-form .form-check-input { margin-top: 0.4em; }
-        .search-filters-form .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.875rem; }
-        .action-icons a, .action-icons button { margin-left: 0.5rem; font-size: 1.1rem; text-decoration: none; }
-        .star-icon { cursor: pointer; font-size: 1.3rem; }
-        body.theme-dark .star-icon.important { color: var(--dark-accent); }
-        body.theme-light .star-icon.important { color: #FFC107; }
-        body.theme-dark .star-icon { color: var(--dark-icon-color); }
-        body.theme-light .star-icon { color: var(--light-icon-color); }
-        body.theme-dark .modal-content { background-color: var(--dark-surface-card, #2C3A47); color: var(--dark-text-primary, #EAEAEA); border-color: var(--dark-border, #3A4F60); }
-        body.theme-dark .modal-header { border-bottom-color: var(--dark-border, #3A4F60); }
-        body.theme-dark .modal-header .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
-        body.theme-dark .modal-title { color: var(--dark-text-primary, #EAEAEA); }
-        body.theme-dark .modal-body { color: var(--dark-text-secondary, #C0C0C0); }
-        body.theme-dark .modal-body h1, body.theme-dark .modal-body h2, body.theme-dark .modal-body h3, body.theme-dark .modal-body h4, body.theme-dark .modal-body h5, body.theme-dark .modal-body h6, body.theme-dark .modal-body .question-text-selector, body.theme-dark .modal-body strong { color: var(--dark-text-primary, #EAEAEA); }
-        body.theme-dark .modal-footer { border-top-color: var(--dark-border, #3A4F60); }
-        body.theme-dark .modal-footer .btn-secondary { color: var(--dark-text-primary, #EAEAEA); background-color: var(--dark-surface-1, #141A22); border-color: var(--dark-border, #3A4F60); }
-        body.theme-dark .modal-footer .btn-secondary:hover { background-color: var(--dark-border, #3A4F60); }
-        body.theme-dark .modal-footer .btn-outline-primary { color: var(--dark-accent, #66FCF1); border-color: var(--dark-accent, #66FCF1); }
-        body.theme-dark .modal-footer .btn-outline-primary:hover { color: var(--dark-button-text-on-accent, #141A22); background-color: var(--dark-accent, #66FCF1); }
-    </style>
-{% endblock %}
+{% block title %}{% translate "나의 학습 자료" %} - 마이페이지{% endblock %}
 
 {% block mypage_content %}
     <div class="page-title-container mb-4">
-        <i class="bi bi-file-earmark-text-fill page-title-icon"></i> 
+        <i class="bi bi-file-earmark-text-fill page-title-icon"></i>
         <h2 class="page-main-title">{% translate "나의 학습 자료" %}</h2>
     </div>
 
-    {# --- 검색 및 필터 폼 --- #}
-    <form method="get" action="{% url 'flo_my:mypage_materials' %}" class="mb-4 search-filters-form">
-        <div class="d-flex flex-wrap align-items-end">
-            <div class="form-group">
-                <label for="{{ search_form.search_title.id_for_label }}" class="form-label fw-bold">제목</label>
-                {{ search_form.search_title }}
-            </div>
-            <div class="form-group">
-                <label for="{{ search_form.search_date_start.id_for_label }}" class="form-label fw-bold">생성일 (시작)</label>
-                {{ search_form.search_date_start }}
-            </div>
-            <div class="form-group">
-                <label for="{{ search_form.search_date_end.id_for_label }}" class="form-label fw-bold">생성일 (종료)</label>
-                {{ search_form.search_date_end }}
-            </div>
-            <div class="form-group form-check ms-2 mb-3">
-                {{ search_form.show_important_only }}
-                <label for="{{ search_form.show_important_only.id_for_label }}" class="form-check-label">중요 표시만</label>
-            </div>
-            <div class="form-group ms-auto d-flex">
-                <button type="submit" class="btn btn-primary btn-sm">검색</button>
-                <a href="{% url 'flo_my:mypage_materials' %}" class="btn btn-outline-secondary btn-sm ms-2">초기화</a>
-            </div>            
-        </div>
-        {% if search_form.errors %}
-            <div class="alert alert-danger mt-2 p-2" role="alert">
-                <small>
-                {% for field, errors in search_form.errors.items %}{% for error in errors %}{{ error }}<br>{% endfor %}{% endfor %}
-                </small>
-            </div>
-        {% endif %}
-    </form>
-
-    {# ★★★★★★★★★★★★★★★★ 이 부분이 핵심 수정 영역입니다 ★★★★★★★★★★★★★★★★ #}
-    {% if test_sets_page %}
-        {# --- 학습 자료가 있을 때 --- #}
-        <div class="table-responsive">
-            <table class="materials-table">
-                <thead>
-                    <tr>
-                        <th scope="col" style="width: 5%;">중요</th>
-                        <th scope="col">제목 (Test 이름)</th>
-                        <th scope="col" style="width: 15%;">생성 날짜</th>
-                        <th scope="col" style="width: 10%; text-align: center;">관리</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for test_set in test_sets_page %}
-                    <tr>
-                        <td class="text-center">
-                            <span class="star-icon {% if test_set.is_important %}important{% endif %}" data-testset-id="{{ test_set.pk }}" data-url="{% url 'flo_my:ajax_toggle_importance' test_set.pk %}" title="중요도 표시/해제">
-                                {% if test_set.is_important %}★{% else %}☆{% endif %}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="#" class="view-test-set" data-testset-id="{{ test_set.pk }}">{{ test_set.title }}</a>
-                        </td>
-                        <td>{{ test_set.created_at|date:"Y.m.d" }}</td>
-                        <td class="text-center action-icons">
-                            <a href="{% url 'flo_my:download_test_set_pdf' test_set.pk %}" class="btn btn-sm btn-icon" title="PDF 다운로드"><i class="bi bi-download"></i></a>
-                            <button type="button" class="btn btn-sm btn-icon text-danger delete-test-set" data-url="{% url 'flo_my:delete_test_set' test_set.pk %}" title="삭제"><i class="bi bi-trash3"></i></button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        {% if test_sets_page.has_other_pages %}
-            <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    {% if test_sets_page.has_previous %}
-                        <li class="page-item"><a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">« 처음</a></li>
-                        <li class="page-item"><a class="page-link" href="?page={{ test_sets_page.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">이전</a></li>
-                    {% else %}
-                        <li class="page-item disabled"><span class="page-link">« 처음</span></li>
-                        <li class="page-item disabled"><span class="page-link">이전</span></li>
-                    {% endif %}
-                    {% for i in test_sets_page.paginator.page_range %}
-                        {% if i >= test_sets_page.number|add:'-2' and i <= test_sets_page.number|add:'2' %}
-                            {% if test_sets_page.number == i %}
-                                <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
-                            {% else %}
-                                <li class="page-item"><a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a></li>
-                            {% endif %}
+    {# ▼▼▼ 가장 간단하고 표준적인 구조로 변경 ▼▼▼ #}
+    <div class="table-responsive">
+        <table class="materials-table">
+            <thead>
+                <tr>
+                    <th scope="col" style="width: 5%;" class="text-center">중요</th>
+                    <th scope="col">제목</th>
+                    <th scope="col" style="width: 15%;">생성 날짜</th>
+                    <th scope="col" style="width: 15%;" class="text-center">관리</th>
+                </tr>
+            </thead>
+            <tbody>
+                {# for 루프 안에서는 empty를 사용하여 데이터가 없을 경우를 처리합니다. #}
+                {% for material in test_sets_page %}
+                <tr id="material-row-{{ material.pk }}">
+                    <td class="text-center">
+                        <span class="star-icon {% if material.is_important %}important{% endif %}" data-url="{% url 'flo_my:ajax_toggle_material_importance' material.pk %}">★</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'flo_exam:loading_page_entry' material.pk %}?retake=true">{{ material.title }}</a>
+                    </td>
+                    <td>
+                        {{ material.uploaded_at|date:"Y.m.d" }}
+                    </td>
+                    <td class="text-center action-icons">
+                        {% if material.generated_exam %}
+                        <a href="{% url 'flo_exam:download_questions_pdf' material.generated_exam.pk %}" class="btn btn-sm btn-icon" title="시험문제 PDF 다운로드"><i class="bi bi-download"></i></a>
                         {% endif %}
-                    {% endfor %}
-                    {% if test_sets_page.has_next %}
-                        <li class="page-item"><a class="page-link" href="?page={{ test_sets_page.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">다음</a></li>
-                        <li class="page-item"><a class="page-link" href="?page={{ test_sets_page.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">마지막 »</a></li>
-                    {% else %}
-                        <li class="page-item disabled"><span class="page-link">다음</span></li>
-                        <li class="page-item disabled"><span class="page-link">마지막 »</span></li>
-                    {% endif %}
-                </ul>
-            </nav>
-        {% endif %}
-
-    {% else %}
-        {# --- 학습 자료가 없을 때 --- #}
-        <div class="no-content-container text-center py-5">
-            {% if search_form.is_bound %}
-                {# 검색은 했지만 결과가 없는 경우 #}
-                <div class="no-content-message">
-                    <i class="bi bi-search" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                    <p class="lead">{% translate "검색 결과가 없습니다." %}</p>
-                    <a href="{% url 'flo_my:mypage_materials' %}" class="btn btn-outline-secondary mt-3">{% translate "전체 목록 보기" %}</a>
-                </div>
-            {% else %}
-                {# 아예 자료가 하나도 없는 경우 #}
-                <div class="no-content-message">
-                    <a href="{% url 'flo_my:pdf_upload' %}" class="no-content-icon-link">
-                        <i class="bi bi-file-earmark-plus-fill" style="font-size: 4rem;"></i>
-                    </a>
-                    <p class="lead mt-3">{% translate "아직 생성된 학습 자료가 없어요." %}</p>
-                    <p class="text-muted">{% translate "지금 바로 PDF를 업로드하여 첫 학습 자료를 만들어 보세요!" %}</p>
-                </div>
-            {% endif %}
-        </div>
-    {% endif %}
-
-    <div class="modal fade" id="testSetDetailsModal" tabindex="-1" aria-labelledby="testSetDetailsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="testSetDetailsModalLabel">시험 상세 내용</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="modal-test-set-title" class="mb-3 h5"></div>
-                    <div class="text-end mb-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="toggle-answers-btn">정답/해설 보기</button>
-                    </div>
-                    <div id="modal-questions-container"></div>
-                    <div id="modal-answers-explanations-container" style="display: none;"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                </div>
-            </div>
-        </div>
+                        <button type="button" class="btn btn-sm btn-icon text-danger delete-material-btn" data-url="{% url 'flo_my:ajax_delete_material' material.pk %}" title="삭제"><i class="bi bi-trash3"></i></button>
+                    </td>
+                </tr>
+                {% empty %}
+                    {# 목록이 비어있을 때 표시될 내용 #}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <a href="{% url 'flo_exam:upload_page' %}" class="no-content-icon-link"><i class="bi bi-file-earmark-plus-fill" style="font-size: 4rem; color: #6b7280;"></i></a>
+                            <p class="lead mt-3">아직 생성된 학습 자료가 없어요.</p>
+                            <p class="text-muted">지금 바로 PDF를 업로드하여 첫 학습 자료를 만들어 보세요!</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+    
+    {# 페이지네이션 #}
+    {% if test_sets_page.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+
+                {# 이전 페이지 버튼 #}
+                {% if test_sets_page.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ test_sets_page.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">‹</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">‹</span>
+                    </li>
+                {% endif %}
+
+                {# 페이지 번호 목록 #}
+                {% for i in custom_page_range %}
+                    <li class="page-item {% if test_sets_page.number == i %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                    </li>
+                {% endfor %}
+
+                {# 다음 페이지 버튼 #}
+                {% if test_sets_page.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ test_sets_page.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">›</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">›</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
 {% endblock %}
+
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    const starIcons = document.querySelectorAll('.star-icon');
-    starIcons.forEach(icon => {
-        icon.addEventListener('click', function() {
-            if (this.classList.contains('processing')) { return; }
-            this.classList.add('processing');
-            const url = this.dataset.url;
-            const csrfToken = getCookie('csrftoken');
-            fetch(url, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrfToken }
-            })
-            .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok.'))
-            .then(data => {
-                if (data.status === 'success') {
-                    this.innerHTML = data.is_important ? '★' : '☆';
-                    this.classList.toggle('important', data.is_important);
-                } else {
-                    alert(data.message || '중요도 변경 실패');
-                }
-            })
-            .catch(error => console.error('Error toggling importance:', error))
-            .finally(() => this.classList.remove('processing'));
-        });
-    });
-
-    const deleteButtons = document.querySelectorAll('.delete-test-set');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function(event) {
-            event.preventDefault();
-            if (confirm('정말로 이 학습 자료를 삭제하시겠습니까?')) {
-                const url = this.dataset.url;
-                fetch(url, {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        this.closest('tr').remove();
-                    } else {
-                        alert(data.message || '삭제 실패');
-                    }
-                });
-            }
-        });
-    });
-
-    const testSetDetailsModal = new bootstrap.Modal(document.getElementById('testSetDetailsModal'));
-    const modalTitleEl = document.getElementById('modal-test-set-title');
-    const questionsContainer = document.getElementById('modal-questions-container');
-    const answersContainer = document.getElementById('modal-answers-explanations-container');
-    const toggleAnswersBtn = document.getElementById('toggle-answers-btn');
-    let currentViewIsAnswers = false;
-
-    toggleAnswersBtn.addEventListener('click', function() {
-        currentViewIsAnswers = !currentViewIsAnswers;
-        questionsContainer.style.display = currentViewIsAnswers ? 'none' : 'block';
-        answersContainer.style.display = currentViewIsAnswers ? 'block' : 'none';
-        this.textContent = currentViewIsAnswers ? '문제만 보기' : '정답/해설 보기';
-    });
-
-    document.querySelectorAll('.view-test-set').forEach(link => {
-        link.addEventListener('click', function(event) {
-            event.preventDefault();
-            const testSetId = this.dataset.testsetId;
-            const url = `/ajax/get_test_set_details/${testSetId}/`;
-            modalTitleEl.textContent = '로딩 중...';
-            questionsContainer.innerHTML = '<p class="text-center">로딩 중...</p>';
-            answersContainer.innerHTML = '';
-            questionsContainer.style.display = 'block';
-            answersContainer.style.display = 'none';
-            toggleAnswersBtn.textContent = '정답/해설 보기';
-            currentViewIsAnswers = false;
-            testSetDetailsModal.show();
-
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest' // 403 Forbidden 오류 해결을 위한 헤더 추가
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        modalTitleEl.textContent = data.test_set_title;
-                        let questionsHtml = '', answersHtml = '';
-                        if (data.questions && data.questions.length > 0) {
-                            data.questions.forEach(q => {
-                                let choicesHtml = q.choices.map(c => `<li>${c.content}</li>`).join('');
-                                questionsHtml += `<div class="mb-4 p-3 border rounded"><p class="fw-bold">Q${q.order}. ${q.content}</p><ul class="list-unstyled ms-3">${choicesHtml}</ul></div>`;
-                                answersHtml += `<div class="mb-4 p-3 border rounded"><p class="fw-bold">Q${q.order}. ${q.content}</p><p class="ms-3"><strong>정답:</strong> ${q.choices.find(c=>c.id === q.correct_choice_id)?.content || '정보 없음'}</p><p class="ms-3"><strong>해설:</strong> ${q.explanation || '해설 없음'}</p></div>`;
-                            });
-                        } else {
-                            questionsHtml = '<p>문제가 없습니다.</p>';
-                        }
-                        questionsContainer.innerHTML = questionsHtml;
-                        answersContainer.innerHTML = answersHtml;
-                    } else {
-                        modalTitleEl.textContent = '오류';
-                        questionsContainer.innerHTML = `<p class="text-danger">${data.message || '데이터 로드 실패'}</p>`;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching details:', error);
-                    modalTitleEl.textContent = '오류';
-                    questionsContainer.innerHTML = `<p class="text-danger">요청 중 오류 발생</p>`;
-                });
-        });
-    });
+    function getCookie(name) {let cookieValue = null;if (document.cookie && document.cookie !== '') {const cookies = document.cookie.split(';');for (let i = 0; i < cookies.length; i++) {const cookie = cookies[i].trim();if (cookie.substring(0, name.length + 1) === (name + '=')) {cookieValue = decodeURIComponent(cookie.substring(name.length + 1));break;}}}return cookieValue;}
+    const csrftoken = getCookie('csrftoken');
+    document.querySelectorAll('.star-icon').forEach(star => {star.addEventListener('click', function() {const url = this.dataset.url;fetch(url, {method: 'POST',headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },}).then(response => response.json()).then(data => {if (data.status === 'success') {this.classList.toggle('important', data.is_important);} else {alert('오류가 발생했습니다: ' + data.message);}});});});
+    document.querySelectorAll('.delete-material-btn').forEach(button => {button.addEventListener('click', function() {if (confirm('정말로 이 학습 자료를 삭제하시겠습니까?\n삭제된 자료는 복구할 수 없습니다.')) {const url = this.dataset.url;fetch(url, {method: 'POST',headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },}).then(response => response.json()).then(data => {if (data.status === 'success') {const row = this.closest('tr');if (row) {row.style.transition = 'opacity 0.5s';row.style.opacity = '0';setTimeout(() => row.remove(), 500);}} else {alert('삭제 중 오류가 발생했습니다: ' + data.message);}});}});});
 });
 </script>
 {% endblock %}

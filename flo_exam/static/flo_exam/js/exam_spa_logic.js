@@ -339,7 +339,31 @@ document.addEventListener('DOMContentLoaded', function() {
         typeof APP_URLS !== 'undefined' && APP_URLS.processPdf &&
         typeof STATIC_PATHS !== 'undefined' && typeof PAGE_INITIAL_MESSAGE !== 'undefined') {
         console.log("exam_spa_logic.js: 초기화 시작, EXAM_DOCUMENT_ID:", EXAM_DOCUMENT_ID);
-        startProblemGeneration(); // 페이지 로드 시 바로 문제 생성 요청 시작
+        // startProblemGeneration(); // 페이지 로드 시 바로 문제 생성 요청 시작
+        // ★★★★★★★★★★★★★★★★★ 25/6/16 ★★★★★★★★★★★★★★★★★
+    // HTML에서 전달된 INITIAL_EXAM_DATA 변수가 있는지 확인합니다.
+    // (이 변수는 exam_spa_page.html에서 전역으로 선언해주어야 합니다.)
+    if (typeof INITIAL_EXAM_DATA !== 'undefined' && INITIAL_EXAM_DATA) {
+        // 데이터가 있으면 ('다시 풀기' 모드),
+        // AJAX 요청 없이 바로 시험 화면을 그리는 함수를 호출합니다.
+        console.log("Retake mode: Loading existing questions from INITIAL_EXAM_DATA.");
+        
+        // 채점 및 PDF 다운로드를 위해 시험 ID를 설정합니다.
+        currentGeneratedExamId = INITIAL_EXAM_DATA.exam_id;
+        
+        // 기존 문제 데이터로 시험 UI를 렌더링합니다.
+        renderProblemSolvingUI(INITIAL_EXAM_DATA.questions, INITIAL_EXAM_DATA.exam_document_title);
+
+    } else {
+        // 데이터가 없으면 (처음 만드는 경우),
+        // 기존처럼 문제 생성 AJAX를 호출합니다.
+        console.log("New exam mode: Starting problem generation via AJAX.");
+        startProblemGeneration();
+    }
+    // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+
+
     } else {
         console.error("exam_spa_logic.js: 초기화에 필요한 전역 변수(EXAM_DOCUMENT_ID, APP_URLS.processPdf 등)가 정의되지 않았습니다.");
         showErrorState("페이지를 초기화하는 데 필요한 정보가 부족합니다. 이전 페이지로 돌아가서 다시 시도해주세요.");

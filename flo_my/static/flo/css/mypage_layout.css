@@ -1,0 +1,47 @@
+/* flo_my/static/flo_my/css/mypage_layout.css */
+
+/* 
+  base.css의 body { display: flex; } 규칙을 보완하고,
+  마이페이지의 새로운 2단 레이아웃을 정의합니다.
+*/
+
+/* 최상위 래퍼: 전체 화면을 차지하고, 자식들을 가로로 정렬 */
+#mypage-container {
+    display: flex;
+    width: 100vw; /* 뷰포트 너비 100% */
+    height: 100vh; /* 뷰포트 높이 100% */
+}
+
+/* 왼쪽 사이드바: 고정 너비를 가짐 */
+#mypage-sidebar {
+    flex-shrink: 0; /* 너비가 줄어들지 않도록 고정 */
+    width: 280px; /* 사이드바 너비 (조절 가능) */
+    background-color: #1a1d21; /* 다크 모드 기준 배경색 */
+    height: 100%;
+    overflow-y: auto; /* 내용이 길어지면 스크롤 */
+}
+
+/* 오른쪽 메인 패널: 남은 공간을 모두 차지하고, 내부 요소를 세로로 정렬 */
+#main-panel {
+    flex-grow: 1; /* 남은 공간을 모두 차지 */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* 헤더: 고정 높이 */
+#main-panel #mypage-header {
+    flex-shrink: 0; /* 높이가 줄어들지 않도록 고정 */
+}
+
+/* 메인 콘텐츠: 헤더와 푸터를 제외한 남은 공간을 모두 차지 */
+#main-panel #mypage-main-content {
+    flex-grow: 1;
+    overflow-y: auto; /* 내용이 길어지면 스크롤 */
+    padding: 2rem; /* 콘텐츠 영역에 여백 추가 */
+}
+
+/* 푸터: 고정 높이 */
+#main-panel .site-footer {
+    flex-shrink: 0;
+}

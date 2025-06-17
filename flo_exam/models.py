@@ -60,6 +60,17 @@ class ExamDocument(models.Model):
         verbose_name="처리 상태"
     )
 
+     # ★★★★★★★★★ 마이페이지 중요도 설정을 위해 추가 25/06/16★★★★★★★★★
+    is_important = models.BooleanField(default=False, verbose_name="중요 표시")
+
+    def __str__(self):
+        return self.title if self.title else f"ExamDocument {self.id}"
+
+    class Meta:
+        verbose_name = "업로드된 PDF 문서"
+        verbose_name_plural = "업로드된 PDF 문서들"
+        ordering = ['-uploaded_at']
+
     def __str__(self):
         return self.title if self.title else f"ExamDocument {self.id}"
 
@@ -169,6 +180,9 @@ class UserExamSession(models.Model):
     start_time = models.DateTimeField(auto_now_add=True, verbose_name="시작 시간")
     end_time = models.DateTimeField(null=True, blank=True, verbose_name="종료 시간") # 채점 완료 시 기록
     score = models.FloatField(null=True, blank=True, verbose_name="점수") # 0.0 ~ 100.0
+    # --- ▼▼▼ 마이페이지 오답노트 ▼▼▼ ---
+    is_important = models.BooleanField(default=False) 
+    # --- ▲▲▲ 25.06.16 ▲▲▲ ---
 
     def __str__(self):
         user_str = self.user.username if self.user else "익명 사용자"

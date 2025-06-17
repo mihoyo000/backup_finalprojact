@@ -1,4 +1,4 @@
-# flo_project/flo_exam/views.py (최종 정리 버전)
+# /flo_exam/views.py (최종 정리 버전)
 
 import json
 import logging
@@ -47,6 +47,30 @@ def upload_page_view(request):
 # ==============================================================================
 def loading_page_entry_view(request, exam_document_id):
     exam_document = get_object_or_404(ExamDocument, pk=exam_document_id)
+
+    # ★★★★★★★★★★ 마이페이지 다시풀기 모드 25/06/16 ★★★★★★★★★★
+    is_retake = request.GET.get('retake') == 'true'
+    initial_questions_json = "null"
+
+    if is_retake:
+        try:
+            # exam_document에 연결된 generated_exam 객체를 직접 조회
+            generated_exam = exam_document.generated_exam
+            questions = generated_exam.questions.all().order_by('question_number')
+            
+            if questions.exists(): # 문제가 하나라도 있을 때만 JSON 생성
+                js_questions_data = [q.to_dict() for q in questions]
+                initial_questions_json = json.dumps({
+                    'status': 'completed', 
+                    'exam_id': generated_exam.id,
+                    'questions': js_questions_data,
+                    'exam_document_title': exam_document.title
+                })
+        except GeneratedExam.DoesNotExist:
+            # 연결된 시험이 없는 경우 (예: 생성 실패) 조용히 새로 만들기 모드로 전환
+            pass
+    # ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
     context = {
         'exam_document_id': exam_document_id,
         'exam_document_title': exam_document.title,
@@ -56,7 +80,10 @@ def loading_page_entry_view(request, exam_document_id):
         'ajax_process_scoring_url_template': reverse('flo_exam:ajax_process_scoring', args=[0]),
         'download_questions_pdf_url_template': reverse('flo_exam:download_questions_pdf', args=[0]),
         'download_answers_pdf_url_template': reverse('flo_exam:download_answers_pdf', args=[0]),
-        'upload_page_url': reverse('flo_exam:upload_page')
+        'upload_page_url': reverse('flo_exam:upload_page'),
+    # ★★★ 마이페이지 다시풀기 모드 25/06/16  ★★★
+        'initial_questions_json': initial_questions_json
+
     }
     return render(request, 'flo_exam/exam_spa_page.html', context)
 
