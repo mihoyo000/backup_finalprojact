@@ -7,7 +7,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q, Count, Prefetch
+from django.db.models import Sum, Avg, Count, F, When, Case, IntegerField, FloatField, Q, ExpressionWrapper, DurationField, Prefetch
 from django.db.models.functions import Lower, Coalesce # ★★★ Lower, Coalesce 임포트 확인/추가 ★★★
 from django.db.models import Value                     # ★★★ Value 임포트 확인/추가 (Coalesce와 함께 사용 시) ★★★
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
@@ -218,7 +218,7 @@ def ajax_get_comments(request, post_pk):
 def study_post_detail(request, pk):
     post = get_object_or_404(
         Post.objects.select_related('author__profile').prefetch_related(
-            'likes', 
+            'likes',
             'categories',
             'post_attachments' # ★★★ 첨부파일도 미리 가져옵니다 ★★★
         ),
@@ -248,7 +248,7 @@ def study_post_detail(request, pk):
             to_attr='prefetched_replies' # 템플릿에서 사용할 속성 이름
         )
     )
-    
+
     # 3. 최상위 댓글 정렬
     initial_sort_order = request.GET.get('sort', 'created_at')
     if initial_sort_order == '-created_at':
@@ -307,10 +307,10 @@ def study_post_create(request):
                     if fs_form_errors:
                         print(f"  Form {i} errors: {fs_form_errors.as_json(escape_html=True)}")
                 print(f"  AttachmentFormSet non_form_errors: {formset.non_form_errors().as_json(escape_html=True)}")
-            
+
             # ★★★ POST 실패 시에도 initial_selected_categories_for_js 정의 ★★★
             initial_selected_categories_for_js = [] # 글쓰기 시 POST 실패는 선택된 카테고리가 없으므로 빈 리스트
-            
+
             # POST 실패 시에도 major_categories를 가공해서 전달
             processed_major_categories_for_form = []
             for major_cat in major_categories_list:
@@ -321,7 +321,7 @@ def study_post_create(request):
                     'children_exists': major_cat.children.exists(),
                     'is_leaf': major_cat.is_leaf_node()
                 })
-                
+
             messages.error(request, '게시글 등록에 실패했습니다. 입력 내용을 확인해주세요.')
 
             context = { # POST 실패 시 context 재구성
@@ -338,7 +338,7 @@ def study_post_create(request):
         form = PostForm()
         formset = AttachmentFormSet(prefix='attachments')
         initial_selected_categories_for_js = [] # 글쓰기 시에는 빈 배열
-        
+
         # GET 요청 시 major_categories 가공
         processed_major_categories_for_form = []
         for major_cat in major_categories_list:
@@ -414,14 +414,14 @@ def ajax_search_categories(request):
             # 모델에 추가한 get_leaf_nodes() 메소드 사용
             leaves_from_match = category_match.get_leaf_nodes()
             leaf_categories_to_display.update(leaves_from_match)
-        
+
         # 3단계: 수집된 최하위 카테고리들을 정렬하고 페이지네이션합니다.
         # Category 모델에 get_full_path_name @property가 있다고 가정
         all_sorted_leaf_categories = sorted(
-            list(leaf_categories_to_display), 
+            list(leaf_categories_to_display),
             key=lambda cat: cat.get_full_path_name  # 정렬 기준
         )
-        
+
         total_results_count = len(all_sorted_leaf_categories)
 
         paginator = Paginator(all_sorted_leaf_categories, ITEMS_PER_PAGE)
@@ -434,16 +434,16 @@ def ajax_search_categories(request):
             # 페이지 번호가 범위를 벗어난 경우, 마지막 페이지로 설정 (또는 1페이지로)
             results_page_obj = paginator.page(paginator.num_pages if paginator.num_pages > 0 else 1)
             current_page_num = results_page_obj.number
-        
+
         for cat in results_page_obj:
             categories_data.append({
                 'id': cat.id,
-                'name': cat.name, 
+                'name': cat.name,
                 'slug': cat.slug,
                 'full_path': cat.get_full_path_name, # @property 호출
                 'is_leaf': True, # 이 로직에서는 항상 leaf 노드만 반환
             })
-        
+
         has_next_page = results_page_obj.has_next()
 
     return JsonResponse({
@@ -511,7 +511,7 @@ def study_post_edit(request, pk):
             has_changed = fs_form.has_changed()
             is_new = not fs_form.instance.pk if fs_form.instance else True
             can_delete_checked = False
-            
+
             if formset.is_bound and fs_form.is_bound and not fs_form.errors:
                 if 'DELETE' in fs_form.cleaned_data and fs_form.cleaned_data.get('DELETE'):
                     can_delete_checked = True
@@ -576,7 +576,7 @@ def study_post_edit(request, pk):
 
     else: # GET 요청 (수정 폼을 처음 보여줄 때)
         form = PostForm(instance=post) # instance=post 로 PostForm 초기화
-        
+
         existing_attachments_list = list(post.post_attachments.all())
         for attachment_instance in existing_attachments_list:
             if attachment_instance.file:
@@ -589,11 +589,11 @@ def study_post_edit(request, pk):
             prefix='attachments',
             queryset=Attachment.objects.filter(pk__in=[att.pk for att in existing_attachments_list])
         )
-        
+
         for i, form_in_formset in enumerate(formset.forms):
             if i < len(existing_attachments_list):
                 form_in_formset.instance._display_filename = existing_attachments_list[i]._display_filename
-        
+
         initial_selected_categories_for_js = []
         # GET 요청 시에는 post 객체의 categories를 사용
         if post and post.pk:
@@ -601,7 +601,7 @@ def study_post_edit(request, pk):
                 {'id': str(cat.id), 'name': cat.name, 'path': cat.get_full_path_name, 'slug': cat.slug}
                 for cat in post.categories.all()
             ]
-        
+
         # ★★★ GET 요청 시에도 major_categories를 가공해서 전달 ★★★
         processed_major_categories_for_form = []
         for major_cat in major_categories_list:
@@ -675,7 +675,7 @@ def study_post_comment_create(request, post_pk):
                 # 사용자 프로필 정보 가져오기 (안전하게)
                 author_display_name = comment.author.username # 기본값은 username
                 author_profile_image_url = None # 기본값은 None (JS에서 기본 이미지 사용)
-                
+
                 # request.user.profile이 아닌 comment.author.profile을 사용해야 합니다.
                 try:
                     profile = comment.author.profile # User와 Profile이 OneToOne으로 연결되어 있다고 가정
@@ -704,12 +704,12 @@ def study_post_comment_create(request, post_pk):
                 })
             messages.success(request, '댓글이 작성되었습니다.')
             return redirect(post.get_absolute_url() + f'#comment-{comment.id}')
-    
+
     # AJAX 요청이 아니고, 폼 유효성 검사에 실패했거나 GET 요청일 경우
     # (이 부분은 현재 로직상 AJAX 실패 시 도달하지는 않을 것으로 보입니다.)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'status': 'error', 'errors': form.errors if 'form' in locals() else 'Unknown error'}, status=400)
-    
+
     messages.error(request, '댓글 작성에 실패했습니다.')
     return redirect(post.get_absolute_url())
 
@@ -752,7 +752,7 @@ def study_post_comment_edit(request, pk):
 def study_post_comment_delete(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
     post = comment.post # 삭제 후 게시글 댓글 수 업데이트 위해
-    
+
     if request.user != comment.author:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'status': 'error', 'message': '삭제 권한이 없습니다.'}, status=403)
@@ -770,10 +770,10 @@ def study_post_comment_delete(request, pk):
                 'deleted_comment_id': comment_id, # 삭제된 댓글 ID 전달
                 'comment_count': post.comment_count,  # 최신 댓글 수 전달
             })
-        
+
         messages.success(request, '댓글이 삭제되었습니다.')
         return redirect(post.get_absolute_url())
-    
+
     # POST 요청이 아닐 경우 (AJAX는 POST로 보내므로 이 경우는 드묾)
     return HttpResponseBadRequest("잘못된 요청입니다. POST 요청만 허용됩니다.")
 
@@ -830,7 +830,7 @@ def study_post_reply_create(request, pk): # pk는 부모 댓글의 ID
 
 # 답글의 수정과 삭제는 기존 댓글의 뷰/URL을 공유하는 것이 효율적입니다.
 # 따라서 별도의 reply_edit, reply_delete 뷰는 만들 필요가 없습니다.
-# urls.py에서도 답글 수정/삭제 URL을 지우고, 템플릿에서 
+# urls.py에서도 답글 수정/삭제 URL을 지우고, 템플릿에서
 # 댓글과 답글 모두 study_post_comment_edit/delete를 사용하도록 하면 됩니다.
 # (이전 답변의 템플릿 코드는 이미 그렇게 되어 있습니다.)
 
@@ -870,7 +870,7 @@ def faq_list(request):
                             show_more = True
                 except EmptyPage:
                     pass # 다음 페이지가 비어있는 경우는 로직상 문제 없음
-            
+
             grouped_faq_list_for_template.append({
                 'grouper': category_obj,
                 'list': items_in_group,

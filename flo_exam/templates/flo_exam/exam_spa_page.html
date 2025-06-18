@@ -54,7 +54,7 @@
             </form>
         </div>
     </template>
-    
+
     <template id="exam-result-ui-template-spa">
         <div class="exam-result-content">
             <h2 id="result-exam-title-placeholder-spa" class="mb-4">시험 결과</h2>
@@ -75,7 +75,8 @@
             <div class="action-links mb-5">
                 {# upload_page_url은 views.py의 context에서 전달받음 #}
                 <a href="{{ upload_page_url }}" class="btn btn-outline-secondary me-2">문제 더 풀기</a>
-                <a href="#" class="btn btn-outline-secondary">마이페이지로 이동</a> {# 실제 URL로 변경 필요 #}
+                <a id="backToMyPageBtn" href="{% url 'flo_my:mypage_dashboard' %}" class="btn btn-outline-secondary">마이페이지로 이동</a>
+
             </div>
             <h4 class="mb-3">문제별 결과</h4>
             <div id="question-results-container-spa">
@@ -89,13 +90,13 @@
 {# CSRF 토큰을 JS에서 사용할 수 있도록 hidden input으로 추가 (폼 제출 시 JS가 FormData에 포함시키거나 헤더에 넣음) #}
     {# 이 방법보다는 JS에서 쿠키를 읽는 getCsrfToken() 함수를 사용하는 것이 더 일반적일 수 있음 #}
     {# {% csrf_token %} #} <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-    
+
     {# Django context 변수를 JavaScript에서 사용할 수 있도록 설정 #}
     <script>
         const EXAM_DOCUMENT_ID = {{ exam_document_id }}; // views.py에서 전달
         const EXAM_DOCUMENT_TITLE = "{{ exam_document_title|escapejs }}"; // views.py에서 전달
         const PAGE_INITIAL_MESSAGE = "{{ page_initial_message|escapejs }}"; // views.py에서 전달
-        
+
         const APP_URLS = {
             processPdf: "{{ ajax_process_pdf_url }}", // views.py에서 전달 (exam_document_id 포함된 완전한 URL)
             processScoringTemplate: "{{ ajax_process_scoring_url_template }}", // views.py에서 전달 (플레이스홀더 포함)

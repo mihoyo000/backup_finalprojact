@@ -118,3 +118,8 @@ body.theme-dark .learning-materials-page .card-footer .btn-outline-secondary { c
 body.theme-dark .learning-materials-page .card-footer .btn-outline-secondary:hover { color: var(--dark-bg); background-color: var(--dark-text-secondary); }
 body.theme-dark .learning-materials-page .card-footer .btn-outline-danger { color: #f87171; border-color: #f87171; }
 body.theme-dark .learning-materials-page .card-footer .btn-outline-danger:hover { color: var(--dark-text-primary); background-color: #f87171; }
+
+/* 학습자료 페이지 제목 아이콘 세로 위치 조정 */
+.page-title-container .bi-file-earmark-text-fill.page-title-icon {
+    top: -12px; /* "나의 학습목표" 아이콘(-10px) 기준으로 조절하세요 */
+}

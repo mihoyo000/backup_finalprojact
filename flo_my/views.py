@@ -1,26 +1,28 @@
-# flo_my/views.py (최종 정리 버전)
+# flo_my/views.py
 
 # --- 1. Python 기본 라이브러리 ---
-from datetime import timedelta, date
 import json
+from datetime import timedelta
 
 # --- 2. Django 핵심 라이브러리 ---
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponseForbidden, Http404
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.db.models import Sum, Avg, Count, F, When, Case, IntegerField, FloatField, Q
-from django.db.models.functions import TruncDate
 from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
 from django.contrib import messages
+from django.db.models import (
+    Sum, Avg, Count, F, Q, When, Case,
+    IntegerField, FloatField, DurationField, DateField, ExpressionWrapper
+)
+from django.db.models.functions import TruncDate, Cast, Extract
 
 # --- 3. 외부 라이브러리 (Pandas) ---
-# import pandas as pd # 아직 사용하지 않으므로 주석 처리
+import pandas as pd
 
 # --- 4. 우리 앱의 모델과 폼 ---
 from .models import LearningGoal
-# 모든 폼을 명시적으로 임포트합니다.
 from .forms import LearningGoalForm, LearningGoalEditForm, IncorrectNoteSearchForm
 
 # --- 5. 다른 앱의 모델 ---
@@ -68,7 +70,7 @@ def mypage_dashboard_view(request):
 def mypage_materials_view(request):
     """'나의 학습 자료' 목록을 보여주는 뷰입니다."""
     materials_query = ExamDocument.objects.filter(author=request.user).order_by('-is_important', '-uploaded_at')
-    
+
     paginator = Paginator(materials_query, 4) # 페이지당 항목 수를 4개로 변경
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -95,7 +97,7 @@ def mypage_incorrect_notes_view(request):
     attempts_query = UserExamSession.objects.filter(user=request.user).select_related(
         'generated_exam__exam_document'
     ).order_by('-is_important', '-start_time')
-    
+
     paginator = Paginator(attempts_query, 4) # 페이지당 항목 수를 4개로 변경
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -120,7 +122,7 @@ def mypage_incorrect_notes_view(request):
 def mypage_learning_goals_view(request):
     """학습 목표 생성 및 목록을 보여주는 뷰입니다."""
     user = request.user
-    
+
     if request.method == 'POST':
         form = LearningGoalForm(request.POST, user=user)
         if form.is_valid():
@@ -143,12 +145,12 @@ def mypage_learning_goals_view(request):
     # --- ▼▼▼ 페이지네이션 및 정렬 로직 시작 ▼▼▼ ---
     # 1. 모든 진행중인 목표를 가져오되, 중요도 높은 순 -> 최신순으로 정렬
     all_goals_query = LearningGoal.objects.filter(
-        user=user, 
+        user=user,
         is_completed=False
     ).order_by('-is_important', '-created_at')
 
     # 2. Paginator를 사용하여 4개씩 나누기
-    paginator = Paginator(all_goals_query, 4) 
+    paginator = Paginator(all_goals_query, 4)
     page_number = request.GET.get('page')
     learning_goals_page = paginator.get_page(page_number)
 
@@ -163,7 +165,7 @@ def mypage_learning_goals_view(request):
     # --- ▲▲▲ 로직 끝 ▲▲▲ ---
 
     context = {
-        'form': form, 
+        'form': form,
         'learning_goals_page': learning_goals_page, # 이제 페이지네이션된 객체를 전달
         'total_goals_count': all_goals_query.count(), # 필터링된 전체 목표 수
         'custom_page_range': custom_page_range, # 페이지네이션 범위 전달
@@ -205,11 +207,92 @@ def learning_goal_delete_view(request, goal_id):
 
 @login_required
 def mypage_analytics_view(request):
-    """학습 현황(Analytics) 페이지 뷰입니다."""
-    # 지금은 비워두고, 나중에 데이터 분석 로직으로 채웁니다.
+    """
+    학습 현황(Analytics) 페이지.
+    Pandas를 활용하여 학습 데이터를 분석하고, Chart.js 시각화에 필요한 데이터를 가공합니다.
+    """
+    user = request.user
+    today = timezone.now().date()
+    seven_days_ago = today - timedelta(days=6)
+
+    # --- 데이터가 없는 경우를 대비한 기본값 설정 ---
+    chart_data = {
+        'goal_flow': {'labels': [], 'data': []},
+        'accuracy': {'labels': ['정답', '오답'], 'data': [0, 0]},
+        'learning_time': {'labels': [], 'data': []},
+    }
+    strengths, weaknesses = [], []
+
+    # --- 1. 목표 달성 플로우 (Line Chart) 데이터 ---
+    completed_goals = LearningGoal.objects.filter(
+        user=user, is_completed=True, updated_at__date__range=[seven_days_ago, today]
+    ).values('updated_at')
+
+    if completed_goals.exists():
+        df_goals = pd.DataFrame(list(completed_goals))
+        df_goals['date'] = pd.to_datetime(df_goals['updated_at']).dt.date
+        goals_by_day = df_goals.groupby('date').size()
+
+        # 7일간의 모든 날짜를 포함하도록 인덱스 재설정
+        date_range = pd.date_range(start=seven_days_ago, end=today, freq='D').date
+        goals_by_day = goals_by_day.reindex(date_range, fill_value=0)
+
+        chart_data['goal_flow']['labels'] = [d.strftime('%m/%d') for d in goals_by_day.index]
+        chart_data['goal_flow']['data'] = goals_by_day.values.tolist()
+
+
+    # --- 2. 최근 정답률 분석 (Doughnut Chart) 데이터 ---
+    recent_answers = UserAnswer.objects.filter(
+        session__user=user,
+        session__start_time__date__range=[seven_days_ago, today]
+    ).values('is_correct')
+
+    if recent_answers.exists():
+        df_answers = pd.DataFrame(list(recent_answers))
+        accuracy_counts = df_answers['is_correct'].value_counts()
+        chart_data['accuracy']['data'] = [
+            int(accuracy_counts.get(True, 0)),  # NumPy int64를 Python int로 변환
+            int(accuracy_counts.get(False, 0))  # NumPy int64를 Python int로 변환
+        ]
+
+    # --- 3. 최근 학습 시간 (Bar Chart) 데이터 ---
+    # 주석 처리 시작 ▼▼▼
+    # recent_sessions = UserExamSession.objects.filter(
+    #     user=user,
+    #     ...
+    # ).values('start_time', 'duration')
+    #
+    # if recent_sessions.exists():
+    #     ...
+    #     chart_data['learning_time']['data'] = (time_by_day / 60).round().astype(int).values.tolist()
+    # 주석 처리 끝 ▲▲▲
+
+
+    # --- 4. 나의 강점 & 약점 분석 (List) 데이터 ---
+    all_sessions = UserExamSession.objects.filter(
+        user=user, score__isnull=False
+    ).values('generated_exam__exam_document__title', 'score')
+
+    if all_sessions.exists():
+        df_all_sessions = pd.DataFrame(list(all_sessions))
+        # 필드 이름을 더 간단하게 변경
+        df_all_sessions.rename(columns={'generated_exam__exam_document__title': 'title'}, inplace=True)
+
+        # 시험지별 평균 점수 계산
+        avg_scores = df_all_sessions.groupby('title')['score'].mean().round(1)
+
+        strengths = avg_scores.nlargest(3).reset_index().to_dict('records')
+        weaknesses = avg_scores.nsmallest(3).reset_index().to_dict('records')
+
+
     context = {
         'mypage_nav_active': 'analytics',
+        # json.dumps를 사용해 파이썬 dict를 안전한 JSON 문자열로 변환
+        'chart_data': json.dumps(chart_data),
+        'strengths': strengths,
+        'weaknesses': weaknesses,
     }
+
     return render(request, 'flo_my/mypage/mypage_analytics.html', context)
 
 
@@ -312,11 +395,11 @@ def ajax_update_learning_goal_due_date(request, goal_id):
             # --- 백엔드 유효성 검사 추가 ---
             if new_date < today:
                 return JsonResponse({'status': 'error', 'message': '마감일은 오늘 또는 미래의 날짜여야 합니다.'})
-            
+
             goal.due_date = new_date
             goal.save(update_fields=['due_date'])
             return JsonResponse({'status': 'success', 'new_due_date': goal.due_date.strftime('%Y-%m-%d')})
         except ValueError:
             return JsonResponse({'status': 'error', 'message': '올바른 날짜 형식이 아닙니다.'})
-            
+
     return JsonResponse({'status': 'error', 'message': '날짜를 입력해주세요.'})

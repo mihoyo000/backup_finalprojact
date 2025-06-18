@@ -1,0 +1,41 @@
+/* flo_exam/static/flo_exam/css/mistake_note_styles.css */
+
+.mistake-note-container {
+    max-width: 800px; /* 콘텐츠 영역 최대 너비 제한 */
+    margin: 0 auto;
+    padding-bottom: 5rem; /* 챗봇 버튼에 가려지지 않도록 하단 여백 확보 */
+}
+
+.accordion-item {
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden; /* radius가 잘 적용되도록 */
+}
+
+.accordion-button {
+    font-weight: 500;
+}
+
+.accordion-button:not(.collapsed) {
+    color: #0d6efd;
+    background-color: #e7f1ff;
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .125);
+}
+
+.accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25);
+}
+
+.accordion-body .card-text {
+    white-space: pre-wrap; /* 문제 텍스트의 줄바꿈 유지 */
+}
+
+.accordion-body .explanation-box {
+    background-color: #f8f9fa;
+    border-left: 4px solid #0dcaf0;
+}
+
+.accordion-body .bi {
+    vertical-align: -0.125em; /* 아이콘 세로 정렬 미세 조정 */
+}

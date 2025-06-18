@@ -37,7 +37,7 @@
 
                 <form method="post" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
-                    
+
                     {# PDF 파일 선택 필드 #}
                     <div class="form-group">
                         {{ form.pdf_file.label_tag }}  {# PDF 파일 선택: #}
@@ -78,7 +78,7 @@
                             <ul class="errorlist">{% for error in form.question_type_requested.errors %}<li>{{ error }}</li>{% endfor %}</ul>
                         {% endif %}
                     </div>
-                            
+
                     {# 분야필드(드롭다운+직접입력) #}
                     <div class="form-group">
                         {{ form.subject_area.label_tag }} {# 분야: #}

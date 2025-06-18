@@ -32,10 +32,14 @@
                     {% for activity in recent_learning_activities %}
                     <li class="list-group-item">
                         <div class="list-item-header">
-                            {% if activity.goal_type == 'TEST_RETAKE' and activity.target_test_set %}
-                                <a href="{% url 'flo_my:take_test' activity.target_test_set.id %}" class="list-item-title" title="{{ activity.title }}">{{ activity.title }}</a>
-                            {% elif activity.goal_type == 'INCORRECT_ANSWERS_RETAKE' and activity.target_attempt_for_incorrect_notes %}
-                                 <a href="{% url 'flo_my:retake_incorrect_answers' activity.target_attempt_for_incorrect_notes.id %}" class="list-item-title" title="{{ activity.title }}">{{ activity.title }}</a>
+                            {% if activity.goal_type == 'TEST_RETAKE' and activity.target_test_set and activity.target_test_set.exam_document %}
+                                {# '시험 다시 풀기'는 flo_exam의 시험 시작 페이지로 연결합니다. #}
+                                <a href="{% url 'flo_exam:loading_page_entry' activity.target_test_set.exam_document.pk %}?retake=true" class="list-item-title" title="{{ activity.title }}">{{ activity.title }}</a>
+
+                            {% elif activity.goal_type == 'INCORRECT_ANSWERS_RETAKE' and activity.target_attempt_for_incorrect_notes and activity.target_attempt_for_incorrect_notes.generated_exam and activity.target_attempt_for_incorrect_notes.generated_exam.exam_document %}
+                                {# '오답 다시 풀기'는 flo_exam의 오답 노트 페이지로 연결합니다. #}
+                                <a href="{% url 'flo_exam:mistake_note_page' activity.target_attempt_for_incorrect_notes.generated_exam.exam_document.pk %}" class="list-item-title" title="{{ activity.title }}">{{ activity.title }}</a>
+
                             {% else %}
                                 <span class="list-item-title">{{ activity.title }}</span>
                             {% endif %}
@@ -73,9 +77,12 @@
             <div class="dashboard-card">
                 <h3 class="dashboard-card-title">{% translate "바로가기" %}</h3>
                 <div class="shortcut-buttons">
-                    <a href="{% url 'flo_my:pdf_upload' %}" class="btn btn-primary">{% translate "Test 생성하기" %}</a>
+                    {# PDF 업로드는 flo_exam 앱의 URL로 연결합니다. #}
+                    <a href="{% url 'flo_exam:upload_page' %}" class="btn btn-primary">{% translate "Test 생성하기" %}</a>
+
                     {% if weakest_attempt %}
-                        <a href="{% url 'flo_my:retake_incorrect_answers' weakest_attempt.pk %}" class="btn btn-outline-primary">
+                        {# 가장 취약한 시험 다시 풀기는 flo_exam의 오답노트 페이지로 연결합니다. #}
+                        <a href="{% url 'flo_exam:mistake_note_page' weakest_attempt.generated_exam.exam_document.pk %}" class="btn btn-outline-primary">
                             {% translate "가장 취약한 시험 다시 풀기" %}
                         </a>
                     {% endif %}

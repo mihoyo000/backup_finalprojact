@@ -1,3 +1,4 @@
+/* mypage_learning_goals.css */
 /* ====================================================================== */
 /* 학습 목표 페이지 전용 스타일 (라이트 모드)                              */
 /* ====================================================================== */
@@ -45,16 +46,30 @@
 /* ====================================================================== */
 /* 다크 모드 스타일                                                       */
 /* ====================================================================== */
-body.theme-dark .learning-goals-page .card { background-color: #212529; border-color: #495057; color: #ced4da; }
+body.theme-dark .learning-goals-page .card {
+    background-color: #212529; /* 학습 자료 카드와 동일하게 카드 본문 배경색 지정 */
+    border-color: var(--dark-border, #495057);       /* 카드 테두리색 변수 사용 */
+    color: var(--dark-text-secondary, #ced4da);      /* 카드 기본 텍스트 색상 변수 사용 */
+}
 body.theme-dark .learning-goals-page .card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
-body.theme-dark .learning-goals-page .card-header { background-color: #343a40; border-color: #495057; } /* 헤더는 기존 유지 가능 또는 --dark-surface-1 사용 가능 */
+body.theme-dark .learning-goals-page .card-header {
+    background-color: var(--dark-surface-1, #343a40); /* 학습 자료 카드 푸터와 유사한 색상으로 헤더 배경색 지정 */
+    border-color: var(--dark-border, #495057);       /* 카드 헤더 테두리색 변수 사용 */
+}
 body.theme-dark .learning-goals-page .card-footer {
-    background-color: var(--dark-surface-1); /* 학습 자료 카드 푸터와 동일하게 --dark-surface-1 변수 사용 */
+    background-color: var(--dark-surface-1, #343a40); /* 학습 자료 카드 푸터와 동일한 색상으로 푸터 배경색 지정 */
     border-color: var(--dark-border);       /* 학습 자료 카드 푸터와 동일하게 --dark-border 변수 사용 */
 }
 body.theme-dark .learning-goals-page .card .card-title,
-body.theme-dark .learning-goals-page .card .goal-title-text { color: #f8f9fa; }
-body.theme-dark .learning-goals-page .progress { background-color: #495057; }
+body.theme-dark .learning-goals-page .card .goal-title-text {
+    color: var(--dark-text-primary, #f8f9fa); /* 카드 제목 텍스트 색상 변수 사용 */
+}
+body.theme-dark .learning-goals-page .progress {
+    background-color: var(--dark-surface-2, #495057); /* 프로그레스 바 배경색 변수 사용 */
+}
+body.theme-dark .learning-goals-page .progress-bar {
+    background-color: var(--dark-accent, #0d6efd); /* 다크 모드 프로그레스 바 강조색 변수 사용 */
+}
 
 /* 페이지네이션 다크모드 스타일 */
 body.theme-dark .learning-goals-page .pagination .page-link {
@@ -89,18 +104,23 @@ body.theme-dark .learning-goals-page .pagination .page-item.disabled .page-link:
     -webkit-user-select: none; /* 크롬, 사파리 등 웹킷 브라우저용 */
 }
 
+/* 중요도 아이콘(별) 다크모드 색상 */
+body.theme-dark .learning-goals-page .toggle-goal-importance-btn.is-important {
+    color: var(--dark-warning-text, #ffc107); /* 부트스트랩 warning 색상 또는 커스텀 변수 */
+}
+
 /* ====================================================================== */
 /* ★★★ 다크 모드 텍스트 색상 문제 해결 ★★★                       */
 /* ====================================================================== */
 
 /* '학습목표' 텍스트 색상 변경 */
 body.theme-dark .learning-goals-page .goal-repetition-section .goal-repetition-display {
-    color: #ced4da; /* 제목(primary)보다는 약간 덜 밝은 secondary 텍스트 색상 */
+    color: var(--dark-text-secondary, #ced4da); /* 보조 텍스트 색상 변수 사용 */
 }
 
 /* '마감일' 텍스트 색상 변경 (small 태그와 그 안의 span 모두에 적용) */
 body.theme-dark .learning-goals-page .goal-due-date-section .goal-due-date-display small.text-muted {
-    color: #ced4da !important; /* Bootstrap의 .text-muted를 덮어쓰기 위해 !important 사용 */
+    color: var(--dark-text-secondary, #ced4da) !important; /* 보조 텍스트 색상 변수 사용 */
 }
 
 /* --- 라이트 모드에서의 색상도 필요한 경우 아래와 같이 추가 (이미 mypage.css에 유사한 규칙이 있을 수 있음) --- */

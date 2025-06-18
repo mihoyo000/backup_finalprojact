@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let currentGeneratedExamId = null; // 생성된 시험의 ID (채점 및 PDF 다운로드 시 사용)
     // let currentQuestionsDataForSolving = []; // 현재 풀고 있는 문제 데이터 (필요시 사용)
-
+    let redirectUrlAfterExam = null; // "돌아갈 주소"를 읽고, 저장하고, 버튼 링크를 동적으로 변경하는 로직 6/18
     // --- UI 렌더링 함수들 ---
     function showInitialLoading() {
         console.log("exam_spa_logic.js: showInitialLoading 호출됨");
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (robotImageElement) robotImageElement.src = STATIC_PATHS.robotGenerating;
         }
     }
-    
+
     function showGenericLoading(message, robotStateKey = "robotGenerating") {
         console.log(`exam_spa_logic.js: showGenericLoading 호출됨 - 메시지: ${message}, 로봇: ${robotStateKey}`);
         if (loadingUITemplateHTML && dynamicContentArea && robotImageElement) {
@@ -60,14 +60,14 @@ document.addEventListener('DOMContentLoaded', function() {
             dynamicContentArea.innerHTML = solveExamUITemplateHTML;
             dynamicContentArea.querySelector('#exam-title-placeholder-spa').textContent = `${escapeHtml(examTitle)} - 문제 풀이`;
             const questionsContainer = dynamicContentArea.querySelector('#questions-container-spa');
-            questionsContainer.innerHTML = ''; 
+            questionsContainer.innerHTML = '';
 
             questionsData.forEach(q => {
-                
+
                 // <<-- ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ -->>
                 // <<-- ★★★        이 부분이 핵심 수정 사항입니다        ★★★ -->>
                 // <<-- ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ -->>
-                
+
                 // 1. 원본 문제 텍스트를 가져옵니다.
                 let questionTextOnly = q.question_text ? q.question_text : '문제 내용 없음';
 
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // ^\d+\.\s.* : 줄의 시작(^)이 숫자(\d+), 점(.), 공백(\s)으로 시작하는 모든 줄(.*)을 의미합니다.
                 // 'gm' 플래그: g(전체에서 찾기), m(여러 줄 모드에서 ^가 각 줄의 시작을 의미하도록 함)
                 questionTextOnly = questionTextOnly.replace(/^\d+\.\s.*$/gm, '').trim();
-                
+
                 // 3. 이제 순수한 질문 내용만 card-text에 넣습니다.
                 let questionHtml = `
                     <div class="card mb-3 q-item" data-question-id="${q.id}">
@@ -92,16 +92,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log(`문제 ${q.question_number}: 이미지 URL 발견 - ${q.image_url}`);
                     questionHtml += `
                         <div class="problem-image-container my-3 text-center">
-                            <img src="${escapeHtml(q.image_url)}" 
-                                alt="문제 ${q.question_number} 관련 이미지" 
-                                class="img-fluid rounded shadow-sm" 
-                                style="max-height: 256px; max-width: 100%; object-fit: contain;"> 
+                            <img src="${escapeHtml(q.image_url)}"
+                                alt="문제 ${q.question_number} 관련 이미지"
+                                class="img-fluid rounded shadow-sm"
+                                style="max-height: 256px; max-width: 100%; object-fit: contain;">
                         </div>`;
                 }
 
                 const isMultipleChoice = q.question_type === "multiple_choice";
                 const hasOptions = q.options && Array.isArray(q.options) && q.options.length > 0;
-                
+
                 // 4. options 배열을 기반으로 라디오 버튼을 생성하는 부분은 그대로 유지합니다.
                 if (isMultipleChoice && hasOptions) {
                     q.options.forEach((opt, index) => {
@@ -136,12 +136,12 @@ document.addEventListener('DOMContentLoaded', function() {
             showErrorState("문제 풀이 화면을 구성할 수 없습니다. 데이터를 확인해주세요.");
         }
     }
-    
+
     function renderResultsUI(resultsData) {
         console.log("exam_spa_logic.js: renderResultsUI 호출됨. 받은 resultsData:", resultsData);
         if (resultUITemplateHTML && resultsData && dynamicContentArea && robotImageElement) {
             dynamicContentArea.innerHTML = resultUITemplateHTML;
-            
+
             dynamicContentArea.querySelector('#result-exam-title-placeholder-spa').textContent = `시험 결과: ${escapeHtml(resultsData.exam_title)}`;
             dynamicContentArea.querySelector('.total-questions-count').textContent = resultsData.total_questions;
             dynamicContentArea.querySelector('.correct-answers-count').textContent = resultsData.correct_answers_count;
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dynamicContentArea.querySelector('.flo-comment-text').textContent = escapeHtml(resultsData.flo_comment);
             dynamicContentArea.querySelector('.download-questions-btn').href = APP_URLS.downloadQuestionsTemplate.replace('0', resultsData.exam_id);
             dynamicContentArea.querySelector('.download-answers-btn').href = APP_URLS.downloadAnswersTemplate.replace('0', resultsData.exam_id);
-            
+
             const qResultsContainer = dynamicContentArea.querySelector('#question-results-container-spa');
             qResultsContainer.innerHTML = '';
             if (resultsData.user_answers_details && Array.isArray(resultsData.user_answers_details)) {
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const cardClass = ua.is_correct ? 'border-success' : 'border-danger';
                     const headerBgClass = ua.is_correct ? 'bg-success-subtle text-success-emphasis' : 'bg-danger-subtle text-danger-emphasis';
                     const resultText = ua.is_correct ? '<span class="badge bg-success">정답</span>' : '<span class="badge bg-danger">오답</span>';
-                    
+
                     let detailHtml = `
                         <div class="card mb-3 ${cardClass}">
                             <div class="card-header ${headerBgClass}">
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div class="card-body">
                                 <p class="card-text mb-2"><strong>문제:</strong> ${ua.question_text ? ua.question_text.replace(/\n/g, '<br>') : '문제 내용 없음'}</p>`;
-                    
+
                     if (ua.options && ua.options.length > 0) {
                         detailHtml += '<p class="mb-1"><strong>선택지:</strong></p><ul class="list-unstyled ps-3">';
                         ua.options.forEach(opt => {
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         detailHtml += '</ul>';
                     }
-                    
+
                     detailHtml += `<p class="mt-2 mb-1"><strong>제출한 답:</strong> ${escapeHtml(ua.submitted_answer) || "답변 안 함"}</p>`;
                     if (ua.question_type !== "multiple_choice" || (ua.options && ua.options.length === 0) || (ua.options && !ua.options.map(o => escapeHtml(o)).includes(escapeHtml(ua.correct_answer)))) {
                         detailHtml += `<p class="mb-1"><strong>정답:</strong> ${escapeHtml(ua.correct_answer)}</p>`;
@@ -203,11 +203,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             robotImageElement.src = STATIC_PATHS.robotResults;
-        } else {
+
+        // ▼▼▼ 바로 이 위치입니다! if 블록의 끝, else 바로 전. ▼▼▼
+        const backToMyPageButton = dynamicContentArea.querySelector('#backToMyPageBtn');
+        if (backToMyPageButton && redirectUrlAfterExam) {
+            backToMyPageButton.href = redirectUrlAfterExam;
+        }
+
+    } else {
             console.error("exam_spa_logic.js: 결과 UI 구성 실패. 템플릿, 데이터, DOM 요소 확인 필요.");
             showErrorState("결과를 표시할 수 없습니다.");
         }
-        
+
     }
 
     function showErrorState(message) {
@@ -226,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("치명적 오류: 에러 메시지를 표시할 영역을 찾을 수 없습니다. " + message);
         }
     }
-    
+
     function escapeHtml(unsafe) {
         if (unsafe === null || typeof unsafe === 'undefined') return '';
         let safeString = unsafe.toString();
@@ -241,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- AJAX 호출 함수들 ---
     function startProblemGeneration() {
         console.log("exam_spa_logic.js: startProblemGeneration 함수 호출 시작");
-        showInitialLoading(); 
+        showInitialLoading();
 
         const ajaxUrl = APP_URLS.processPdf;
         console.log("exam_spa_logic.js: 문제 생성 요청 URL:", ajaxUrl);
@@ -255,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             console.log("exam_spa_logic.js: 문제 생성 응답 상태:", response.status);
-            if (!response.ok) { 
+            if (!response.ok) {
                 return response.json().then(errData => { throw errData; })
                                  .catch(() => { throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`); });
             }
@@ -288,6 +295,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const scoringUrl = APP_URLS.processScoringTemplate.replace('0', currentGeneratedExamId);
         console.log("exam_spa_logic.js: 답안 제출 요청 URL:", scoringUrl);
 
+        // --- ▼▼▼ '학습 목표' ID를 formData에 추가하는 로직 6/18 ▼▼▼ ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const goalId = urlParams.get('goal_id');
+        if (goalId) {
+            formData.append('goal_id', goalId);
+            console.log("exam_spa_logic.js: '학습 목표' ID를 함께 전송합니다 - goal_id:", goalId);
+        }
+         // --- ▲▲▲ 여기까지 추가 ▲▲▲ ---
+
         fetch(scoringUrl, {
             method: 'POST',
             body: formData,
@@ -298,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             console.log("exam_spa_logic.js: 채점 응답 상태:", response.status);
-            if (!response.ok) { 
+            if (!response.ok) {
                 return response.json().then(errData => { throw errData; })
                                  .catch(() => { throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`); });
             }
@@ -335,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- 페이지 로드 시 초기 작업 ---
-    if (typeof EXAM_DOCUMENT_ID !== 'undefined' && EXAM_DOCUMENT_ID && 
+    if (typeof EXAM_DOCUMENT_ID !== 'undefined' && EXAM_DOCUMENT_ID &&
         typeof APP_URLS !== 'undefined' && APP_URLS.processPdf &&
         typeof STATIC_PATHS !== 'undefined' && typeof PAGE_INITIAL_MESSAGE !== 'undefined') {
         console.log("exam_spa_logic.js: 초기화 시작, EXAM_DOCUMENT_ID:", EXAM_DOCUMENT_ID);
@@ -347,12 +363,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // 데이터가 있으면 ('다시 풀기' 모드),
         // AJAX 요청 없이 바로 시험 화면을 그리는 함수를 호출합니다.
         console.log("Retake mode: Loading existing questions from INITIAL_EXAM_DATA.");
-        
-        // 채점 및 PDF 다운로드를 위해 시험 ID를 설정합니다.
         currentGeneratedExamId = INITIAL_EXAM_DATA.exam_id;
-        
-        // 기존 문제 데이터로 시험 UI를 렌더링합니다.
         renderProblemSolvingUI(INITIAL_EXAM_DATA.questions, INITIAL_EXAM_DATA.exam_document_title);
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUrl = urlParams.get('redirect_url');
+        if (redirectUrl) {
+            redirectUrlAfterExam = redirectUrl;
+            console.log("시험 완료 후 돌아갈 주소가 설정되었습니다:", redirectUrlAfterExam);
+        }
 
     } else {
         // 데이터가 없으면 (처음 만드는 경우),
@@ -369,5 +387,5 @@ document.addEventListener('DOMContentLoaded', function() {
         showErrorState("페이지를 초기화하는 데 필요한 정보가 부족합니다. 이전 페이지로 돌아가서 다시 시도해주세요.");
     }
 
-    
+
 });

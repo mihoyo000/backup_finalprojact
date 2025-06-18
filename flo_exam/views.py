@@ -12,6 +12,9 @@ from django.urls import reverse
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
+from django.http import Http404 # --- 마이페이지 오답노트 구현목적  6/18---
+from django.db.models import Q # --- 마이페이지 오답노트 구현목적  6/18---
+
 
 from .forms import PDFUploadForm
 from .models import ExamDocument, GeneratedExam, GeneratedQuestion, UserExamSession, UserAnswer
@@ -20,6 +23,9 @@ from .pdf_utils import render_to_pdf_reportlab
 # --- 수정된 import 문: 각 파일에서 필요한 함수만 명확하게 가져옵니다 ---
 from .ai_services import extract_text_and_images_from_pdf, generate_questions_via_openai
 from .rag_chatbot import get_rag_service_instance
+
+# --- 마이페이지와 연결  6/18---
+from flo_my.models import LearningGoal
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +45,7 @@ def upload_page_view(request):
             messages.error(request, "입력 내용을 다시 확인해주세요.")
     else:
         form = PDFUploadForm(user=request.user if request.user.is_authenticated else None)
-    
+
     context = {'form': form}
     return render(request, 'flo_exam/upload_page.html', context)
 
@@ -57,11 +63,11 @@ def loading_page_entry_view(request, exam_document_id):
             # exam_document에 연결된 generated_exam 객체를 직접 조회
             generated_exam = exam_document.generated_exam
             questions = generated_exam.questions.all().order_by('question_number')
-            
+
             if questions.exists(): # 문제가 하나라도 있을 때만 JSON 생성
                 js_questions_data = [q.to_dict() for q in questions]
                 initial_questions_json = json.dumps({
-                    'status': 'completed', 
+                    'status': 'completed',
                     'exam_id': generated_exam.id,
                     'questions': js_questions_data,
                     'exam_document_title': exam_document.title
@@ -93,15 +99,15 @@ def loading_page_entry_view(request, exam_document_id):
 def ajax_process_pdf_view(request, exam_document_id):
     exam_doc = get_object_or_404(ExamDocument, pk=exam_document_id)
     logger.info(f"views.py (ajax_process_pdf_view): ExamDocument ID {exam_doc.id} 처리 시작")
-    
+
     try:
         # ★★★ 수정: 바뀐 함수 이름으로 호출하고, 두 개의 반환값을 받습니다 ★★★
         # 1. ai_services.py에서 텍스트와 이미지 정보 추출
         pdf_text, extracted_images = extract_text_and_images_from_pdf(
-            exam_doc.pdf_file.path, 
+            exam_doc.pdf_file.path,
             exam_doc.id
         )
-        
+
         # 2. rag_chatbot.py에 Vector Store 생성을 요청
         if pdf_text:
             rag_service = get_rag_service_instance()
@@ -121,7 +127,7 @@ def ajax_process_pdf_view(request, exam_document_id):
             exam_doc.question_type_requested,
             exam_doc.subject_area
         )
-        
+
         if not questions_data_list_from_ai:
             logger.error("AI가 유효한 문제 데이터를 반환하지 않았습니다.")
             return JsonResponse({'status': 'error', 'message': 'AI 문제 생성에 실패했습니다.'}, status=500)
@@ -146,9 +152,9 @@ def ajax_process_pdf_view(request, exam_document_id):
                     explanation=q_data.get('explanation', '')
                 )
                 js_questions_data.append(question.to_dict())
-        
+
         return JsonResponse({
-            'status': 'completed', 
+            'status': 'completed',
             'exam_id': generated_exam_instance.id,
             'questions': js_questions_data,
             'exam_document_title': exam_doc.title
@@ -173,7 +179,7 @@ def ajax_chatbot_view(request, exam_document_id):
             return JsonResponse({'status': 'error', 'answer': '챗봇 서비스를 현재 사용할 수 없습니다.'}, status=503)
 
         ai_answer = rag_service.ask(user_question, exam_document_id)
-        
+
         return JsonResponse({'status': 'success', 'answer': ai_answer})
     except Exception as e:
         logger.error(f"ajax_chatbot_view에서 오류 발생: {e}\n{traceback.format_exc()}")
@@ -207,6 +213,25 @@ def ajax_process_scoring_view(request, generated_exam_id):
     elif final_score >= 50: flo_message = "좋아요! 조금만 더 집중하면 더 좋은 결과를 얻을 수 있을 거예요. 💪"
     else: flo_message = "괜찮아요, 다음 기회에 더 잘할 수 있어요! 꾸준히 노력하는 것이 중요합니다. 📖"
     logger.info(f"views.py (ajax_process_scoring_view): 채점 완료, 점수: {final_score}")
+    # --- ▼▼▼ 마이페이지 학습 목표 달성 횟수 업데이트 로직 (6/18) ▼▼▼ ---
+    goal_id = request.POST.get('goal_id')
+    if goal_id and request.user.is_authenticated:
+        try:
+            # goal_id와 현재 로그인한 사용자를 기준으로 정확한 학습 목표 객체를 찾습니다.
+            goal = LearningGoal.objects.get(id=goal_id, user=request.user)
+
+            # 카운트를 1 증가시킵니다.
+            goal.current_repetition_count += 1
+            goal.save() # save() 메서드에서 is_completed 등이 자동 계산될 수 있습니다.
+
+            logger.info(f"학습 목표(ID: {goal_id}) 횟수 업데이트 완료. 현재 횟수: {goal.current_repetition_count}")
+
+        except LearningGoal.DoesNotExist:
+            # 다른 사용자의 목표에 접근하거나 존재하지 않는 ID일 경우,
+            # 오류를 발생시키지 않고 조용히 넘어갑니다.
+            logger.warning(f"요청된 학습 목표(ID: {goal_id})를 찾지 못했거나 접근 권한이 없습니다.")
+            pass
+    # --- ▲▲▲ 여기까지 추가 ▲▲▲ ---
     return JsonResponse({'status': 'completed', 'session_id': current_user_session.id, 'results': {'exam_id': generated_exam.id, 'exam_title': generated_exam.exam_document.title, 'total_questions': num_total_questions, 'correct_answers_count': num_correct, 'score': final_score, 'flo_comment': flo_message, 'user_answers_details': js_user_answers_details}})
 
 # 6. PDF 다운로드 뷰
@@ -247,10 +272,43 @@ def download_answers_pdf_view(request, generated_exam_id):
 # ==============================================================================
 @require_GET
 def mistake_note_page_view(request, exam_document_id):
+    # exam_document_id는 챗봇 컨텍스트 등에 필요하므로 그대로 둡니다.
     exam_doc = get_object_or_404(ExamDocument, pk=exam_document_id)
+
+    # --- ▼▼▼ 마이페이지 오답 문제들을 가져오는 로직 (추가/수정된 부분 6/18) ▼▼▼ ---
+    attempt_id = request.GET.get('attempt_id')
+    incorrect_answers = []  # 기본값: 빈 리스트
+    page_title = f"'{exam_doc.title}' 오답노트" # 기본 제목
+
+    if attempt_id:
+        try:
+            # URL의 attempt_id와 현재 로그인한 사용자를 기준으로 정확한 시험 응시 기록(session)을 찾습니다.
+            session = get_object_or_404(UserExamSession, pk=attempt_id, user=request.user)
+            # 해당 세션에서 is_correct가 False인 답변들만 가져옵니다.
+            # .select_related('question')는 DB 쿼리 효율을 높여줍니다. (N+1 문제 방지)
+            incorrect_answers = UserAnswer.objects.filter(
+                session=session
+            ).exclude(
+                is_correct=True # is_correct 필드가 True인 것을 '제외한' 모든 것을 찾음
+            ).select_related('question').order_by('question__question_number')
+
+            # 제목을 실제 응시 기록의 제목으로 설정합니다.
+            page_title = f"'{session.generated_exam.exam_document.title}' 오답노트"
+
+        except Http404:
+            # 다른 사용자의 오답노트에 접근 시도 시, 그냥 아무것도 안 합니다.
+            # incorrect_answers는 빈 리스트로 유지됩니다.
+            # 보안을 위해 로깅을 추가할 수도 있습니다.
+            logger.warning(f"User {request.user.id} tried to access attempt {attempt_id} without permission.")
+            pass
+
+    # --- ▲▲▲ 여기까지 추가/수정된 부분 ▲▲▲ ---
+    # 템플릿에서 사용할 수 있도록 incorrect_answers와 그 타입을 context에 추가합니다.
     context = {
-        'page_title': f"'{exam_doc.title}' 오답노트",
+        'page_title': page_title, # 동적으로 설정된 page_title 사용
         'exam_document_id': exam_document_id,
         'chatbot_ajax_url': reverse('flo_exam:ajax_chatbot', args=[exam_document_id]),
+        'incorrect_answers': incorrect_answers,
+        'incorrect_answers_type': type(incorrect_answers).__name__,
     }
     return render(request, 'flo_exam/mistake_note_page.html', context)

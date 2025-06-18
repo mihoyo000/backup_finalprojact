@@ -8,10 +8,10 @@
     --header-height: 150px; /* 헤더 높이 축소 */
     --sidebar-width: 250px; /* 사이드바 너비 축소 */
     --main-content-max-width: 1400px;
-    
+
     /* 폰트 크기 */
     --font-size-root: 16px;
-    --font-size-base: 1rem; 
+    --font-size-base: 1rem;
     --font-size-sm: 0.875rem;
     --font-size-lg: 1.125rem;
     --font-size-xl: 1.25rem;
@@ -35,21 +35,21 @@
     --dark-accent: #66FCF1;
     --dark-accent-hover: #4FC1BB;
     --dark-icon-color: #B0B0B0;
-    --dark-button-text-on-accent: #141A22; 
+    --dark-button-text-on-accent: #141A22;
 
     /* --- 라이트 모드 색상 변수 --- */
-    --light-bg: #F8F9FA; 
-    --light-surface-1: #FFFFFF; 
-    --light-surface-2: #FFFFFF; 
-    --light-surface-card: #FFFFFF; 
+    --light-bg: #F8F9FA;
+    --light-surface-1: #FFFFFF;
+    --light-surface-2: #FFFFFF;
+    --light-surface-card: #FFFFFF;
     /* ★★★★★★★★★★★★★★★★★★★★ 수정 1: 테두리 색상 변경 ★★★★★★★★★★★★★★★★★★★★ */
     --light-border: #ced4da; /* #FFFFFF 에서 Bootstrap 기본 회색 테두리 색상으로 변경 */
     --light-input-border-focus: var(--light-accent);
-    --light-text-primary: #212529; 
-    --light-text-secondary: #5A6268;    
-    --light-text-label: #495057;        
+    --light-text-primary: #212529;
+    --light-text-secondary: #5A6268;
+    --light-text-label: #495057;
     --light-text-placeholder: rgba(108, 117, 125, 0.7);
-    --light-accent: #0D6EFD; 
+    --light-accent: #0D6EFD;
     --light-accent-hover: #0A58CA;
     --light-icon-color: #495057;
     --light-button-text-on-accent: #FFFFFF;
@@ -138,7 +138,7 @@ body.theme-dark #mypage-main-content { background-color: #1a1d21; }
     height: 150px; /* var(--header-height)와 동일값 */
     border-bottom: 0px solid #e9ecef; /* --light-border와 유사하나, 명시적 값 사용 */
     flex-shrink: 0;
-    display: flex; 
+    display: flex;
     align-items: center;
     padding: 0 2rem;
     background-color: #ffffff; /* var(--light-surface-1)와 동일값 */
@@ -150,9 +150,9 @@ body.theme-dark #mypage-header { background-color: #121212; border-bottom-color:
 /* body.theme-light #mypage-header는 위 기본 스타일에 병합됨 */
 
 #mypage-header .mypage-header-container {
-    display: flex; 
+    display: flex;
     justify-content: space-between;
-    align-items: center; 
+    align-items: center;
     width: 100%;
     max-width: var(--main-content-max-width);
     margin: 0 auto;
@@ -245,8 +245,8 @@ body.theme-dark #mypage-sidebar .sidebar-header {
 }
 
 #mypage-sidebar .sidebar-header .logo-container {
-    display: flex; 
-    align-items: center; 
+    display: flex;
+    align-items: center;
     margin-right: 10px; /* 로고와 "MY PAGE" 타이틀 사이 간격 */
 }
 #mypage-sidebar .sidebar-header .logo-container a {
@@ -255,7 +255,7 @@ body.theme-dark #mypage-sidebar .sidebar-header {
     justify-content: center;
 }
 #mypage-sidebar .sidebar-header .logo-container img#sidebar-logo {
-    display: block; 
+    display: block;
     height: 135px; /* 로고 이미지 크기 축소 */
     width: auto;
 }
@@ -263,9 +263,9 @@ body.theme-dark #mypage-sidebar .sidebar-header {
 #mypage-sidebar .mypage-sidebar-nav { flex-grow: 1; overflow-y: auto; padding-top: 0px; }
 .mypage-sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
 .mypage-sidebar-nav .nav-item a {
-    display: flex; align-items: center; padding: 15px 30px; 
+    display: flex; align-items: center; padding: 15px 30px;
     font-size: var(--font-size-sidebar-menu); font-weight: 500; /* 폰트 굵기 약간 증가 */
-    text-decoration: none; 
+    text-decoration: none;
     transition: color 0.15s ease, background-color 0.15s ease, border-left-color 0.15s ease;
     border-left: 3px solid transparent;
 }
@@ -301,22 +301,23 @@ body.theme-dark #mypage-main-content {
 }
 .main-content-inner-wrapper { max-width: var(--main-content-max-width); margin: 0 auto; padding: 30px 40px; }
 
-.page-title-container { 
-    display: flex; align-items: center; gap: 0.7rem; margin-bottom: 2rem !important; 
+.page-title-container {
+    display: flex; align-items: center; gap: 0.7rem; margin-bottom: 2rem !important;
 }
-.page-title-icon { 
-    font-size: 1.7rem; 
-} 
+.page-title-icon {
+    font-size: 2rem;
+    position: relative;
+}
 
 /* 테마별 아이콘 공통 색상 */
 body.theme-dark .page-title-icon {
-    color: var(--dark-accent) !important; 
+    color: var(--dark-accent) !important;
 }
 body.theme-light .page-title-icon {
     color: var(--light-accent) !important;
 }
 
-.page-main-title { 
+.page-main-title {
     font-size: var(--font-size-page-main-title); font-weight: 600;
 }
 
@@ -327,9 +328,8 @@ body.theme-light .page-title-container .page-title-icon { color: var(--light-acc
 
 /* 각 아이콘별 세로 위치 미세 조정 */
 .page-title-container .bi-grid-1x2-fill.page-title-icon { top: -10px; }
-.page-title-container .bi-bullseye.page-title-icon { top: 2px; }
-.page-title-container .bi-file-earmark-text-fill.page-title-icon { top: -10px; }
-.page-title-container .bi-journal-x.page-title-icon { top: -2px; }
+.page-title-container .bi-bullseye.page-title-icon { top: 1px; }
+
 /* ▲▲▲ 여기까지 ▲▲▲ */
 
 
@@ -356,165 +356,165 @@ body.theme-light .no-goals-text-secondary { color: var(--light-text-secondary); 
 /* 학습 목표 생성/수정 폼 (다크/라이트 스타일 개선) */
 /* ============================================= */
 .learningGoalFormContainer .card,
-.learning-goal-edit-form-wrapper .card { 
-    border-radius: 0.4rem; 
-    margin-bottom: 2.5rem !important; 
+.learning-goal-edit-form-wrapper .card {
+    border-radius: 0.4rem;
+    margin-bottom: 2.5rem !important;
 }
-body.theme-dark .learningGoalFormContainer .card, 
-body.theme-dark .learning-goal-edit-form-wrapper .card { 
+body.theme-dark .learningGoalFormContainer .card,
+body.theme-dark .learning-goal-edit-form-wrapper .card {
     background-color: var(--dark-surface-card) !important;
-    border: 1px solid var(--dark-border); 
+    border: 1px solid var(--dark-border);
 }
-body.theme-light .learningGoalFormContainer .card, 
-body.theme-light .learning-goal-edit-form-wrapper .card { 
-    background-color: var(--light-surface-card); 
-    border: 1px solid var(--light-border); 
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04); 
+body.theme-light .learningGoalFormContainer .card,
+body.theme-light .learning-goal-edit-form-wrapper .card {
+    background-color: var(--light-surface-card);
+    border: 1px solid var(--light-border);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
-.learningGoalFormContainer .card-header h4, 
-.learning-goal-edit-form-wrapper .card-header h4 { 
-    font-size: var(--font-size-lg); 
-    padding: 0.8rem 1.2rem; 
-    margin-bottom: 0; 
-    border-bottom: 0px solid; 
-    font-weight: 500; 
+.learningGoalFormContainer .card-header h4,
+.learning-goal-edit-form-wrapper .card-header h4 {
+    font-size: var(--font-size-lg);
+    padding: 0.8rem 1.2rem;
+    margin-bottom: 0;
+    border-bottom: 0px solid;
+    font-weight: 500;
 }
 body.theme-dark .learningGoalFormContainer .card-header h4,
-body.theme-dark .learning-goal-edit-form-wrapper .card-header h4 { 
+body.theme-dark .learning-goal-edit-form-wrapper .card-header h4 {
     color: var(--dark-text-primary) !important;
-    border-bottom-color: var(--dark-border); 
+    border-bottom-color: var(--dark-border);
 }
 body.theme-light .learningGoalFormContainer .card-header h4,
-body.theme-light .learning-goal-edit-form-wrapper .card-header h4 { 
+body.theme-light .learning-goal-edit-form-wrapper .card-header h4 {
     color: var(--light-text-primary) !important;
-    border-bottom-color: var(--light-border); 
+    border-bottom-color: var(--light-border);
 }
 
-.learningGoalFormContainer .card-body, 
+.learningGoalFormContainer .card-body,
 .learning-goal-edit-form-wrapper .card-body { padding: 1.5rem; }
-.learningGoalFormContainer form, 
+.learningGoalFormContainer form,
 .learning-goal-edit-form { max-width: 580px; margin: 0 auto; }
 
-body.theme-dark .learningGoalFormContainer .form-label, 
-body.theme-dark .learning-goal-edit-form-wrapper .form-label { 
-    font-weight: 500; 
-    margin-bottom: 0.4rem; 
-    font-size: var(--font-size-sm); 
+body.theme-dark .learningGoalFormContainer .form-label,
+body.theme-dark .learning-goal-edit-form-wrapper .form-label {
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    font-size: var(--font-size-sm);
     color: var(--dark-text-primary) !important;
 }
-body.theme-light .learningGoalFormContainer .form-label, 
-body.theme-light .learning-goal-edit-form-wrapper .form-label { 
-    color: var(--light-text-label); 
+body.theme-light .learningGoalFormContainer .form-label,
+body.theme-light .learning-goal-edit-form-wrapper .form-label {
+    color: var(--light-text-label);
 }
 
 body.theme-dark .learningGoalFormContainer .form-control,
 body.theme-dark .learningGoalFormContainer .form-select,
 body.theme-dark .learning-goal-edit-form-wrapper .form-control,
-body.theme-dark .learning-goal-edit-form-wrapper .form-select { 
-    border-radius: 0.25rem; 
-    padding: 0.6rem 0.8rem; 
-    font-size: 0.95rem; 
+body.theme-dark .learning-goal-edit-form-wrapper .form-select {
+    border-radius: 0.25rem;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.95rem;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
     background-color: var(--dark-surface-input) !important;
-    border: 1px solid var(--dark-border) !important; 
+    border: 1px solid var(--dark-border) !important;
     color: var(--dark-text-primary) !important;
 }
 body.theme-dark .learningGoalFormContainer .form-control:focus,
 body.theme-dark .learningGoalFormContainer .form-select:focus,
 body.theme-dark .learning-goal-edit-form-wrapper .form-control:focus,
-body.theme-dark .learning-goal-edit-form-wrapper .form-select:focus { 
-    border-color: var(--dark-accent); 
-    box-shadow: 0 0 0 0.2rem rgba(102, 252, 241, 0.25); 
+body.theme-dark .learning-goal-edit-form-wrapper .form-select:focus {
+    border-color: var(--dark-accent);
+    box-shadow: 0 0 0 0.2rem rgba(102, 252, 241, 0.25);
 }
 body.theme-dark .learningGoalFormContainer .form-control::placeholder,
-body.theme-dark .learning-goal-edit-form-wrapper .form-control::placeholder { 
-    color: var(--dark-text-placeholder) !important; 
-    opacity: 1 !important; 
+body.theme-dark .learning-goal-edit-form-wrapper .form-control::placeholder {
+    color: var(--dark-text-placeholder) !important;
+    opacity: 1 !important;
 }
 
-body.theme-light .learningGoalFormContainer .form-control, 
-body.theme-light .learningGoalFormContainer .form-select, 
-body.theme-light .learning-goal-edit-form-wrapper .form-control, 
-body.theme-light .learning-goal-edit-form-wrapper .form-select { 
-    background-color: var(--light-surface-1); 
-    border: 1px solid var(--light-border); 
-    color: var(--light-text-primary); 
+body.theme-light .learningGoalFormContainer .form-control,
+body.theme-light .learningGoalFormContainer .form-select,
+body.theme-light .learning-goal-edit-form-wrapper .form-control,
+body.theme-light .learning-goal-edit-form-wrapper .form-select {
+    background-color: var(--light-surface-1);
+    border: 1px solid var(--light-border);
+    color: var(--light-text-primary);
 }
-body.theme-light .learningGoalFormContainer .form-control:focus, 
-body.theme-light .learningGoalFormContainer .form-select:focus, 
-body.theme-light .learning-goal-edit-form-wrapper .form-control:focus, 
-body.theme-light .learning-goal-edit-form-wrapper .form-select:focus { 
-    border-color: var(--light-input-border-focus); 
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25); 
+body.theme-light .learningGoalFormContainer .form-control:focus,
+body.theme-light .learningGoalFormContainer .form-select:focus,
+body.theme-light .learning-goal-edit-form-wrapper .form-control:focus,
+body.theme-light .learning-goal-edit-form-wrapper .form-select:focus {
+    border-color: var(--light-input-border-focus);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
-body.theme-light .learningGoalFormContainer .form-control::placeholder, 
-body.theme-light .learning-goal-edit-form-wrapper .form-control::placeholder { 
-    color: var(--light-text-placeholder); 
-}
-
-body.theme-dark .learningGoalFormContainer .form-check-input, 
-body.theme-dark .learning-goal-edit-form-wrapper .form-check-input { 
-    border-radius: 0.2rem; 
-    margin-top: 0.2em; 
-    background-color: var(--dark-surface-input); 
-    border-color: var(--dark-border); 
-}
-body.theme-dark .learningGoalFormContainer .form-check-input:checked, 
-body.theme-dark .learning-goal-edit-form-wrapper .form-check-input:checked { 
-    background-color: var(--dark-accent); 
-    border-color: var(--dark-accent); 
-}
-body.theme-light .learningGoalFormContainer .form-check-input, 
-body.theme-light .learning-goal-edit-form-wrapper .form-check-input { 
-    background-color: var(--light-surface-1); 
-    border-color: var(--light-border); 
-}
-body.theme-light .learningGoalFormContainer .form-check-input:checked, 
-body.theme-light .learning-goal-edit-form-wrapper .form-check-input:checked { 
-    background-color: var(--light-accent); 
-    border-color: var(--light-accent); 
+body.theme-light .learningGoalFormContainer .form-control::placeholder,
+body.theme-light .learning-goal-edit-form-wrapper .form-control::placeholder {
+    color: var(--light-text-placeholder);
 }
 
-body.theme-dark .learningGoalFormContainer .form-text.text-muted, 
-body.theme-dark .learning-goal-edit-form-wrapper .form-text.text-muted { 
-    font-size: var(--font-size-sm); 
-    opacity: 1; 
+body.theme-dark .learningGoalFormContainer .form-check-input,
+body.theme-dark .learning-goal-edit-form-wrapper .form-check-input {
+    border-radius: 0.2rem;
+    margin-top: 0.2em;
+    background-color: var(--dark-surface-input);
+    border-color: var(--dark-border);
+}
+body.theme-dark .learningGoalFormContainer .form-check-input:checked,
+body.theme-dark .learning-goal-edit-form-wrapper .form-check-input:checked {
+    background-color: var(--dark-accent);
+    border-color: var(--dark-accent);
+}
+body.theme-light .learningGoalFormContainer .form-check-input,
+body.theme-light .learning-goal-edit-form-wrapper .form-check-input {
+    background-color: var(--light-surface-1);
+    border-color: var(--light-border);
+}
+body.theme-light .learningGoalFormContainer .form-check-input:checked,
+body.theme-light .learning-goal-edit-form-wrapper .form-check-input:checked {
+    background-color: var(--light-accent);
+    border-color: var(--light-accent);
+}
+
+body.theme-dark .learningGoalFormContainer .form-text.text-muted,
+body.theme-dark .learning-goal-edit-form-wrapper .form-text.text-muted {
+    font-size: var(--font-size-sm);
+    opacity: 1;
     color: var(--dark-text-secondary) !important;
 }
-body.theme-light .learningGoalFormContainer .form-text.text-muted, 
-body.theme-light .learning-goal-edit-form-wrapper .form-text.text-muted { 
-    color: var(--light-text-secondary) !important; 
+body.theme-light .learningGoalFormContainer .form-text.text-muted,
+body.theme-light .learning-goal-edit-form-wrapper .form-text.text-muted {
+    color: var(--light-text-secondary) !important;
 }
 
 #id_target_repetition_count, #id_due_date { max-width: 220px; }
 
-body.theme-dark .learningGoalFormContainer .btn.learning-goal-submit, 
-body.theme-dark .learning-goal-edit-form-wrapper .btn.learning-goal-submit { 
-    font-weight: 500; 
-    padding: 0.5rem 1.2rem; 
-    font-size: var(--font-size-sm); 
+body.theme-dark .learningGoalFormContainer .btn.learning-goal-submit,
+body.theme-dark .learning-goal-edit-form-wrapper .btn.learning-goal-submit {
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+    font-size: var(--font-size-sm);
     background-color: #28A745;
-    border-color: #28A745; 
+    border-color: #28A745;
     color: #FFFFFF !important;
 }
-body.theme-light .learningGoalFormContainer .btn.learning-goal-submit, 
-body.theme-light .learning-goal-edit-form-wrapper .btn.learning-goal-submit { 
-    background-color: var(--light-accent); 
-    border-color: var(--light-accent); 
-    color: var(--light-button-text-on-accent); 
+body.theme-light .learningGoalFormContainer .btn.learning-goal-submit,
+body.theme-light .learning-goal-edit-form-wrapper .btn.learning-goal-submit {
+    background-color: var(--light-accent);
+    border-color: var(--light-accent);
+    color: var(--light-button-text-on-accent);
 }
-body.theme-dark .learning-goal-edit-form .btn-secondary { 
-    padding: 0.5rem 1.2rem; 
-    font-size: var(--font-size-sm); 
-    background-color: var(--dark-surface-card); 
-    border-color: var(--dark-border); 
-    color: var(--dark-text-secondary); 
+body.theme-dark .learning-goal-edit-form .btn-secondary {
+    padding: 0.5rem 1.2rem;
+    font-size: var(--font-size-sm);
+    background-color: var(--dark-surface-card);
+    border-color: var(--dark-border);
+    color: var(--dark-text-secondary);
 }
-body.theme-light .learning-goal-edit-form .btn-secondary { 
-    background-color: #6c757d; 
-    border-color: #6c757d; 
-    color: #FFFFFF; 
+body.theme-light .learning-goal-edit-form .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #FFFFFF;
 }
 
 /* ============================================= */
@@ -566,9 +566,9 @@ body.theme-light .learning-goal-card .btn-warning { background-color: #FFC107; b
 /* ============================================= */
 .site-footer {
     /* padding-left: var(--sidebar-width); -- #main-panel의 margin-left로 대체 */
-    border-top: 1px solid; 
-    padding-top: 20px; 
-    padding-bottom: 20px; 
+    border-top: 1px solid;
+    padding-top: 20px;
+    padding-bottom: 20px;
     font-size: var(--font-size-sm);
     flex-shrink: 0; /* #main-panel 내부에서 크기 유지 */
 }
@@ -645,7 +645,7 @@ body.theme-dark .learning-goal-card .card-footer .btn-outline-danger:hover {
 .learning-goal-card .card-title-wrapper .goal-importance-icon {
     flex-shrink: 0; /* 아이콘이 찌그러지지 않도록 */
     font-size: 1.25rem; /* 아이콘 크기 */
-    color: #ffc107; /* Bootstrap 'warning' 색상 */
+    color: #ffc107 !important; /* Bootstrap 'warning' 색상 */
 }
 
 /* 2. 카드 하단 버튼 영역 스타일 복구 및 다크 모드 색상 적용 */
@@ -684,8 +684,8 @@ body.theme-dark .learning-goal-card .card-body .card-text {
 /* "새 학습 목표 만들기" 폼 제목 색상 문제 해결 (최종)              */
 /* =================================================================== */
 
-/* 
-  설명: 
+/*
+  설명:
   base.css의 'body.theme-dark h4' 규칙이 모든 h4를 밝게 만듭니다.
   아래 규칙은 그 중에서도 '.create-goal-section' 안에 있는 h4만
   다시 검정색으로 덮어쓰기 위한 예외 처리입니다.
@@ -699,8 +699,8 @@ body.theme-dark .create-goal-section .card-header h4 {
 /* "새 목표 추가" 버튼 아이콘 색상 문제 해결 (최종)                     */
 /* =================================================================== */
 
-/* 
-  설명: 
+/*
+  설명:
   라이트 모드에서 모든 아이콘(.bi)은 어두운 색으로 지정되어 있습니다.
   아래 규칙은 그 중에서도 '새 목표 추가' 버튼(#toggleCreateGoalFormBtnHeader)
   안에 있는 아이콘만 흰색으로 덮어쓰기 위한 예외 처리입니다.
@@ -788,3 +788,4 @@ body.theme-light .learning-goals-page .learning-goal-card .goal-due-date-section
 body.theme-light .learning-goals-page .learning-goal-card .goal-due-date-section .goal-due-date-display small.text-muted span.due-date-text {
     color: var(--light-text-secondary); /* 예시: 라이트 모드 보조 텍스트 색상 */
 }
+

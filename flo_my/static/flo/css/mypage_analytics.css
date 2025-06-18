@@ -1,0 +1,92 @@
+/* mypage_analytics.css */
+
+/* --- 카드 공통 스타일 --- */
+/* HTML에서 .analytics-page 클래스 내의 카드에만 적용되도록 선택자 구체화 */
+.analytics-page .chart-card,
+.analytics-page .list-card {
+    padding: 1.5rem;
+    border-radius: 0.5rem; /* mypage.css의 0.75rem을 덮어쓰려면 이 파일이 나중에 로드되어야 함, 또는 !important 사용 */
+    /* background-color, box-shadow, border 등은 mypage.css의 테마별 스타일을 따르도록 여기서 제거 */
+    display: flex;
+    flex-direction: column;
+    /*
+      공통 height: 100% 제거.
+      HTML의 h-100 클래스가 이미 height: 100% !important를 적용합니다.
+      개별 카드에서 높이를 조절하려면 h-100을 제거하거나, CSS에서 !important로 덮어써야 합니다.
+    */
+}
+
+/* --- 제목 스타일 --- */
+.analytics-page .chart-title,
+.analytics-page .list-title {
+    margin-bottom: 1.5rem; /* 일반적인 값으로 수정 */
+    /* color는 mypage.css의 테마별 스타일을 따르도록 여기서 제거 */
+    flex-shrink: 0; /* 제목 높이가 줄어들지 않도록 함 */
+}
+
+/* --- 차트 래퍼 스타일 --- */
+.chart-wrapper {
+    position: relative; /* canvas의 위치 기준 */
+    flex-grow: 1;    /* 남은 세로 공간을 모두 차지하도록 수정 */
+    width: 100%;
+}
+
+/* --- 목록(강점/약점) 스타일 --- */
+.analytics-page .list-card .list-group {
+    flex-grow: 1; /* 목록이 남은 세로 공간을 차지 */
+    margin-bottom: 0; /* list-group의 기본 margin 제거 */
+}
+
+.analytics-page .list-card .list-group-item {
+    background-color: transparent; /* 카드 배경색과 동일하게 */
+    /* border-color, color는 mypage.css의 테마별 스타일을 따르도록 여기서 제거 */
+    padding-left: 0;
+    padding-right: 0;
+}
+.analytics-page .list-card .list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* ====================================================================== */
+/* 페이지 제목 아이콘 스타일                                                */
+/* ====================================================================== */
+/* "나의 학습 현황" 페이지 제목 아이콘 (예: bi-bar-chart-line-fill) */
+.analytics-page .page-title-container .page-title-icon {
+    position: relative; /* top, bottom, left, right 속성을 적용하기 위해 필요 */
+    /* 다른 페이지 아이콘과의 상대적 위치 조정을 위해 top 사용 */
+    top: -10px; /* 일반적인 값으로 수정, 필요시 이 값을 조절하세요 */
+    /* 필요에 따라 font-size, color 등 추가적인 스타일 조절 가능 */
+}
+
+/* ====================================================================== */
+/* 개별 카드 크기 조절 (아래 ID를 HTML 카드 div에 추가 후 주석 해제하여 사용) */
+/* ====================================================================== */
+
+/* "목표 달성 플로우" 카드 */
+
+.analytics-page #goal-flow-card {
+    min-height: 380px;
+    height: auto; /* h-100을 덮어쓰려면 !important 필요 또는 HTML에서 h-100 제거 */
+
+
+
+/* "최근 정답률 분석" 카드 */
+/*
+.analytics-page #accuracy-donut-card {
+    min-height: 380px;
+}
+*/
+
+/* "나의 강점" 카드 */
+/*
+.analytics-page #strengths-card {
+    min-height: 250px;
+}
+*/
+
+/* "나의 약점" 카드 */
+/*
+.analytics-page #weaknesses-card {
+    min-height: 250px;
+}
+*/

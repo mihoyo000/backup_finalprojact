@@ -121,3 +121,8 @@ body.theme-dark .incorrect-notes-page .card-footer .btn-outline-primary { color:
 body.theme-dark .incorrect-notes-page .card-footer .btn-outline-primary:hover { color: var(--dark-button-text-on-accent); background-color: var(--dark-accent); }
 body.theme-dark .incorrect-notes-page .card-footer .btn-outline-danger { color: #f87171; border-color: #f87171; } /* 학습 목표/자료와 동일 */
 body.theme-dark .incorrect-notes-page .card-footer .btn-outline-danger:hover { color: var(--dark-text-primary); background-color: #f87171; } /* 학습 목표/자료와 동일 */
+body.theme-dark .incorrect-notes-page .card-footer .btn-outline-danger { color: #f87171; border-color: #f87171; } /* 학습 목표/자료와 동일 */
+body.theme-dark .incorrect-notes-page .card-footer .btn-outline-danger:hover { color: var(--dark-text-primary); background-color: #f87171; } /* 학습 목표/자료와 동일 */
+
+/* 오답노트 페이지 제목 아이콘 세로 위치 조정 */
+.page-title-container .bi-journal-x.page-title-icon { top: -10px; } /* "나의 학습목표" 아이콘(-10px) 기준으로 조절 */

@@ -3,63 +3,81 @@
 
 {% block title %}{% translate "나의 학습 현황" %} - {{ block.super }}{% endblock %}
 
+{# ▼▼▼ [추가] 이 페이지 전용 CSS 파일을 연결하는 블록 ▼▼▼ #}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'flo/css/mypage_analytics.css' %}">
+{% endblock %}
+
 
 {% block mypage_content %}
-{# --- ▼▼▼ 모든 콘텐츠를 이 div 안에 넣어 스타일을 격리합니다 ▼▼▼ --- #}
-<div class="mypage-analytics-page">
+<div class="analytics-page">
 
     <div class="page-title-container mb-4">
         <i class="bi bi-bar-chart-line-fill page-title-icon"></i>
         <h2 class="page-main-title">{% translate "나의 학습 현황" %}</h2>
     </div>
 
-    <div class="row">
-        <div class="col-lg-7">
-            <div class="chart-card">
+    <div class="row align-items-stretch">
+        <div class="col-lg-7 mb-4">
+            {# ▼▼▼ [수정] 카드 높이 통일을 위해 h-100 클래스 추가 ▼▼▼ #}
+            <div class="chart-card h-100">
                 <h4 class="chart-title">{% translate "목표 달성 플로우 (최근 7일)" %}</h4>
-                <canvas id="goalFlowChart"></canvas>
+                {# ▼▼▼ [수정] 반응형 차트를 위해 래퍼 div 추가 ▼▼▼ #}
+                <div class="chart-wrapper">
+                    <canvas id="goalFlowChart"></canvas>
+                </div>
             </div>
         </div>
-        <div class="col-lg-5">
-            <div class="chart-card">
+        <div class="col-lg-5 mb-4">
+            {# ▼▼▼ [수정] 카드 높이 통일을 위해 h-100 클래스 추가 ▼▼▼ #}
+            <div class="chart-card h-100">
                 <h4 class="chart-title">{% translate "최근 정답률 분석 (최근 7일)" %}</h4>
-                <canvas id="accuracyDonutChart"></canvas>
+                 {# ▼▼▼ [수정] 반응형 차트를 위해 래퍼 div 추가 ▼▼▼ #}
+                <div class="chart-wrapper">
+                    <canvas id="accuracyDonutChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="chart-card">
-                <h4 class="chart-title">{% translate "최근 학습 시간 (분, 최근 7일)" %}</h4>
-                <canvas id="learningTimeBarChart"></canvas>
-            </div>
-        </div>
-    </div>
+    <!-- 막대 그래프는 주석 처리됨 -->
 
-    <div class="row">
-        <div class="col-md-6">
-            <div class="chart-card">
-                <h4 class="chart-title">{% translate "나의 강점 (평균 점수 Top 3)" %}</h4>
-                <ul class="list-group list-group-flush">
-                    {# 데이터가 채워지기 전 임시 텍스트 #}
-                    <li class="list-group-item">{% translate "데이터 분석 중..." %}</li>
+    <div class="row align-items-stretch">
+        <div class="col-md-6 mb-4">
+             {# ▼▼▼ [수정] 카드 높이 통일을 위해 h-100 클래스 추가 ▼▼▼ #}
+            <div class="list-card h-100">
+                <h4 class="list-title">{% translate "나의 강점 (평균 점수 Top 3)" %}</h4>
+                <ul class="list-group list-group-flush" id="strengths-list">
+                    {% for item in strengths %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ item.title }}</span>
+                            <span class="badge bg-primary rounded-pill">{{ item.average_score|floatformat:1 }}점</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item">{% translate "분석할 데이터가 부족합니다." %}</li>
+                    {% endfor %}
                 </ul>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="chart-card">
-                <h4 class="chart-title">{% translate "나의 약점 (평균 점수 Bottom 3)" %}</h4>
-                <ul class="list-group list-group-flush">
-                    {# 데이터가 채워지기 전 임시 텍스트 #}
-                    <li class="list-group-item">{% translate "데이터 분석 중..." %}</li>
+        <div class="col-md-6 mb-4">
+             {# ▼▼▼ [수정] 카드 높이 통일을 위해 h-100 클래스 추가 ▼▼▼ #}
+            <div class="list-card h-100">
+                <h4 class="list-title">{% translate "나의 약점 (평균 점수 Bottom 3)" %}</h4>
+                <ul class="list-group list-group-flush" id="weaknesses-list">
+                    {% for item in weaknesses %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ item.title }}</span>
+                            <span class="badge bg-danger rounded-pill">{{ item.average_score|floatformat:1 }}점</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item">{% translate "분석할 데이터가 부족합니다." %}</li>
+                    {% endfor %}
                 </ul>
             </div>
         </div>
     </div>
 
 </div>
-{# --- ▲▲▲ mypage-analytics-page div 끝 ▲▲▲ --- #}
 {% endblock %}
 
 
@@ -67,8 +85,60 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // 이 안에서 차트 생성 코드를 작성할 예정입니다.
-            console.log("학습 현황 페이지 스크립트 로드 완료!");
+            const chartData = JSON.parse('{{ chart_data|safe }}');
+            const isDarkMode = document.body.classList.contains('theme-dark');
+            const textColor = isDarkMode ? 'rgba(234, 234, 234, 0.8)' : 'rgba(73, 80, 87, 0.8)';
+            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+            const goalCtx = document.getElementById('goalFlowChart');
+            if (goalCtx && chartData.goal_flow.labels.length > 0) {
+                new Chart(goalCtx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.goal_flow.labels,
+                        datasets: [{
+                            label: '완료된 목표 개수',
+                            data: chartData.goal_flow.data,
+                            borderColor: isDarkMode ? '#66FCF1' : '#0D6EFD',
+                            backgroundColor: isDarkMode ? 'rgba(102, 252, 241, 0.2)' : 'rgba(13, 110, 253, 0.2)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // ▼▼▼ [수정] 부모 div에 꽉 차도록 설정
+                        scales: { y: { beginAtZero: true, ticks: { color: textColor, stepSize: 1 }, grid: { color: gridColor } },
+                                  x: { ticks: { color: textColor }, grid: { color: gridColor } } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            const accuracyCtx = document.getElementById('accuracyDonutChart');
+            if (accuracyCtx && (chartData.accuracy.data[0] > 0 || chartData.accuracy.data[1] > 0)) {
+                new Chart(accuracyCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['정답', '오답'],
+                        datasets: [{
+                            data: chartData.accuracy.data,
+                            backgroundColor: [
+                                isDarkMode ? 'rgba(102, 252, 241, 0.7)' : 'rgba(13, 110, 253, 0.7)',
+                                isDarkMode ? 'rgba(255, 99, 132, 0.7)' : 'rgba(220, 53, 69, 0.7)'
+                            ],
+                            borderColor: isDarkMode ? '#1F2833' : '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // ▼▼▼ [수정] 부모 div에 꽉 차도록 설정
+                        plugins: { legend: { position: 'top', labels: { color: textColor } } }
+                    }
+                });
+            }
+
+            // 막대그래프는 주석 처리됨
         });
     </script>
 {% endblock %}
